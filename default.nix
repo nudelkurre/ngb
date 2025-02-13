@@ -24,6 +24,7 @@ buildPythonApplication rec {
   ];
 
   dependencies = [
+    psutil
     pygobject3
     screeninfo
   ];
