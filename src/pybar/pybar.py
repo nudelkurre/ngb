@@ -13,6 +13,8 @@ from gi.repository import Gdk
 from gi.repository import GLib
 from screeninfo import get_monitors
 
+from pybar.widgets import Clock
+
 class MainWindow(Gtk.Application):
     monitors = {}
     active_monitor = ""
@@ -65,6 +67,8 @@ class MainWindow(Gtk.Application):
         leftbox.append(leftlabel)
         centerbox.append(centerlabel)
         rightbox.append(rightlabel)
+        clocklabel = Clock("%Y-%m-%d %H:%M:%S")
+        rightbox.append(clocklabel)
         window.set_child(box)
         window.present()
 
