@@ -34,7 +34,7 @@
               wrapGAppsHook
             ];
             shellHook = ''
-              export PS1='\n\[\033[1;32m\][nix-shell:\w]\[\033[1;31m\](Dev)\[\033[1;32m\]\$\[\033[0m\]'
+              export PS1='\n\[\e[1;32m\][\u@\h:\w]\[\e[1;31m\](Dev)\[\e[1;32m\]\$\[\e[0m\]'
             '';
             env = {
               "LD_LIBRARY_PATH" = "$out/lib:${pkgs.gtk4-layer-shell}/lib:$LD_LIBRARY_PATH";
