@@ -13,7 +13,7 @@ from gi.repository import Gdk
 from gi.repository import GLib
 from screeninfo import get_monitors
 
-from pybar.widgets import Clock, Network
+from pybar.widgets import Clock, Disk, Network
 
 class MainWindow(Gtk.Application):
     monitors = {}
@@ -67,6 +67,8 @@ class MainWindow(Gtk.Application):
         leftbox.append(leftlabel)
         centerbox.append(centerlabel)
         rightbox.append(rightlabel)
+        disk = Disk("/")
+        rightbox.append(disk)
         network = Network("eth0")
         rightbox.append(network)
         clocklabel = Clock("%Y-%m-%d %H:%M:%S")
