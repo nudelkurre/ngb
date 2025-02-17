@@ -28,9 +28,11 @@
               gtk4-layer-shell
               hatch
               makeWrapper
-              python3Packages.psutil
-              python3Packages.pygobject3
-              python3Packages.screeninfo
+              (python3.withPackages (python-pkgs: with python-pkgs; [
+                psutil
+                pygobject3
+                screeninfo
+              ]))
               wrapGAppsHook
             ];
             shellHook = ''
