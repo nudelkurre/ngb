@@ -12,8 +12,21 @@
 
 ## Installation
 
+### Install dependenices
+
+#### Arch Linux
 ```console
-pip install pybar
+pacman -S python python-hatch  meson ninja gcc cmake pkgconfig cairo gtk4 gtk4-layer-shell  gobject-introspection
+```
+#### Fedora
+```console
+dnf install python3-devel python3-pip hatch gcc cmake pkgconfig cairo-devel cairo-gobject-devel meson ninja gobject-introspection-devel gtk4-devel gtk4-layer-shell-devel
+```
+
+### Install pybar
+
+```console
+pip install git+https://github.com/nudelkurre/pybar
 ```
 
 ## License
