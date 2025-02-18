@@ -3,30 +3,26 @@ from gi.repository import GLib
 import psutil
 from psutil._common import bytes2human
 
-class Disk(Gtk.Box):
-    mountpoint: str = ""
-    label = Gtk.Label()
+from pybar.modules import WidgetBox
+
+class Disk(WidgetBox):
+    mountpoint = ""
+    text_label = Gtk.Label()
+    icon_label = Gtk.Label()
 
     def __init__(self, mountpoint):
         self.mountpoint = mountpoint
-        Gtk.Box.__init__(self)
-        self.append(self.label)
-        self.get_disk_usage()
-        self.update_disk_usage()
+        WidgetBox.__init__(self, timer=10000, icon="")
 
+    def set_text(self):
+        self.get_disk_usage()
+        return True
 
     def get_disk_usage(self):
         disk_data = psutil.disk_usage(self.mountpoint)
         percent = disk_data.percent
-        total = bytes2human(disk_data.total)
-        used = bytes2human(disk_data.used)
-        self.label.set_label(f"{used}/{total} {percent}%")
-        return True
-
-    def get_disk_total(self):
-        disk_data = psutil.disk_usage(self.mountpoint)
-        self.label.set_label(f"{used}/{total}")
+        self.text_label.set_label(f"{percent}%")
         return True
 
     def update_disk_usage(self):
-        GLib.timeout_add(10000, self.get_disk_usage)
+        GLib.timeout_add(self.timer, self.get_disk_usage)

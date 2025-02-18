@@ -14,13 +14,15 @@ from gi.repository import GLib
 from screeninfo import get_monitors
 
 from pybar.widgets import Clock, Disk, Network
+from pybar.modules import Bar
 
 class MainWindow(Gtk.Application):
     monitors = {}
     active_monitor = ""
     
-    def __init__(self, active_monitor):
-        Gtk.Application.__init__(self, application_id="gtk.pybar")
+    def __init__(self, active_monitor, spacing=10):
+        super().__init__(application_id="gtk.pybar")
+        self.spacing = spacing
         self.active_monitor = active_monitor
         self.get_displays()
         self.connect("activate", self.on_activate)
@@ -54,26 +56,14 @@ class MainWindow(Gtk.Application):
         LayerShell.auto_exclusive_zone_enable(window)
         LayerShell.set_monitor(window, window_monitor)
 
-        box = Gtk.CenterBox()
-        leftbox = Gtk.Box(spacing=6)
-        centerbox = Gtk.Box(spacing=6)
-        rightbox = Gtk.Box(spacing=6)
-        box.set_start_widget(leftbox)
-        box.set_center_widget(centerbox)
-        box.set_end_widget(rightbox)
-        leftlabel = Gtk.Label(label="Left")
-        centerlabel = Gtk.Label(label="Center")
-        rightlabel = Gtk.Label(label="Right")
-        leftbox.append(leftlabel)
-        centerbox.append(centerlabel)
-        rightbox.append(rightlabel)
+        bar = Bar(spacing=self.spacing)
         disk = Disk("/")
-        rightbox.append(disk)
+        bar.right(disk)
         network = Network("eth0")
-        rightbox.append(network)
+        bar.right(network)
         clocklabel = Clock("%Y-%m-%d %H:%M:%S")
-        rightbox.append(clocklabel)
-        window.set_child(box)
+        bar.right(clocklabel)
+        window.set_child(bar)
         window.present()
 
 def main():
