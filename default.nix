@@ -2,7 +2,7 @@
 with pkgs.python3Packages;
 
 buildPythonApplication rec {
-  pname = "pybar";
+  pname = "ngb";
   version = "testing";
   pyproject = true;
   src = ./.;

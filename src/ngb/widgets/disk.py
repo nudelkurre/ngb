@@ -3,7 +3,7 @@ from gi.repository import GLib
 import psutil
 from psutil._common import bytes2human
 
-from pybar.modules import WidgetBox
+from ngb.modules import WidgetBox
 
 class Disk(WidgetBox):
     mountpoint = ""

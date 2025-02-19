@@ -13,12 +13,12 @@
       in
       {
         packages = rec {
-          default = pybar;
-          pybar = import ./. { inherit (pkgs) pkgs stdenv; };
+          default = ngb;
+          ngb = import ./. { inherit (pkgs) pkgs stdenv; };
         };
         apps = rec {
-          default = pybar;
-          pybar = flake-utils.lib.mkApp { drv = self.packages.${system}.pybar; };
+          default = ngb;
+          ngb = flake-utils.lib.mkApp { drv = self.packages.${system}.ngb; };
         };
         devShells = rec {
           default = pkgs.mkShell {

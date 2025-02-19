@@ -2,7 +2,7 @@ from gi.repository import Gtk
 from gi.repository import GLib
 from datetime import datetime
 
-from pybar.modules import WidgetBox
+from ngb.modules import WidgetBox
 
 class Clock(WidgetBox):
     label = ""

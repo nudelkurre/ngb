@@ -2,7 +2,7 @@ from gi.repository import Gtk
 from gi.repository import GLib
 import subprocess
 
-from pybar.modules import WidgetBox
+from ngb.modules import WidgetBox
 
 class Volume(WidgetBox):
     text_label = Gtk.Label()

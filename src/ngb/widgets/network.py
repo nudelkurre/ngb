@@ -3,7 +3,7 @@ from gi.repository import GLib
 import psutil
 import socket
 
-from pybar.modules import WidgetBox
+from ngb.modules import WidgetBox
 
 class Network(WidgetBox):
     interface = []

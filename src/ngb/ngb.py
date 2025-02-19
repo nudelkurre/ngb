@@ -13,15 +13,15 @@ from gi.repository import Gdk
 from gi.repository import GLib
 from screeninfo import get_monitors
 
-from pybar.widgets import Clock, Disk, Network, Volume
-from pybar.modules import Bar
+from ngb.widgets import Clock, Disk, Network, Volume
+from ngb.modules import Bar
 
 class MainWindow(Gtk.Application):
     monitors = {}
     active_monitor = ""
     
     def __init__(self, active_monitor, spacing=10):
-        super().__init__(application_id="gtk.pybar")
+        super().__init__(application_id="gtk.ngb")
         self.spacing = spacing
         self.active_monitor = active_monitor
         self.get_displays()
