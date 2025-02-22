@@ -3,12 +3,13 @@ from gi.repository import GLib
 
 class WidgetBox(Gtk.Box):
     def __init__(self, icon="", icon_size=20, text="", timer=1000, spacing=10):
-        self.spacing = spacing
+        super().__init__(spacing=spacing)
         self.timer = timer
         self.text = text
         self.icon = icon
         self.icon_size = icon_size
-        Gtk.Box.__init__(self, spacing=self.spacing)
+        self.icon_label = Gtk.Label()
+        self.text_label = Gtk.Label()
         self.append(self.icon_label)
         self.append(self.text_label)
         self.set_icon()

@@ -5,11 +5,8 @@ import subprocess
 from ngb.modules import WidgetBox
 
 class Volume(WidgetBox):
-    text_label = Gtk.Label()
-    icon_label = Gtk.Label()
-
     def __init__(self):
-        WidgetBox.__init__(self, icon="", timer=200)
+        super().__init__(icon="", timer=200)
 
     def get_volume(self):
         volume = subprocess.run("wpctl get-volume @DEFAULT_AUDIO_SINK@".split(), capture_output=True, text=True).stdout

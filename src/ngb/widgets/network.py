@@ -7,14 +7,10 @@ from ngb.modules import WidgetBox
 
 class Network(WidgetBox):
     interface = []
-    ipv4_addr = Gtk.Label()
-    ipv6_addr = Gtk.Label()
-    text_label = Gtk.Label()
-    icon_label = Gtk.Label()
-
+    
     def __init__(self, interface):
         self.interface = psutil.net_if_addrs()[interface]
-        WidgetBox.__init__(self, icon="󰈀", timer=10000)
+        super().__init__(icon="󰈀", timer=10000)
 
     def set_text(self):
         self.get_ipv4_addr()
