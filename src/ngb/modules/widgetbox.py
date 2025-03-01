@@ -18,9 +18,18 @@ class WidgetBox(Gtk.Box):
         self.hover_controller.connect("enter", self.on_hover_enter)
         self.hover_controller.connect("leave", self.on_hover_leave)
         self.add_controller(self.hover_controller)
-        self.click_controller = Gtk.GestureClick.new()
-        self.click_controller.connect("pressed", self.on_click)
+        self.click_controller = Gtk.GestureSingle()
+        self.click_controller.set_button(1)
+        self.click_controller.connect("begin", self.on_click)
         self.add_controller(self.click_controller)
+        self.middle_click_controller = Gtk.GestureSingle()
+        self.middle_click_controller.set_button(2)
+        self.middle_click_controller.connect("begin", self.on_middle_click)
+        self.add_controller(self.middle_click_controller)
+        self.right_click_controller = Gtk.GestureSingle()
+        self.right_click_controller.set_button(3)
+        self.right_click_controller.connect("begin", self.on_right_click)
+        self.add_controller(self.right_click_controller)
         self.append(self.icon_label)
         self.append(self.text_label)
         self.set_icon()
@@ -36,7 +45,13 @@ class WidgetBox(Gtk.Box):
     def on_hover_leave(self, controller):
         pass
 
-    def on_click(self, controller, n_press, x, y):
+    def on_click(self, sequence, user_data):
+        pass
+
+    def on_middle_click(self, sequence, user_data):
+        pass
+
+    def on_right_click(self, sequence, user_data):
         pass
 
     def set_icon(self):
