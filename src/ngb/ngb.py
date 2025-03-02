@@ -11,7 +11,7 @@ from gi.repository import Gtk
 
 import sys
 
-from ngb.widgets import Clock, Disk, Network, Volume
+from ngb.widgets import Clock, Cpu, Disk, Network, Volume
 from ngb.modules import Bar
 
 class MainWindow(Gtk.Application):
@@ -31,6 +31,7 @@ class MainWindow(Gtk.Application):
         to create bars with widgets dynamicly
         """
         window.center(Gtk.Label(label=monitor))
+        window.right(Cpu())
         window.right(Disk("/"))
         window.right(Network("eth0"))
         window.right(Volume())
