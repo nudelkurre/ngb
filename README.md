@@ -16,11 +16,15 @@
 
 #### Arch Linux
 ```console
-pacman -S python python-hatch  meson ninja gcc cmake pkgconfig cairo gtk4 gtk4-layer-shell  gobject-introspection
+sudo pacman -S python python-pip gtk4 gtk4-layer-shell gobject-introspection
 ```
 #### Fedora
 ```console
-dnf install python3-devel python3-pip hatch gcc cmake pkgconfig cairo-devel cairo-gobject-devel meson ninja gobject-introspection-devel gtk4-devel gtk4-layer-shell-devel
+sudo dnf install python3 python3-pip gtk4-devel glib2-devel gobject-introspection-devel
+```
+#### Ubuntu
+```console
+sudo apt install python3 python3-pip libgtk-4-dev libglib2.0-dev gir1.2-gtk-4.0
 ```
 
 ### Install ngb
