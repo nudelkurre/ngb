@@ -27,6 +27,9 @@ buildPythonApplication rec {
     psutil
     pygobject3
     screeninfo
+    meson
+    meson-python
+    ninja
   ];
 
   doCheck = false;
