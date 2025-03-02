@@ -45,7 +45,6 @@ class  Bluetooth(Gtk.Box):
                     device["icon"] = "󰥈"
                 if(device["connected"]):
                     dev_list.append(device)
-        print(dev_list)
         return (dev_list)
 
     def update_list(self):
