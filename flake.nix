@@ -29,12 +29,12 @@
               hatch
               makeWrapper
               (python3.withPackages (python-pkgs: with python-pkgs; [
-                psutil
-                pygobject3
-                screeninfo
                 meson
                 meson-python
                 ninja
+                psutil
+                pygobject3
+                screeninfo
               ]))
               wrapGAppsHook
             ];
