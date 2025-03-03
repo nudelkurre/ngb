@@ -30,7 +30,8 @@ dependencies = [
   "ninja",
   "psutil",
   "pygobject",
-  "screeninfo"
+  "screeninfo",
+  "shutilwhich"
 ]
 
 [project.scripts]

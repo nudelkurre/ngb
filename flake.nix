@@ -35,6 +35,7 @@
                 psutil
                 pygobject3
                 screeninfo
+                shutilwhich
               ]))
               wrapGAppsHook
             ];

@@ -11,7 +11,7 @@ from gi.repository import Gtk
 
 import sys
 
-from ngb.widgets import Bluetooth, Clock, Cpu, Disk, Network, Volume
+from ngb.widgets import Bluetooth, Clock, Cpu, Disk, Headset, Network, Volume
 from ngb.modules import Bar
 
 class MainWindow(Gtk.Application):
@@ -34,6 +34,7 @@ class MainWindow(Gtk.Application):
         window.right(Bluetooth())
         window.right(Cpu())
         window.right(Disk("/"))
+        window.right(Headset())
         window.right(Network("eth0"))
         window.right(Volume())
         window.right(Clock())
