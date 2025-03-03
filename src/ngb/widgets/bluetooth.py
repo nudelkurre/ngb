@@ -1,5 +1,7 @@
 from gi.repository import Gtk
 from gi.repository import GLib
+from shutil import which
+
 import subprocess
 import re
 
@@ -10,16 +12,20 @@ class  Bluetooth(Gtk.Box):
         super().__init__(spacing=spacing)
         self.timer = timer
         self.spacing = spacing
+        self.label = Gtk.Label(label="bluetoothctl is not installed")
+        self.append(self.label)
         self.update_boxes()
         self.update_list()
 
     def update_boxes(self):
-        while self.get_first_accessible_child() is not None:
-            self.remove(self.get_first_accessible_child())
+        path = which("bluetoothctl")
+        if(path):
+            while self.get_first_accessible_child() is not None:
+                self.remove(self.get_first_accessible_child())
 
-        for device in self.get_devices():
-            if(device["connected"]):
-                self.append(WidgetBox(icon=device["icon"], text=f"{device['battery']}%", spacing=self.spacing))
+            for device in self.get_devices():
+                if(device["connected"]):
+                    self.append(WidgetBox(icon=device["icon"], text=f"{device['battery']}%", spacing=self.spacing))
 
         return True
 
