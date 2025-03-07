@@ -11,7 +11,7 @@ from gi.repository import Gtk
 
 import sys
 
-from ngb.widgets import Bluetooth, Clock, Cpu, Disk, Headset, Network, Volume
+from ngb.widgets import Bluetooth, Clock, Cpu, Disk, Headset, Network, Volume, Workspaces
 from ngb.modules import Bar
 
 class MainWindow(Gtk.Application):
@@ -30,6 +30,7 @@ class MainWindow(Gtk.Application):
         Widgets added just to test until config file implemented
         to create bars with widgets dynamicly
         """
+        window.left(Workspaces(monitor=monitor))
         window.center(Gtk.Label(label=monitor))
         window.right(Bluetooth())
         window.right(Cpu())

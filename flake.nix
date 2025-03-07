@@ -29,6 +29,7 @@
               hatch
               makeWrapper
               (python3.withPackages (python-pkgs: with python-pkgs; [
+                i3ipc
                 meson
                 meson-python
                 ninja

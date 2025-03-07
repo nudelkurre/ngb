@@ -24,12 +24,14 @@ buildPythonApplication rec {
   ];
 
   dependencies = [
-    psutil
-    pygobject3
-    screeninfo
+    i3ipc
     meson
     meson-python
     ninja
+    psutil
+    pygobject3
+    screeninfo
+    shutilwhich
   ];
 
   doCheck = false;
