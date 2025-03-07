@@ -1,14 +1,15 @@
 from gi.repository import Gtk
 from gi.repository import GLib
 from gi.repository import Gdk
+from gi.repository import Gio
 
 class WidgetBox(Gtk.Box):
-    def __init__(self, icon="", icon_size=20, text="", timer=1000, spacing=10):
+    icon_size = 0
+    def __init__(self, icon="", text="", timer=1000, spacing=10):
         super().__init__(spacing=spacing)
         self.timer = timer
         self.text = text
         self.icon = icon
-        self.icon_size = icon_size
         self.icon_label = Gtk.Label()
         self.text_label = Gtk.Label()
         self.scroll_controller = Gtk.EventControllerScroll.new(Gtk.EventControllerScrollFlags.VERTICAL)
@@ -54,7 +55,18 @@ class WidgetBox(Gtk.Box):
     def on_right_click(self, sequence, user_data):
         pass
 
+    def get_font_size_from_gsettings(self):
+        settings = Gio.Settings.new('org.gnome.desktop.interface')
+        font_name = settings.get_string('font-name')
+        font_size = None
+        for part in reversed(font_name.split()):
+            if part.isdigit():
+                font_size = int(part)
+                break
+        return font_size
+
     def set_icon(self):
+        self.icon_size = self.get_font_size_from_gsettings() * 2
         self.icon_label.set_markup(f"<span size=\"{self.icon_size * 1000}\">{self.icon}</span>")
         return True
 
