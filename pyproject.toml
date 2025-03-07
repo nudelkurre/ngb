@@ -30,6 +30,7 @@ dependencies = [
   "ninja",
   "psutil",
   "pygobject",
+  "pyyaml",
   "screeninfo",
   "shutilwhich"
 ]

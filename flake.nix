@@ -35,6 +35,7 @@
                 ninja
                 psutil
                 pygobject3
+                pyyaml
                 screeninfo
                 shutilwhich
               ]))

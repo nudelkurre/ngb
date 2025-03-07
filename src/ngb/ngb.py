@@ -12,33 +12,81 @@ from gi.repository import Gtk
 import sys
 
 from ngb.widgets import Bluetooth, Clock, Cpu, Disk, Headset, Network, Volume, Workspaces
-from ngb.modules import Bar
+from ngb.modules import Bar, Config
 
 class MainWindow(Gtk.Application):
     def __init__(self, spacing=10):
         super().__init__(application_id="gtk.ngb")
+        self.config = Config()
 
     def do_activate(self):
-        for i in ["DP-1", "HDMI-A-1"]:
+        for i in self.config.data['bars']:
             self.create_window(i)
 
-    def create_window(self, monitor):
-        window = Bar(self, monitor)
+    def create_window(self, bar_config):
+        output = bar_config["output"]
+        window = Bar(self, output)
         window.show()
-        
-        """
-        Widgets added just to test until config file implemented
-        to create bars with widgets dynamicly
-        """
-        window.left(Workspaces(monitor=monitor))
-        window.center(Gtk.Label(label=monitor))
-        window.right(Bluetooth())
-        window.right(Cpu())
-        window.right(Disk("/"))
-        window.right(Headset())
-        window.right(Network("eth0"))
-        window.right(Volume())
-        window.right(Clock())
+
+        for widget in bar_config["widgets"]["left"]:
+            config = widget["config"]
+            match widget["module"]:
+                case "bluetooth":
+                    window.left(Bluetooth())
+                case "clock":
+                    window.left(Clock(timeformat_normal=config["format"], timeformat_hover=config["format_hover"]))
+                case "cpu":
+                    window.left(Cpu())
+                case "disk":
+                    window.left(Disk(mountpoint=config["mountpoint"]))
+                case "headset":
+                    window.left(Headset())
+                case "network":
+                    window.left(Network(interface=config["interface"]))
+                case "volume":
+                    window.left(Volume())
+                case "workspace":
+                    window.left(Workspaces(monitor=widget["config"]["monitor"]))
+
+        for widget in bar_config["widgets"]["center"]:
+            config = widget["config"]
+            match widget["module"]:
+                case "bluetooth":
+                    window.center(Bluetooth())
+                case "clock":
+                    window.center(Clock(timeformat_normal=config["format"], timeformat_hover=config["format_hover"]))
+                case "cpu":
+                    window.center(Cpu())
+                case "disk":
+                    window.center(Disk(mountpoint=config["mountpoint"]))
+                case "headset":
+                    window.center(Headset())
+                case "network":
+                    window.center(Network(interface=config["interface"]))
+                case "volume":
+                    window.center(Volume())
+                case "workspace":
+                    window.center(Workspaces(monitor=widget["config"]["monitor"]))
+
+        for widget in bar_config["widgets"]["right"]:
+            config = widget["config"]
+            match widget["module"]:
+                case "bluetooth":
+                    window.right(Bluetooth())
+                case "clock":
+                    window.right(Clock(timeformat_normal=config["format"], timeformat_hover=config["format_hover"]))
+                case "cpu":
+                    window.right(Cpu())
+                case "disk":
+                    window.right(Disk(mountpoint=config["mountpoint"]))
+                case "headset":
+                    window.right(Headset())
+                case "network":
+                    window.right(Network(interface=config["interface"]))
+                case "volume":
+                    window.right(Volume())
+                case "workspace":
+                    window.right(Workspaces(monitor=widget["config"]["monitor"]))
 
 def main():
     try:
