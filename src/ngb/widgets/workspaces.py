@@ -8,10 +8,16 @@ from ngb.modules import WidgetBox
 
 class WorkspaceBox(WidgetBox):
     i3 = i3ipc.Connection()
-    def __init__(self, name="", urgent=False):
+    def __init__(self, name="", focused=False, urgent=False):
         self.name = name
+        self.focused = focused
         super().__init__(text=self.name)
         self.icon_label.set_visible(False)
+        self.set_focused()
+
+    def set_focused(self):
+        if(not self.focused):
+            self.text_label.set_opacity(0.6)
 
     def on_click(self, sequence, user_data):
         if(self.name):
@@ -57,7 +63,7 @@ class Workspaces(Gtk.Box):
         
         for ws in self.workspaces:
             if(self.monitor == "all" or ws["output"] == self.monitor):
-                self.append(WorkspaceBox(name=ws["name"], urgent=ws["urgent"]))
+                self.append(WorkspaceBox(name=ws["name"], focused=ws["focused"], urgent=ws["urgent"]))
         
         return True
 
