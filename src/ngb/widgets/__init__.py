@@ -5,4 +5,5 @@ from .disk import Disk
 from .headset import Headset
 from .network import Network
 from .volume import Volume
+from .weather import Weather
 from .workspaces import Workspaces

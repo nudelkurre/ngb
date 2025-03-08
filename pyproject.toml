@@ -25,14 +25,18 @@ classifiers = [
   "Programming Language :: Python :: Implementation :: PyPy",
 ]
 dependencies = [
+  "geopy",
+  "i3ipc",
   "meson-python",
   "meson",
   "ninja",
   "psutil",
   "pygobject",
   "pyyaml",
+  "requests",
   "screeninfo",
-  "shutilwhich"
+  "shutilwhich",
+  "tzlocal"
 ]
 
 [project.scripts]

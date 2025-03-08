@@ -24,14 +24,18 @@ buildPythonApplication rec {
   ];
 
   dependencies = [
+    geopy
     i3ipc
     meson
     meson-python
     ninja
     psutil
     pygobject3
+    pyyaml
+    requests
     screeninfo
     shutilwhich
+    tzlocal
   ];
 
   doCheck = false;

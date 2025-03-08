@@ -43,6 +43,9 @@ class Config:
             - config: {}
               module: cpu
             - config:
+                city: ""
+                module: weather
+            - config:
                 format: '%H:%M:%S'
                 format_hover: '%Y-%m-%d %H:%M:%S'
                 module: clock

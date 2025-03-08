@@ -11,7 +11,7 @@ from gi.repository import Gtk
 
 import sys
 
-from ngb.widgets import Bluetooth, Clock, Cpu, Disk, Headset, Network, Volume, Workspaces
+from ngb.widgets import Bluetooth, Clock, Cpu, Disk, Headset, Network, Volume, Weather, Workspaces
 from ngb.modules import Bar, Config
 
 class MainWindow(Gtk.Application):
@@ -45,6 +45,8 @@ class MainWindow(Gtk.Application):
                     window.left(Network(interface=config["interface"]))
                 case "volume":
                     window.left(Volume())
+                case "weather":
+                    window.left(Weather(city=config["city"]))
                 case "workspace":
                     window.left(Workspaces(monitor=widget["config"]["monitor"]))
 
@@ -65,6 +67,8 @@ class MainWindow(Gtk.Application):
                     window.center(Network(interface=config["interface"]))
                 case "volume":
                     window.center(Volume())
+                case "weather":
+                    window.center(Weather(city=config["city"]))
                 case "workspace":
                     window.center(Workspaces(monitor=widget["config"]["monitor"]))
 
@@ -85,6 +89,8 @@ class MainWindow(Gtk.Application):
                     window.right(Network(interface=config["interface"]))
                 case "volume":
                     window.right(Volume())
+                case "weather":
+                    window.right(Weather(city=config["city"]))
                 case "workspace":
                     window.right(Workspaces(monitor=widget["config"]["monitor"]))
 
