@@ -36,7 +36,7 @@ dependencies = [
   "requests",
   "screeninfo",
   "shutilwhich",
-  "tzlocal"
+  "tzlocal",
 ]
 
 [project.scripts]
