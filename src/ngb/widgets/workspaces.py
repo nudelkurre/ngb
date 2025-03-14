@@ -36,10 +36,12 @@ class WorkspaceBox(WidgetBox):
 class Workspaces(Gtk.Box):
     workspaces = []
     i3 = i3ipc.Connection()
-    def __init__(self, monitor="all", ws_names={}):
-        super().__init__(spacing=5)
-        self.monitor = monitor
-        self.ws_names = ws_names
+    def __init__(self, **kwargs):
+        self.spacing = kwargs.get("spacing", 5)
+        super().__init__(spacing=self.spacing)
+        self.timer = kwargs.get("timer", 0.1)
+        self.monitor = kwargs.get("monitor", "all")
+        self.ws_names = kwargs.get("names", {})
         self.update_boxes()
         self.update_list()
         self.scroll_controller = Gtk.EventControllerScroll.new(Gtk.EventControllerScrollFlags.VERTICAL)
@@ -80,7 +82,7 @@ class Workspaces(Gtk.Box):
         return True
 
     def update_list(self):
-        GLib.timeout_add(100, self.update_boxes)
+        GLib.timeout_add(self.timer * 1000, self.update_boxes)
 
     def on_scroll(self, controller, x, y):
         if(y < 0):

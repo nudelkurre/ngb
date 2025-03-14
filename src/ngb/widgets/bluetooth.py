@@ -8,10 +8,10 @@ import re
 from ngb.modules import WidgetBox
 
 class  Bluetooth(Gtk.Box):
-    def __init__(self, timer=5000, spacing=10):
-        super().__init__(spacing=spacing)
-        self.timer = timer
-        self.spacing = spacing
+    def __init__(self, **kwargs):
+        self.timer = kwargs.get("timer", 5)
+        self.spacing = kwargs.get("spacing", 10)
+        super().__init__(spacing=self.spacing)
         self.label = Gtk.Label(label="bluetoothctl is not installed")
         self.append(self.label)
         self.update_boxes()
@@ -54,5 +54,5 @@ class  Bluetooth(Gtk.Box):
         return (dev_list)
 
     def update_list(self):
-        GLib.timeout_add(self.timer, self.update_boxes)
+        GLib.timeout_add(self.timer * 1000, self.update_boxes)
         return True

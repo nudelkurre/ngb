@@ -9,8 +9,10 @@ from ngb.modules import WidgetBox
 
 class Volume(WidgetBox):
     path = which("wpctl")
-    def __init__(self):
-        super().__init__(icon="", timer=200)
+    def __init__(self, **kwargs):
+        self.icon = kwargs.get("icon", "")
+        self.timer = kwargs.get("timer", 0.2)
+        super().__init__(icon=self.icon, timer=self.timer)
 
     def get_volume(self):
         if(self.path):

@@ -6,9 +6,11 @@ from psutil._common import bytes2human
 from ngb.modules import WidgetBox
 
 class Disk(WidgetBox):
-    def __init__(self, mountpoint="/"):
-        self.mountpoint = mountpoint
-        super().__init__(timer=10000, icon="")
+    def __init__(self, **kwargs):
+        self.mountpoint = kwargs.get("mountpoint", "/")
+        self.icon = kwargs.get("icon", "")
+        self.timer = kwargs.get("timer", 10)
+        super().__init__(timer=self.timer, icon=self.icon)
 
     def set_text(self):
         self.get_disk_usage()

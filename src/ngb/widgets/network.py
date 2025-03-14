@@ -8,9 +8,11 @@ from ngb.modules import WidgetBox
 class Network(WidgetBox):
     interface = []
     
-    def __init__(self, interface):
-        self.interface = psutil.net_if_addrs()[interface]
-        super().__init__(icon="󰈀", timer=10000)
+    def __init__(self, **kwargs):
+        self.interface = psutil.net_if_addrs()[kwargs.get("interface", "")]
+        self.timer = kwargs.get("timer", 10)
+        self.icon = kwargs.get("icon", "󰈀")
+        super().__init__(icon=self.icon, timer=self.timer)
 
     def set_text(self):
         self.get_ipv4_addr()

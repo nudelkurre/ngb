@@ -5,11 +5,12 @@ from gi.repository import Gio
 
 class WidgetBox(Gtk.Box):
     icon_size = 0
-    def __init__(self, icon="", text="", timer=1000, spacing=10):
-        super().__init__(spacing=spacing)
-        self.timer = timer
-        self.text = text
-        self.icon = icon
+    def __init__(self, **kwargs):
+        self.spacing = kwargs.get("spacing", 10)
+        self.timer = kwargs.get("timer", 1)
+        self.text = kwargs.get("text", "")
+        self.icon = kwargs.get("icon", "")
+        super().__init__(spacing=self.spacing)
         self.icon_label = Gtk.Label()
         self.text_label = Gtk.Label()
         self.scroll_controller = Gtk.EventControllerScroll.new(Gtk.EventControllerScrollFlags.VERTICAL)
@@ -75,5 +76,5 @@ class WidgetBox(Gtk.Box):
         return True
 
     def update_label(self):
-        GLib.timeout_add(self.timer, self.set_text)
+        GLib.timeout_add(self.timer * 1000, self.set_text)
         return True

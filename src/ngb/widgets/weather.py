@@ -75,9 +75,10 @@ class Weather(WidgetBox):
         27: "Heavy snowfall"
     }
 
-    def __init__(self, city):
-        self.city = city
-        super().__init__(timer=600000)
+    def __init__(self, **kwargs):
+        self.city = kwargs.get("city", "")
+        self.timer = kwargs.get("timer", 600)
+        super().__init__(timer=self.timer)
         if(self.city == ""):
             self.text_label.set_label("City not set")
         else:

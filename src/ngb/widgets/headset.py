@@ -9,8 +9,9 @@ import re
 from ngb.modules import WidgetBox
 
 class Headset(WidgetBox):
-    def __init__(self):
-        self.icon = "󰋎"
+    def __init__(self, **kwargs):
+        self.icon = kwargs.get("icon", "󰋎")
+        self.timer = kwargs.get("timer", 1)
         super().__init__(icon=self.icon)
 
     def set_text(self):

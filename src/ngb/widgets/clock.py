@@ -6,11 +6,14 @@ from ngb.modules import WidgetBox
 
 class Clock(WidgetBox):
     timeformat = ""
-    def __init__(self, timeformat_normal="%T", timeformat_hover="%Y-%m-%d %H:%M:%S"):
-        super().__init__(icon="", spacing=4, timer=1000)
-        self.timeformat = timeformat_normal
-        self.timeformat_normal = timeformat_normal
-        self.timeformat_hover = timeformat_hover
+    def __init__(self, **kwargs):
+        self.icon = kwargs.get("icon", "")
+        self.spacing = kwargs.get("spacing", 4)
+        self.timer = kwargs.get("timer", 1)
+        self.timeformat = kwargs.get("timeformat_normal", "%T")
+        self.timeformat_normal = kwargs.get("timeformat_normal", "%T")
+        self.timeformat_hover = kwargs.get("timeformat_hover", "%Y-%m-%d %H:%M:%S")
+        super().__init__(icon=self.icon, spacing=self.spacing, timer=self.timer)
 
     def set_text(self):
         datetimenow = datetime.now().strftime(self.timeformat)

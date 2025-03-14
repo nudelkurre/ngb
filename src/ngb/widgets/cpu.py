@@ -6,8 +6,10 @@ from psutil._common import bytes2human
 from ngb.modules import WidgetBox
 
 class Cpu(WidgetBox):
-    def __init__(self):
-        super().__init__(timer=2000, icon="")
+    def __init__(self, **kwargs):
+        self.timer = kwargs.get("timer", 2)
+        self.icon = kwargs.get("icon", "")
+        super().__init__(timer=self.timer, icon=self.icon)
 
     def set_text(self):
         self.get_cpu_usage()

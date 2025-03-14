@@ -28,71 +28,35 @@ class MainWindow(Gtk.Application):
         window = Bar(self, output)
         window.show()
 
+        valid_widgets = {
+            "bluetooth": Bluetooth,
+            "clock": Clock,
+            "cpu": Cpu,
+            "disk": Disk,
+            "headset": Headset,
+            "network": Network,
+            "volume": Volume,
+            "weather": Weather,
+            "workspace": Workspaces
+        }
+
         for widget in bar_config["widgets"]["left"]:
             config = widget["config"]
-            match widget["module"]:
-                case "bluetooth":
-                    window.left(Bluetooth())
-                case "clock":
-                    window.left(Clock(timeformat_normal=config["format"], timeformat_hover=config["format_hover"]))
-                case "cpu":
-                    window.left(Cpu())
-                case "disk":
-                    window.left(Disk(mountpoint=config["mountpoint"]))
-                case "headset":
-                    window.left(Headset())
-                case "network":
-                    window.left(Network(interface=config["interface"]))
-                case "volume":
-                    window.left(Volume())
-                case "weather":
-                    window.left(Weather(city=config["city"]))
-                case "workspace":
-                    window.left(Workspaces(monitor=widget["config"]["monitor"], ws_names=widget["config"]["names"]))
+            module = widget["module"]
+            if(module in valid_widgets):
+                window.left(valid_widgets.get(module)(**config))
 
         for widget in bar_config["widgets"]["center"]:
             config = widget["config"]
-            match widget["module"]:
-                case "bluetooth":
-                    window.center(Bluetooth())
-                case "clock":
-                    window.center(Clock(timeformat_normal=config["format"], timeformat_hover=config["format_hover"]))
-                case "cpu":
-                    window.center(Cpu())
-                case "disk":
-                    window.center(Disk(mountpoint=config["mountpoint"]))
-                case "headset":
-                    window.center(Headset())
-                case "network":
-                    window.center(Network(interface=config["interface"]))
-                case "volume":
-                    window.center(Volume())
-                case "weather":
-                    window.center(Weather(city=config["city"]))
-                case "workspace":
-                    window.center(Workspaces(monitor=widget["config"]["monitor"]))
+            module = widget["module"]
+            if(module in valid_widgets):
+                window.center(valid_widgets.get(module)(**config))
 
         for widget in bar_config["widgets"]["right"]:
             config = widget["config"]
-            match widget["module"]:
-                case "bluetooth":
-                    window.right(Bluetooth())
-                case "clock":
-                    window.right(Clock(timeformat_normal=config["format"], timeformat_hover=config["format_hover"]))
-                case "cpu":
-                    window.right(Cpu())
-                case "disk":
-                    window.right(Disk(mountpoint=config["mountpoint"]))
-                case "headset":
-                    window.right(Headset())
-                case "network":
-                    window.right(Network(interface=config["interface"]))
-                case "volume":
-                    window.right(Volume())
-                case "weather":
-                    window.right(Weather(city=config["city"]))
-                case "workspace":
-                    window.right(Workspaces(monitor=widget["config"]["monitor"]))
+            module = widget["module"]
+            if(module in valid_widgets):
+                window.right(valid_widgets.get(module)(**config))
 
 def main():
     try:
