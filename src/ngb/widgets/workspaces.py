@@ -8,16 +8,26 @@ from ngb.modules import WidgetBox
 
 class WorkspaceBox(WidgetBox):
     i3 = i3ipc.Connection()
-    def __init__(self, name="", focused=False, urgent=False):
+    def __init__(self, name="", show_name="", focused=False, urgent=False):
         self.name = name
+        self.show_name = show_name
         self.focused = focused
-        super().__init__(text=self.name)
-        self.icon_label.set_visible(False)
+        super().__init__(icon=self.show_name, text=self.name)
+        self.hide_label()
         self.set_focused()
 
     def set_focused(self):
         if(not self.focused):
+            self.icon_label.set_opacity(0.6)
             self.text_label.set_opacity(0.6)
+
+    def hide_label(self):
+        if(self.show_name != ""):
+            self.icon_label.set_visible(True)
+            self.text_label.set_visible(False)
+        else:
+            self.icon_label.set_visible(False)
+            self.text_label.set_visible(True)
 
     def on_click(self, sequence, user_data):
         if(self.name):
@@ -26,9 +36,10 @@ class WorkspaceBox(WidgetBox):
 class Workspaces(Gtk.Box):
     workspaces = []
     i3 = i3ipc.Connection()
-    def __init__(self, monitor="all"):
+    def __init__(self, monitor="all", ws_names={}):
         super().__init__(spacing=5)
         self.monitor = monitor
+        self.ws_names = ws_names
         self.update_boxes()
         self.update_list()
         self.scroll_controller = Gtk.EventControllerScroll.new(Gtk.EventControllerScrollFlags.VERTICAL)
@@ -63,7 +74,8 @@ class Workspaces(Gtk.Box):
         
         for ws in self.workspaces:
             if(self.monitor == "all" or ws["output"] == self.monitor):
-                self.append(WorkspaceBox(name=ws["name"], focused=ws["focused"], urgent=ws["urgent"]))
+                show_name = self.ws_names[ws["name"]] if ws["name"] in self.ws_names else ""
+                self.append(WorkspaceBox(name=ws["name"], show_name=show_name, focused=ws["focused"], urgent=ws["urgent"]))
         
         return True
 

@@ -48,7 +48,7 @@ class MainWindow(Gtk.Application):
                 case "weather":
                     window.left(Weather(city=config["city"]))
                 case "workspace":
-                    window.left(Workspaces(monitor=widget["config"]["monitor"]))
+                    window.left(Workspaces(monitor=widget["config"]["monitor"], ws_names=widget["config"]["names"]))
 
         for widget in bar_config["widgets"]["center"]:
             config = widget["config"]
