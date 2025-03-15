@@ -3,40 +3,45 @@ from gi.repository import GLib
 from gi.repository import Gdk
 from gi.repository import Gio
 
-class WidgetBox(Gtk.Box):
+from ngb.modules import DropDownWindow
+
+class WidgetBox(Gtk.Button):
     icon_size = 0
     def __init__(self, **kwargs):
         self.spacing = kwargs.get("spacing", 10)
         self.timer = kwargs.get("timer", 1)
         self.text = kwargs.get("text", "")
         self.icon = kwargs.get("icon", "")
-        super().__init__(spacing=self.spacing)
+        super().__init__()
+        self.add_css_class("widget-button")
         self.icon_label = Gtk.Label()
         self.text_label = Gtk.Label()
+        self.box = Gtk.Box(spacing=self.spacing)
+        self.set_child(self.box)
+        self.dropdown = DropDownWindow(orientation="vertical", spacing=self.spacing)
+        self.append(self.dropdown)
         self.scroll_controller = Gtk.EventControllerScroll.new(Gtk.EventControllerScrollFlags.VERTICAL)
         self.scroll_controller.connect("scroll", self.on_scroll)
-        self.add_controller(self.scroll_controller)
+        self.box.add_controller(self.scroll_controller)
         self.hover_controller = Gtk.EventControllerMotion.new()
         self.hover_controller.connect("enter", self.on_hover_enter)
         self.hover_controller.connect("leave", self.on_hover_leave)
-        self.add_controller(self.hover_controller)
-        self.click_controller = Gtk.GestureSingle()
-        self.click_controller.set_button(1)
-        self.click_controller.connect("begin", self.on_click)
-        self.add_controller(self.click_controller)
+        self.box.add_controller(self.hover_controller)
+        self.connect("clicked", self.on_click)
         self.middle_click_controller = Gtk.GestureSingle()
         self.middle_click_controller.set_button(2)
         self.middle_click_controller.connect("begin", self.on_middle_click)
-        self.add_controller(self.middle_click_controller)
+        self.box.add_controller(self.middle_click_controller)
         self.right_click_controller = Gtk.GestureSingle()
         self.right_click_controller.set_button(3)
         self.right_click_controller.connect("begin", self.on_right_click)
-        self.add_controller(self.right_click_controller)
-        self.append(self.icon_label)
-        self.append(self.text_label)
+        self.box.add_controller(self.right_click_controller)
+        self.box.append(self.icon_label)
+        self.box.append(self.text_label)
         self.set_icon()
         self.set_text()
         self.update_label()
+        self.load_css()
 
     def on_scroll(self, controller, x, y):
         pass
@@ -47,7 +52,7 @@ class WidgetBox(Gtk.Box):
     def on_hover_leave(self, controller):
         pass
 
-    def on_click(self, sequence, user_data):
+    def on_click(self, user_data):
         pass
 
     def on_middle_click(self, sequence, user_data):
@@ -55,6 +60,10 @@ class WidgetBox(Gtk.Box):
 
     def on_right_click(self, sequence, user_data):
         pass
+
+    def append(self, widget):
+        self.box.append(widget)
+        return True
 
     def get_font_size_from_gsettings(self):
         settings = Gio.Settings.new('org.gnome.desktop.interface')
@@ -78,3 +87,26 @@ class WidgetBox(Gtk.Box):
     def update_label(self):
         GLib.timeout_add(self.timer * 1000, self.set_text)
         return True
+
+    def load_css(self):
+        css_provider = Gtk.CssProvider()
+
+        css = f"""
+        .widget-button {{
+            background-color: transparent;
+            border: none;
+            padding: 0 {self.spacing}px;
+            outline: none;
+        }}
+
+        .widget-button:active {{
+            background-color: transparent;
+        }}
+        """
+        css_provider.load_from_data(css.encode("utf-8"))
+
+        Gtk.StyleContext.add_provider_for_display(
+            Gdk.Display.get_default(),
+            css_provider,
+            Gtk.STYLE_PROVIDER_PRIORITY_USER
+        )
