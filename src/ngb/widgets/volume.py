@@ -43,7 +43,7 @@ class Volume(WidgetBox):
                 volume_cmd = f"{volume_cmd} 5%-".split()
                 subprocess.run(volume_cmd)
 
-    def on_click(self, sequence, user_data):
+    def on_click(self, user_data):
         if(self.path):
             subprocess.run("wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle".split())
 
