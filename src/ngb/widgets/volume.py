@@ -56,7 +56,7 @@ class Volume(WidgetBox):
             sink_list = []
 
             for i in sinks:
-                match = re.search(r"\s*(\*?)\s*(\d+)\.\s*([\w\s\d]+)\s*\[vol:\s*(\d+\.\d+)\]", i)
+                match = re.search(r"\s*(\*?)\s*(\d+)\.\s*([\w\s\d]+)\s*\[vol:\s*(\d+\.\d+)\s?[MUTED]*\]", i)
                 if(match):
                     sink = {"id": match.group(2),
                         "name": match.group(3).lstrip().rstrip(),
