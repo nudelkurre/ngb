@@ -5,8 +5,9 @@ from datetime import datetime
 from tzlocal import get_localzone
 from geopy.geocoders import Nominatim
 import os
+from gi.repository import Gtk
 
-from ngb.modules import WidgetBox
+from ngb.modules import WidgetBox, DropDownWindow
 
 class Weather(WidgetBox):
     lat = 0
@@ -79,13 +80,22 @@ class Weather(WidgetBox):
         self.city = kwargs.get("city", "")
         self.timer = kwargs.get("timer", 600)
         super().__init__(timer=self.timer)
+        self.city_label = Gtk.Label()
+        self.temperature_label = Gtk.Label()
+        self.wind_speed_label = Gtk.Label()
+        self.weather_description_label = Gtk.Label()
         if(self.city == ""):
             self.text_label.set_label("City not set")
         else:
             self.get_location()
             self.get_weather_data()
             self.parse_weather_data()
+            self.populate_dropdown()
             self.set_text()
+
+    def on_click(self, user_data):
+        self.dropdown.popup()
+        return True
 
     def get_location(self):
         loc = Nominatim(user_agent=self.user_agent)
@@ -118,9 +128,23 @@ class Weather(WidgetBox):
             elif(d["name"] == "Wsymb2"):
                 self.parsed_data["weather_code"] = d["values"][0]
 
+    def populate_dropdown(self):
+        self.dropdown.add(self.city_label)
+        self.city_label.set_label(self.city)
+        self.dropdown.add(self.temperature_label)
+        self.dropdown.add(self.wind_speed_label)
+        self.dropdown.add(self.weather_description_label)
+        return True
+
     def set_text(self):
         if("temperature" in self.parsed_data):
-            self.text_label.set_label(f"{self.parsed_data['temperature']} {self.parsed_data['temperature_unit']}")
+            temperature = f"{self.parsed_data['temperature']} {self.parsed_data['temperature_unit']}"
+            self.text_label.set_label(temperature)
             self.icon = self.icons[self.parsed_data["weather_code"]]
             self.set_icon()
+            self.temperature_label.set_label(f"Temperature {temperature}")
+        if("wind_speed" in self.parsed_data):
+            self.wind_speed_label.set_label(f"Wind speed {self.parsed_data['wind_speed']} m/s")
+        if("weather_code" in self.parsed_data):
+            self.weather_description_label.set_label(f"{self.descriptions[self.parsed_data['weather_code']]}")
         return True
