@@ -12,6 +12,7 @@ class WidgetBox(Gtk.Button):
         self.timer = kwargs.get("timer", 1)
         self.text = kwargs.get("text", "")
         self.icon = kwargs.get("icon", "")
+        self.icon_size = kwargs.get("icon_size", 20)
         super().__init__()
 
         # Load custom css to make widget buttons to look like Gtk.Box
@@ -88,18 +89,7 @@ class WidgetBox(Gtk.Button):
         self.box.append(widget)
         return True
 
-    def get_font_size_from_gsettings(self):
-        settings = Gio.Settings.new('org.gnome.desktop.interface')
-        font_name = settings.get_string('font-name')
-        font_size = None
-        for part in reversed(font_name.split()):
-            if part.isdigit():
-                font_size = int(part)
-                break
-        return font_size
-
     def set_icon(self):
-        self.icon_size = self.get_font_size_from_gsettings() * 2
         self.icon_label.set_markup(f"<span size=\"{self.icon_size * 1000}\">{self.icon}</span>")
         return True
 
