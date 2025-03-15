@@ -13,35 +13,58 @@ class WidgetBox(Gtk.Button):
         self.text = kwargs.get("text", "")
         self.icon = kwargs.get("icon", "")
         super().__init__()
+
+        # Load custom css to make widget buttons to look like Gtk.Box
+        self.load_css()
+
+        # Set css class to use the custom css created
         self.add_css_class("widget-button")
+
+        # Create labels for icon and text for button
         self.icon_label = Gtk.Label()
         self.text_label = Gtk.Label()
+
+        # Create a box to add multiple items to button
         self.box = Gtk.Box(spacing=self.spacing)
         self.set_child(self.box)
+
+        # Create a dropdown window
         self.dropdown = DropDownWindow(orientation="vertical", spacing=self.spacing)
         self.append(self.dropdown)
+
+        # Create a controller for scroll events
         self.scroll_controller = Gtk.EventControllerScroll.new(Gtk.EventControllerScrollFlags.VERTICAL)
         self.scroll_controller.connect("scroll", self.on_scroll)
         self.box.add_controller(self.scroll_controller)
+
+        # Create a controller for hover events
         self.hover_controller = Gtk.EventControllerMotion.new()
         self.hover_controller.connect("enter", self.on_hover_enter)
         self.hover_controller.connect("leave", self.on_hover_leave)
         self.box.add_controller(self.hover_controller)
+
+        # Create a controller for click events events
+        # left click
         self.connect("clicked", self.on_click)
+        # middle click
         self.middle_click_controller = Gtk.GestureSingle()
         self.middle_click_controller.set_button(2)
         self.middle_click_controller.connect("begin", self.on_middle_click)
         self.box.add_controller(self.middle_click_controller)
+        # right click
         self.right_click_controller = Gtk.GestureSingle()
         self.right_click_controller.set_button(3)
         self.right_click_controller.connect("begin", self.on_right_click)
         self.box.add_controller(self.right_click_controller)
+
+        # Append and set icon and text to widget
         self.box.append(self.icon_label)
         self.box.append(self.text_label)
         self.set_icon()
         self.set_text()
+
+        # Start timer to update the label
         self.update_label()
-        self.load_css()
 
     def on_scroll(self, controller, x, y):
         pass
