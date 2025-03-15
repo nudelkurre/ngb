@@ -15,7 +15,7 @@ from ngb.widgets import Bluetooth, Clock, Cpu, Disk, Headset, Network, Volume, W
 from ngb.modules import Bar, Config
 
 class MainWindow(Gtk.Application):
-    def __init__(self, spacing=10):
+    def __init__(self):
         super().__init__(application_id="gtk.ngb")
         self.config = Config()
 
@@ -25,7 +25,7 @@ class MainWindow(Gtk.Application):
 
     def create_window(self, bar_config):
         output = bar_config["output"]
-        window = Bar(self, output)
+        window = Bar(app=self, monitor=output)
         window.show()
 
         valid_widgets = {

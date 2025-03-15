@@ -7,11 +7,13 @@ from screeninfo import get_monitors
 class Bar(Gtk.ApplicationWindow):
     monitors = {}
     active_monitor = ""
-    def __init__(self, app, monitor, spacing=10):
-        super().__init__(application=app)
+    def __init__(self, **kwargs):
+        self.app = kwargs.get("app")
+        self.monitor = kwargs.get("monitor")
+        super().__init__(application=self.app)
 
         self.get_displays()
-        self.active_monitor = monitor
+        self.active_monitor = self.monitor
 
         window_width = self.monitors[self.active_monitor]["width"]
         window_height = self.monitors[self.active_monitor]["height"]
@@ -29,15 +31,9 @@ class Bar(Gtk.ApplicationWindow):
         self.set_child(bar)
         self.present()
 
-        self.leftbox = Gtk.Box(spacing=spacing)
-        self.leftbox.set_margin_start(spacing)
-        self.leftbox.set_margin_end(spacing)
-        self.centerbox = Gtk.Box(spacing=spacing)
-        self.centerbox.set_margin_start(spacing)
-        self.centerbox.set_margin_end(spacing)
-        self.rightbox = Gtk.Box(spacing=spacing)
-        self.rightbox.set_margin_start(spacing)
-        self.rightbox.set_margin_end(spacing)
+        self.leftbox = Gtk.Box()
+        self.centerbox = Gtk.Box()
+        self.rightbox = Gtk.Box()
 
         bar.set_start_widget(self.leftbox)
         bar.set_center_widget(self.centerbox)
