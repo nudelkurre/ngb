@@ -79,7 +79,8 @@ class Weather(WidgetBox):
     def __init__(self, **kwargs):
         self.city = kwargs.get("city", "")
         self.timer = kwargs.get("timer", 600)
-        super().__init__(timer=self.timer)
+        self.icon_size = kwargs.get("icon_size", 20)
+        super().__init__(timer=self.timer, icon_size=self.icon_size)
         self.city_label = Gtk.Label()
         self.temperature_label = Gtk.Label()
         self.wind_speed_label = Gtk.Label()

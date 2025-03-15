@@ -11,6 +11,7 @@ class  Bluetooth(Gtk.Box):
     def __init__(self, **kwargs):
         self.timer = kwargs.get("timer", 5)
         self.spacing = kwargs.get("spacing", 10)
+        self.icon_size = kwargs.get("icon_size", 20)
         super().__init__(spacing=self.spacing)
         self.label = Gtk.Label(label="bluetoothctl is not installed")
         self.append(self.label)
@@ -25,7 +26,7 @@ class  Bluetooth(Gtk.Box):
 
             for device in self.get_devices():
                 if(device["connected"]):
-                    self.append(WidgetBox(icon=device["icon"], text=f"{device['battery']}%", spacing=self.spacing))
+                    self.append(WidgetBox(icon=device["icon"], text=f"{device['battery']}%", spacing=self.spacing, icon_size=self.icon_size))
 
         return True
 

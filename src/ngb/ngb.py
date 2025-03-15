@@ -46,19 +46,19 @@ class MainWindow(Gtk.Application):
             config = widget["config"]
             module = widget["module"]
             if(module in valid_widgets):
-                window.left(valid_widgets.get(module)(**config))
+                window.left(valid_widgets.get(module)(**config, icon_size=self.config.data["iconsize"]))
 
         for widget in bar_config["widgets"]["center"]:
             config = widget["config"]
             module = widget["module"]
             if(module in valid_widgets):
-                window.center(valid_widgets.get(module)(**config))
+                window.center(valid_widgets.get(module)(**config, icon_size=self.config.data["iconsize"]))
 
         for widget in bar_config["widgets"]["right"]:
             config = widget["config"]
             module = widget["module"]
             if(module in valid_widgets):
-                window.right(valid_widgets.get(module)(**config))
+                window.right(valid_widgets.get(module)(**config, icon_size=self.config.data["iconsize"]))
 
     def load_css(self):
         css_provider = Gtk.CssProvider()

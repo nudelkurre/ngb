@@ -9,7 +9,8 @@ class Cpu(WidgetBox):
     def __init__(self, **kwargs):
         self.timer = kwargs.get("timer", 2)
         self.icon = kwargs.get("icon", "")
-        super().__init__(timer=self.timer, icon=self.icon)
+        self.icon_size = kwargs.get("icon_size", 20)
+        super().__init__(timer=self.timer, icon=self.icon, icon_size=self.icon_size)
 
     def set_text(self):
         self.get_cpu_usage()

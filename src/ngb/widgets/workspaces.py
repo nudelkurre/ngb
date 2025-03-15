@@ -8,11 +8,13 @@ from ngb.modules import WidgetBox
 
 class WorkspaceBox(WidgetBox):
     i3 = i3ipc.Connection()
-    def __init__(self, name="", show_name="", focused=False, urgent=False):
-        self.name = name
-        self.show_name = show_name
-        self.focused = focused
-        super().__init__(icon=self.show_name, text=self.name)
+    def __init__(self, **kwargs):
+        self.name = kwargs.get("name", "")
+        self.show_name = kwargs.get("show_name", "")
+        self.focused = kwargs.get("focused", False)
+        self.urgent = kwargs.get("urgent", False)
+        self.icon_size = kwargs.get("icon_size", 20)
+        super().__init__(icon=self.show_name, text=self.name, icon_size=self.icon_size)
         self.hide_label()
         self.set_focused()
 
@@ -39,6 +41,7 @@ class Workspaces(Gtk.Box):
     i3 = i3ipc.Connection()
     def __init__(self, **kwargs):
         self.spacing = kwargs.get("spacing", 5)
+        self.icon_size = kwargs.get("icon_size", 20)
         super().__init__(spacing=self.spacing)
         self.timer = kwargs.get("timer", 0.1)
         self.monitor = kwargs.get("monitor", "all")
@@ -80,7 +83,7 @@ class Workspaces(Gtk.Box):
             for ws in self.workspaces:
                 if(self.monitor == "all" or ws["output"] == self.monitor):
                     show_name = self.ws_names[ws["name"]] if ws["name"] in self.ws_names else ""
-                    self.append(WorkspaceBox(name=ws["name"], show_name=show_name, focused=ws["focused"], urgent=ws["urgent"]))
+                    self.append(WorkspaceBox(name=ws["name"], show_name=show_name, focused=ws["focused"], urgent=ws["urgent"], icon_size=self.icon_size))
         
         return True
 

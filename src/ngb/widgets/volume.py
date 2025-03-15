@@ -12,7 +12,8 @@ class Volume(WidgetBox):
     def __init__(self, **kwargs):
         self.icon = kwargs.get("icon", "")
         self.timer = kwargs.get("timer", 0.2)
-        super().__init__(icon=self.icon, timer=self.timer)
+        self.icon_size = kwargs.get("icon_size", 20)
+        super().__init__(icon=self.icon, timer=self.timer, icon_size=self.icon_size)
 
     def get_volume(self):
         if(self.path):

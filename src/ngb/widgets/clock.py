@@ -13,7 +13,8 @@ class Clock(WidgetBox):
         self.timeformat = kwargs.get("timeformat_normal", "%T")
         self.timeformat_normal = kwargs.get("timeformat_normal", "%T")
         self.timeformat_hover = kwargs.get("timeformat_hover", "%Y-%m-%d %H:%M:%S")
-        super().__init__(icon=self.icon, spacing=self.spacing, timer=self.timer)
+        self.icon_size = kwargs.get("icon_size", 20)
+        super().__init__(icon=self.icon, spacing=self.spacing, timer=self.timer, icon_size=self.icon_size)
 
     def set_text(self):
         datetimenow = datetime.now().strftime(self.timeformat)

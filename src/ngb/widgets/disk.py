@@ -10,7 +10,8 @@ class Disk(WidgetBox):
         self.mountpoint = kwargs.get("mountpoint", "/")
         self.icon = kwargs.get("icon", "")
         self.timer = kwargs.get("timer", 10)
-        super().__init__(timer=self.timer, icon=self.icon)
+        self.icon_size = kwargs.get("icon_size", 20)
+        super().__init__(timer=self.timer, icon=self.icon, icon_size=self.icon_size)
 
     def set_text(self):
         self.get_disk_usage()
