@@ -29,12 +29,13 @@ class WorkspaceBox(WidgetBox):
             self.icon_label.set_visible(False)
             self.text_label.set_visible(True)
 
-    def on_click(self, sequence, user_data):
+    def on_click(self, user_data):
         if(self.name):
             self.i3.command(f"workspace {self.name}")
 
 class Workspaces(Gtk.Box):
     workspaces = []
+    old_workspaces = []
     i3 = i3ipc.Connection()
     def __init__(self, **kwargs):
         self.spacing = kwargs.get("spacing", 5)
@@ -71,13 +72,15 @@ class Workspaces(Gtk.Box):
 
     def update_boxes(self):
         self.get_ws()
-        while self.get_first_accessible_child() is not None:
-            self.remove(self.get_first_accessible_child())
-        
-        for ws in self.workspaces:
-            if(self.monitor == "all" or ws["output"] == self.monitor):
-                show_name = self.ws_names[ws["name"]] if ws["name"] in self.ws_names else ""
-                self.append(WorkspaceBox(name=ws["name"], show_name=show_name, focused=ws["focused"], urgent=ws["urgent"]))
+        if(self.workspaces != self.old_workspaces):
+            self.old_workspaces = self.workspaces
+            while self.get_first_accessible_child() is not None:
+                self.remove(self.get_first_accessible_child())
+            
+            for ws in self.workspaces:
+                if(self.monitor == "all" or ws["output"] == self.monitor):
+                    show_name = self.ws_names[ws["name"]] if ws["name"] in self.ws_names else ""
+                    self.append(WorkspaceBox(name=ws["name"], show_name=show_name, focused=ws["focused"], urgent=ws["urgent"]))
         
         return True
 
