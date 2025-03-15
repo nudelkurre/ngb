@@ -8,6 +8,7 @@ gi.require_version("Gtk4LayerShell", "1.0")
 gi.require_version("Gdk", "4.0")
 
 from gi.repository import Gtk
+from gi.repository import Gdk
 
 import sys
 
@@ -18,6 +19,7 @@ class MainWindow(Gtk.Application):
     def __init__(self):
         super().__init__(application_id="gtk.ngb")
         self.config = Config()
+        self.load_css()
 
     def do_activate(self):
         for i in self.config.data['bars']:
@@ -57,6 +59,29 @@ class MainWindow(Gtk.Application):
             module = widget["module"]
             if(module in valid_widgets):
                 window.right(valid_widgets.get(module)(**config))
+
+    def load_css(self):
+        css_provider = Gtk.CssProvider()
+
+        css = f"""
+        .widget-button {{
+            background-color: transparent;
+            border: none;
+            padding: 0 {self.config.data["spacing"]}px;
+            outline: none;
+        }}
+
+        .widget-button:active {{
+            background-color: transparent;
+        }}
+        """
+        css_provider.load_from_data(css.encode("utf-8"))
+
+        Gtk.StyleContext.add_provider_for_display(
+            Gdk.Display.get_default(),
+            css_provider,
+            Gtk.STYLE_PROVIDER_PRIORITY_USER
+        )
 
 def main():
     try:

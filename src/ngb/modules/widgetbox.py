@@ -15,9 +15,6 @@ class WidgetBox(Gtk.Button):
         self.icon_size = kwargs.get("icon_size", 20)
         super().__init__()
 
-        # Load custom css to make widget buttons to look like Gtk.Box
-        self.load_css()
-
         # Set css class to use the custom css created
         self.add_css_class("widget-button")
 
@@ -100,26 +97,3 @@ class WidgetBox(Gtk.Button):
     def update_label(self):
         GLib.timeout_add(self.timer * 1000, self.set_text)
         return True
-
-    def load_css(self):
-        css_provider = Gtk.CssProvider()
-
-        css = f"""
-        .widget-button {{
-            background-color: transparent;
-            border: none;
-            padding: 0 {self.spacing}px;
-            outline: none;
-        }}
-
-        .widget-button:active {{
-            background-color: transparent;
-        }}
-        """
-        css_provider.load_from_data(css.encode("utf-8"))
-
-        Gtk.StyleContext.add_provider_for_display(
-            Gdk.Display.get_default(),
-            css_provider,
-            Gtk.STYLE_PROVIDER_PRIORITY_USER
-        )
