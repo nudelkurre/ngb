@@ -44,21 +44,27 @@ class MainWindow(Gtk.Application):
 
         for widget in bar_config["widgets"]["left"]:
             config = widget["config"]
+            if("icon_size" not in config and "icon_size" in self.config.data):
+                config["icon_size"] = self.config.data["icon_size"]
             module = widget["module"]
             if(module in valid_widgets):
-                window.left(valid_widgets.get(module)(**config, icon_size=self.config.data["iconsize"]))
+                window.left(valid_widgets.get(module)(**config))
 
         for widget in bar_config["widgets"]["center"]:
             config = widget["config"]
+            if("icon_size" not in config and "icon_size" in self.config.data):
+                config["icon_size"] = self.config.data["icon_size"]
             module = widget["module"]
             if(module in valid_widgets):
-                window.center(valid_widgets.get(module)(**config, icon_size=self.config.data["iconsize"]))
+                window.center(valid_widgets.get(module)(**config))
 
         for widget in bar_config["widgets"]["right"]:
             config = widget["config"]
+            if("icon_size" not in config and "icon_size" in self.config.data):
+                config["icon_size"] = self.config.data["icon_size"]
             module = widget["module"]
             if(module in valid_widgets):
-                window.right(valid_widgets.get(module)(**config, icon_size=self.config.data["iconsize"]))
+                window.right(valid_widgets.get(module)(**config))
 
     def load_css(self):
         css_provider = Gtk.CssProvider()
