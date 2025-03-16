@@ -11,20 +11,29 @@ class Clock(WidgetBox):
         self.spacing = kwargs.get("spacing", 4)
         self.timer = kwargs.get("timer", 1)
         self.timeformat = kwargs.get("timeformat_normal", "%T")
-        self.timeformat_normal = kwargs.get("timeformat_normal", "%T")
-        self.timeformat_hover = kwargs.get("timeformat_hover", "%Y-%m-%d %H:%M:%S")
+        self.timeformat_revealer = kwargs.get("timeformat_revealer", "%A %Y-%m-%d")
+        self.transition_time = kwargs.get("transition_time", 500)
         self.icon_size = kwargs.get("icon_size", 20)
+        self.revealer_label = Gtk.Label()
         super().__init__(icon=self.icon, spacing=self.spacing, timer=self.timer, icon_size=self.icon_size)
+        
+        # Create a revealer for smoother transition when hover over
+        self.revealer = Gtk.Revealer()
+        self.revealer.set_child(self.revealer_label)
+        self.revealer.set_transition_type(Gtk.RevealerTransitionType.SLIDE_LEFT)
+        self.revealer.set_transition_duration(self.transition_time)
+        self.box.insert_child_after(self.revealer, self.icon_label)
+
 
     def set_text(self):
         datetimenow = datetime.now().strftime(self.timeformat)
+        datetimenow_revealer = datetime.now().strftime(self.timeformat_revealer)
         self.text_label.set_text(datetimenow)
+        self.revealer_label.set_text(datetimenow_revealer)
         return True
 
     def on_hover_enter(self, controller, x, y):
-        self.timeformat = self.timeformat_hover
-        self.set_text()
+        self.revealer.set_reveal_child(True)
 
     def on_hover_leave(self, controller):
-        self.timeformat = self.timeformat_normal
-        self.set_text()
+        self.revealer.set_reveal_child(False)
