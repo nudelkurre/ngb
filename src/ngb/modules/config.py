@@ -27,29 +27,10 @@ class Config:
             - config: {}
               module: volume
             - config:
-                format: '%H:%M:%S'
-                format_hover: '%Y-%m-%d %H:%M:%S'
+                timeformat_normal: '%H:%M:%S'
+                timeformat_revealer: '%Y-%m-%d %H:%M:%S'
                 module: clock
-        - output: HDMI-A-1
-          widgets:
-            left:
-            - config:
-                monitor: HDMI-A-1
-                module: workspace
-            center: []
-            right:
-            - config: {}
-              module: headset
-            - config: {}
-              module: cpu
-            - config:
-                city: ""
-                module: weather
-            - config:
-                format: '%H:%M:%S'
-                format_hover: '%Y-%m-%d %H:%M:%S'
-                module: clock
-        iconsize: 20
+        icon_size: 20
         """
         self.data = yaml.safe_load(default_data)
 
