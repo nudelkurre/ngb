@@ -20,7 +20,7 @@ sudo pacman -S python python-pip gtk4 gtk4-layer-shell gobject-introspection
 ```
 #### Fedora
 ```console
-sudo dnf install python3 python3-pip gtk4-devel glib2-devel gobject-introspection-devel
+sudo dnf install python3 python3-pip gtk4-devel gtk4-layer-shell-devel glib2-devel gobject-introspection-devel
 ```
 #### Ubuntu
 ```console
