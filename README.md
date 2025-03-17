@@ -16,7 +16,7 @@
 
 #### Arch Linux
 ```console
-sudo pacman -S python python-pip gtk4 gtk4-layer-shell gobject-introspection
+sudo pacman -S python python-pip gtk4 gtk4-layer-shell glib2 gobject-introspection
 ```
 #### Fedora
 ```console
@@ -24,7 +24,7 @@ sudo dnf install python3 python3-pip gtk4-devel gtk4-layer-shell-devel glib2-dev
 ```
 #### Ubuntu
 ```console
-sudo apt install python3 python3-pip libgtk-4-dev libglib2.0-dev gir1.2-gtk-4.0
+sudo apt install python3 python3-pip libgtk-4-dev libgtk4-layer-shell-dev libglib2.0-dev gir1.2-gtk-4.0
 ```
 
 ### Install ngb
