@@ -1,9 +1,12 @@
 import os
 import json
+from screeninfo import get_monitors
+import psutil
 
 class Config:
     data = dict()
     file_path = f"{os.environ['HOME']}/.config/ngb/config"
+    file_dir = os.path.dirname(file_path)
     def __init__(self):
         if(os.path.isfile(self.file_path)):
             self.load_config(self.file_path)
@@ -11,10 +14,13 @@ class Config:
             self.load_default()
 
     def load_default(self):
+        first_monitor = get_monitors()[0].name
+        # Get first first interface after loopback if more than loopback exist
+        first_network_interface = list(psutil.net_if_addrs())[1] if len(list(psutil.net_if_addrs())) > 1 else list(psutil.net_if_addrs())[0]
         default_data = {
             "bars": [
                 {
-                    "output": "DP-1",
+                    "output": first_monitor,
                     "widgets": {
                         "left": [
                             {
@@ -32,7 +38,7 @@ class Config:
                             },
                             {
                                 "config": {
-                                    "interface": "eth0"
+                                    "interface": first_network_interface
                                 },
                                 "module": "network"
                             },
@@ -54,6 +60,8 @@ class Config:
             "icon_size": 20,
             "spacing": 5
         }
+        if(not os.path.exists(self.file_dir)):
+            os.makedirs(self.file_dir)
         f = open(self.file_path, "w")
         f.write(json.dumps(default_data))
         f.close()
