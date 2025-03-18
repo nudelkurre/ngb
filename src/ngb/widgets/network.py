@@ -21,6 +21,7 @@ class Network(WidgetBox):
         self.ipv4_label.set_justify(Gtk.Justification.CENTER)
         self.ipv6_label = Gtk.Label()
         self.ipv6_label.set_justify(Gtk.Justification.CENTER)
+        self.ipv6_label.add_css_class("multi-line")
         self.mac_address_label = Gtk.Label()
         super().__init__(icon=self.icon, timer=self.timer, icon_size=self.icon_size)
         self.populate_dropdown()

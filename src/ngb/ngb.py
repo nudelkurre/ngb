@@ -80,6 +80,10 @@ class MainWindow(Gtk.Application):
         .widget-button:active {{
             background-color: transparent;
         }}
+
+        .multi-line {{
+            line-height: 1.6;
+        }}
         """
         css_provider.load_from_data(css.encode("utf-8"))
 
