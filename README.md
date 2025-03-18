@@ -1,9 +1,5 @@
 # ngb
 
-[![PyPI - Version](https://img.shields.io/pypi/v/ngb.svg)](https://pypi.org/project/ngb)
-[![PyPI - Python Version](https://img.shields.io/pypi/pyversions/ngb.svg)](https://pypi.org/project/ngb)
-
------
 
 ## Table of Contents
 
@@ -16,15 +12,11 @@
 
 #### Arch Linux
 ```console
-sudo pacman -S python python-pip gtk4 gtk4-layer-shell glib2 gobject-introspection
+sudo pacman -S python python-pip git gtk4 gtk4-layer-shell glib2 gobject-introspection
 ```
 #### Fedora
 ```console
-sudo dnf install python3 python3-pip gtk4-devel gtk4-layer-shell-devel glib2-devel gobject-introspection-devel
-```
-#### Ubuntu
-```console
-sudo apt install python3 python3-pip libgtk-4-dev libgtk4-layer-shell-dev libglib2.0-dev gir1.2-gtk-4.0
+sudo dnf install python3 python3-pip git gtk4-devel gtk4-layer-shell-devel glib2-devel gobject-introspection-devel
 ```
 
 ### Install ngb
