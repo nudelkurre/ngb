@@ -89,6 +89,10 @@ class MainWindow(Gtk.Application):
             margin: 0 {self.config.data["spacing"]}px;
         }}
 
+        scale {{
+            min-width: 200px;
+        }}
+
         .dropdown {{
             padding: 10px 0;
         }}

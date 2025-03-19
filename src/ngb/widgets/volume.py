@@ -13,11 +13,15 @@ class Volume(WidgetBox):
         self.icon = kwargs.get("icon", "")
         self.timer = kwargs.get("timer", 0.2)
         self.icon_size = kwargs.get("icon_size", 20)
+        self.click_to_mute = kwargs.get("click_to_mute", False)
+        self.sinks = []
         super().__init__(icon=self.icon, timer=self.timer, icon_size=self.icon_size)
+        self.get_sinks()
+        self.populate_dropdown()
 
-    def get_volume(self):
+    def get_volume(self, sink):
         if(self.path):
-            volume = subprocess.run("wpctl get-volume @DEFAULT_AUDIO_SINK@".split(), capture_output=True, text=True).stdout
+            volume = subprocess.run(f"wpctl get-volume {sink}".split(), capture_output=True, text=True).stdout
             volume = volume.split(" ")
             if(len(volume) == 2): 
                 volume = float(volume[1].lstrip().rstrip()) * 100
@@ -30,45 +34,85 @@ class Volume(WidgetBox):
             self.icon_label.set_visible(False)
         return True
 
-    def set_text(self):
-        self.get_volume()
-        return True
-
-    def on_scroll(self, controller, x, y):
-        if(self.path):
-            volume_cmd = "wpctl set-volume @DEFAULT_AUDIO_SINK@"
-            if(y < 0):
-                volume_cmd = f"{volume_cmd} 5%+".split()
-                subprocess.run(volume_cmd)
-            elif(y > 0):
-                volume_cmd = f"{volume_cmd} 5%-".split()
-                subprocess.run(volume_cmd)
-
-    def on_click(self, user_data):
-        if(self.path):
-            subprocess.run("wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle".split())
-
-    def on_right_click(self, sequence, user_data):
+    def get_sinks(self):
         if(self.path):
             wpctl = subprocess.run("wpctl status".split(), capture_output=True, text=True).stdout#.split("\n\n")
 
             sinks = re.search(r"Audio\n([\W\w]*)Video", wpctl).group(1)
             sinks = re.search(r"Sinks:\n([\W\w]*)Sources", sinks).group(1).split("\n")[:-2]
-            sink_list = []
 
             for i in sinks:
-                match = re.search(r"\s*(\*?)\s*(\d+)\.\s*([\w\s\d]+)\s*\[vol:\s*(\d+\.\d+)\s?[MUTED]*\]", i)
+                match = re.search(r"\s*(?P<default>\*?)\s*(?P<id>\d+)\.\s*(?P<name>[\w\s\d]+)\s*\[vol:\s*(?P<volume>\d+\.\d+)\s?(?P<muted>MUTED)*\]", i)
                 if(match):
-                    sink = {"id": match.group(2),
-                        "name": match.group(3).lstrip().rstrip(),
-                        "volume": int(float(match.group(4)) * 100),
-                        "default": True if match.group(1) == "*" else False
+                    sink = {"id": match.group("id"),
+                        "name": match.group("name").lstrip().rstrip(),
+                        "volume": int(float(match.group("volume")) * 100),
+                        "muted": True if match.group("muted") == "MUTED" else False,
+                        "default": True if match.group("default") == "*" else False
                     }
-                    sink_list.append(sink)
+                    self.sinks.append(sink)
 
+    def set_volume(self, sink, volume):
+        if(self.path):
+            volume_cmd = f"wpctl set-volume {sink} {volume}".split()
+            subprocess.run(volume_cmd)
+
+    def toggle_mute(self, sink):
+        if(self.path):
+            subprocess.run(f"wpctl set-mute {sink} toggle".split())
+
+    def change_default_sink(self):
+        self.get_sinks()
+        if(len(self.sinks) > 0):
             default = 0
-            for index, sink in enumerate(sink_list):
+            for index, sink in enumerate(self.sinks):
                 if(sink["default"]):
                     default = index
-            
-            subprocess.run(f"wpctl set-default {sink_list[(default + 1) % len(sink_list)]['id']}".split())
+        
+        self.set_default_sink(self.sinks[(default + 1) % len(self.sinks)]['id'])
+    
+    def set_default_sink(self, sink):
+        subprocess.run(f"wpctl set-default {sink}".split())
+
+    def populate_dropdown(self):
+        for sink in self.sinks:
+            self.dropdown.add(Gtk.Label(label=sink["name"]))
+            slider_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=self.spacing)
+            slider = Gtk.Scale(orientation=Gtk.Orientation.HORIZONTAL)
+            slider.set_range(0, 100)
+            slider.set_digits(0)
+            slider.set_draw_value(True)
+            slider.set_value_pos(Gtk.PositionType.RIGHT)
+            slider.set_value(sink["volume"])
+            slider.connect("value-changed", lambda scale: self.on_slider_change(scale, sink["id"]))
+            slider_box.append(slider)
+            self.dropdown.add(slider_box)
+
+    def set_text(self):
+        self.get_volume("@DEFAULT_AUDIO_SINK@")
+        return True
+
+    def on_slider_change(self, scale, sink):
+        volume = scale.get_value() / 100
+        self.set_volume(sink, volume)
+
+    def on_scroll(self, controller, x, y):
+        if(y < 0):
+            self.set_volume("@DEFAULT_AUDIO_SINK@", "5%+")
+        elif(y > 0):
+            self.set_volume("@DEFAULT_AUDIO_SINK@", "5%-")
+
+    def on_click(self, user_data):
+        if(self.click_to_mute):
+            self.toggle_mute("@DEFAULT_AUDIO_SINK@")
+        else:
+            self.dropdown.popup()
+
+    def on_middle_click(self, sequence, user_data):
+        if(not self.click_to_mute):
+            self.toggle_mute("@DEFAULT_AUDIO_SINK@")
+        else:
+            self.dropdown.popup()
+
+    def on_right_click(self, sequence, user_data):
+        self.change_default_sink()
