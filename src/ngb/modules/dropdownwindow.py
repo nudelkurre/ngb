@@ -9,6 +9,7 @@ class DropDownWindow(Gtk.Popover):
         self.spacing = kwargs.get("spacing", 6)
         self.orientation = kwargs.get("orientation", "vertical")
         self.box = Gtk.Box(spacing=self.spacing, orientation=self.orientation)
+        self.box.add_css_class("dropdown")
         self.set_child(self.box)
         self.box.set_margin_start(self.spacing * 3)
         self.box.set_margin_end(self.spacing * 3)

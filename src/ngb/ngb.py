@@ -88,6 +88,10 @@ class MainWindow(Gtk.Application):
         .widget-box {{
             margin: 0 {self.config.data["spacing"]}px;
         }}
+
+        .dropdown {{
+            padding: 10px 0;
+        }}
         """
         css_provider.load_from_data(css.encode("utf-8"))
 
