@@ -84,6 +84,10 @@ class MainWindow(Gtk.Application):
         .multi-line {{
             line-height: 1.6;
         }}
+
+        .widget-box {{
+            margin: 0 {self.config.data["spacing"]}px;
+        }}
         """
         css_provider.load_from_data(css.encode("utf-8"))
 

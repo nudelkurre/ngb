@@ -32,8 +32,11 @@ class Bar(Gtk.ApplicationWindow):
         self.present()
 
         self.leftbox = Gtk.Box()
+        self.leftbox.add_css_class("widget-box")
         self.centerbox = Gtk.Box()
+        self.centerbox.add_css_class("widget-box")
         self.rightbox = Gtk.Box()
+        self.rightbox.add_css_class("widget-box")
 
         bar.set_start_widget(self.leftbox)
         bar.set_center_widget(self.centerbox)
