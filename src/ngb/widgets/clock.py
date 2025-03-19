@@ -15,6 +15,7 @@ class Clock(WidgetBox):
         self.transition_time = kwargs.get("transition_time", 500)
         self.icon_size = kwargs.get("icon_size", 20)
         self.revealer_label = Gtk.Label()
+        self.show_revealer = False
         super().__init__(icon=self.icon, spacing=self.spacing, timer=self.timer, icon_size=self.icon_size)
         
         # Create a revealer for smoother transition when hover over
@@ -32,8 +33,6 @@ class Clock(WidgetBox):
         self.revealer_label.set_text(datetimenow_revealer)
         return True
 
-    def on_hover_enter(self, controller, x, y):
-        self.revealer.set_reveal_child(True)
-
-    def on_hover_leave(self, controller):
-        self.revealer.set_reveal_child(False)
+    def on_click(self, user_data):
+        self.show_revealer = not self.show_revealer
+        self.revealer.set_reveal_child(self.show_revealer)
