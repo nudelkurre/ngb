@@ -17,7 +17,7 @@ from ngb.modules import Bar, Config
 
 class MainWindow(Gtk.Application):
     def __init__(self):
-        super().__init__(application_id="gtk.ngb")
+        super().__init__(application_id="com.github.nudelkurre.ngb")
         self.config = Config()
         self.load_css()
 
