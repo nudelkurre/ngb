@@ -18,6 +18,7 @@ class Volume(WidgetBox):
         super().__init__(icon=self.icon, timer=self.timer, icon_size=self.icon_size)
         self.get_sinks()
         self.populate_dropdown()
+        self.update_sinks()
 
     def get_volume(self, sink):
         if(self.path):
@@ -36,13 +37,14 @@ class Volume(WidgetBox):
 
     def get_sinks(self):
         if(self.path):
+            self.sinks.clear()
             wpctl = subprocess.run("wpctl status".split(), capture_output=True, text=True).stdout#.split("\n\n")
 
             sinks = re.search(r"Audio\n([\W\w]*)Video", wpctl).group(1)
             sinks = re.search(r"Sinks:\n([\W\w]*)Sources", sinks).group(1).split("\n")[:-2]
 
             for i in sinks:
-                match = re.search(r"\s*(?P<default>\*?)\s*(?P<id>\d+)\.\s*(?P<name>[\w\s\d]+)\s*\[vol:\s*(?P<volume>\d+\.\d+)\s?(?P<muted>MUTED)*\]", i)
+                match = re.search(r"\s*(?P<default>\*?)\s*(?P<id>\d+)\.\s*(?P<name>[\w\s\d\[\]\(\)-\/]+)\s*\[vol:\s*(?P<volume>\d+\.\d+)\s?(?P<muted>MUTED)*\]", i)
                 if(match):
                     sink = {"id": match.group("id"),
                         "name": match.group("name").lstrip().rstrip(),
@@ -51,6 +53,7 @@ class Volume(WidgetBox):
                         "default": True if match.group("default") == "*" else False
                     }
                     self.sinks.append(sink)
+        return True
 
     def set_volume(self, sink, volume):
         if(self.path):
@@ -75,8 +78,15 @@ class Volume(WidgetBox):
         subprocess.run(f"wpctl set-default {sink}".split())
 
     def populate_dropdown(self):
+        self.dropdown.clear()
+        self.get_sinks()
         for sink in self.sinks:
-            self.dropdown.add(Gtk.Label(label=sink["name"]))
+            sink_label = Gtk.Label()
+            # Split string to insert new line at every 25 character
+            # to line wrap long sink names
+            sink_text = "\n".join(re.findall(".{1,25}", sink["name"]))
+            sink_label.set_label(sink_text)
+            self.dropdown.add(sink_label)
             slider_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=self.spacing)
             slider = Gtk.Scale(orientation=Gtk.Orientation.HORIZONTAL)
             slider.set_range(0, 100)
@@ -87,6 +97,7 @@ class Volume(WidgetBox):
             slider.connect("value-changed", lambda scale: self.on_slider_change(scale, sink["id"]))
             slider_box.append(slider)
             self.dropdown.add(slider_box)
+        return True
 
     def set_text(self):
         self.get_volume("@DEFAULT_AUDIO_SINK@")
@@ -116,3 +127,6 @@ class Volume(WidgetBox):
 
     def on_right_click(self, sequence, user_data):
         self.change_default_sink()
+
+    def update_sinks(self):
+        GLib.timeout_add(1000, self.populate_dropdown)
