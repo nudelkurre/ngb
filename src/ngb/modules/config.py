@@ -6,7 +6,7 @@ import psutil
 class Config:
     data = dict()
     file_dir = f"{os.environ['XDG_CONFIG_HOME']}/ngb/" if os.environ['XDG_CONFIG_HOME'] else f"{os.environ['HOME']}/.config/ngb"
-    file_path = f"{file_dir}/config"
+    file_path = f"{file_dir}/config.json"
     def __init__(self):
         if(os.path.isfile(self.file_path)):
             self.load_config(self.file_path)
