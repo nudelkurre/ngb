@@ -18,3 +18,8 @@ class DropDownWindow(Gtk.Popover):
     def add(self, widget):
         self.box.append(widget)
         return True
+
+    def clear(self):
+        while self.box.get_first_child() is not None:
+            self.box.remove(self.box.get_first_child())
+        return True
