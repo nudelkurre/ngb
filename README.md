@@ -89,7 +89,7 @@ If a configuration file is not found when ngb first run, it will create one in t
 {
   "bars": [
       {
-          "output": "DP-1,
+          "output": "DP-1",
           "widgets": {
               "left": [
                   {
