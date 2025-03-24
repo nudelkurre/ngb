@@ -1,6 +1,7 @@
 from gi.repository import Gtk
 from gi.repository import GLib
 from datetime import datetime
+from time import sleep
 
 from ngb.modules import WidgetBox
 
@@ -19,6 +20,7 @@ class Clock(WidgetBox):
         self.show_week_numbers = kwargs.get("show_week_numbers", True)
         self.revealer_label = Gtk.Label()
         self.show_revealer = False
+        self.calendar = Gtk.Calendar()
         super().__init__(icon=self.icon, spacing=self.spacing, timer=self.timer, icon_size=self.icon_size)
         self.populate_dropdown()
         
@@ -30,11 +32,13 @@ class Clock(WidgetBox):
         self.box.insert_child_after(self.revealer, self.icon_label)
 
     def populate_dropdown(self):
-        calendar = Gtk.Calendar()
-        calendar.set_show_day_names(self.show_day_names)
-        calendar.set_show_heading(self.show_heading)
-        calendar.set_show_week_numbers(self.show_week_numbers)
-        self.dropdown.add(calendar)
+        today_button = Gtk.Button(label="Today")
+        today_button.connect("clicked", self.on_today_clicked)
+        self.calendar.set_show_day_names(self.show_day_names)
+        self.calendar.set_show_heading(self.show_heading)
+        self.calendar.set_show_week_numbers(self.show_week_numbers)
+        self.dropdown.add(self.calendar)
+        self.dropdown.add(today_button)
 
     def set_text(self):
         datetimenow = datetime.now().strftime(self.timeformat)
@@ -47,5 +51,16 @@ class Clock(WidgetBox):
         self.show_revealer = not self.show_revealer
         self.revealer.set_reveal_child(self.show_revealer)
 
+    def on_today_clicked(self, user_data):
+        self.reset_calendar_date()
+
+    def reset_calendar_date(self):
+        today = datetime.now()
+        day = int(today.strftime("%d"))
+        month = int(today.strftime("%m"))
+        self.calendar.set_day(day)
+        self.calendar.set_month(month - 1)
+
     def on_right_click(self, sequence, user_data):
+        self.reset_calendar_date()
         self.dropdown.popup()
