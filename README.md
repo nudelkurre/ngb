@@ -39,7 +39,7 @@ sudo dnf install python3 python3-pip git gtk4-devel gtk4-layer-shell-devel glib2
 ### Install ngb
 Install latest release
 ```console
-pip install https://github.com/nudelkurre/ngb/releases/latest/download/ngb.whl
+pip install https://github.com/nudelkurre/ngb/releases/latest/download/ngb-0.1.1-py3-none-any.whl
 ```
 
 ### Nixos
