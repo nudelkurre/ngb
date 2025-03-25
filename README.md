@@ -37,16 +37,22 @@ sudo dnf install python3 python3-pip git gtk4-devel gtk4-layer-shell-devel glib2
 ```
 
 ### Install ngb
-Build from source and install.
+Install latest release
 ```console
-pip install git+https://github.com/nudelkurre/ngb.git@0.1.0
+pip install https://github.com/nudelkurre/ngb/releases/latest/download/ngb.whl
 ```
 
 ### Nixos
 
 #### Run from terminal
+To run latest version from main branch without installing ngb
 ```console
-nix run https://github.com/nudelkurre/ngb#ngb
+nix run github:nudelkurre/ngb#ngb
+```
+
+To run latest release
+```console
+nix run github:nudelkurre/ngb/0.1.1#ngb
 ```
 
 #### Add to nix flake
