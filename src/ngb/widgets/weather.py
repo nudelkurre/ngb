@@ -89,10 +89,8 @@ class Weather(WidgetBox):
             self.text_label.set_label("City not set")
         else:
             self.get_location()
-            self.get_weather_data()
-            self.parse_weather_data()
             self.populate_dropdown()
-            self.set_text()
+            self.update_weather()
 
     def on_click(self, user_data):
         self.dropdown.popup()
@@ -119,7 +117,6 @@ class Weather(WidgetBox):
 
     def parse_weather_data(self):
         data = self.weather_data["timeSeries"][0]["parameters"]
-        # print(data)
         for d in data:
             if(d["name"] == "t"):
                 self.parsed_data["temperature"] = d["values"][0]
@@ -149,3 +146,11 @@ class Weather(WidgetBox):
         if("weather_code" in self.parsed_data):
             self.weather_description_label.set_label(f"{self.descriptions[self.parsed_data['weather_code']]}")
         return True
+
+    def update_weather(self):
+        self.get_weather_data()
+        self.parse_weather_data()
+        self.set_text()
+
+    def update_timeout(self):
+        GLib.timeout_add(self.timer * 1000, update_weather)
