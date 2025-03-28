@@ -10,7 +10,7 @@ with lib;
             };
             package = mkOption {
                 type = types.package;
-                default = null;
+                default = pkgs.ngb;
                 description = "Set the package to use for ngb";
             };
             settings = {
@@ -93,6 +93,9 @@ with lib;
         };
     };
     config = lib.mkIf config.programs.ngb.enable {
+        home.packages = [
+            (optionalString (config.programs.ngb.package != null) config.programs.ngb.package)
+        ];
         xdg.configFile."ngb/config.json".text = ''
             ${builtins.toJSON config.programs.ngb.settings}
         '';
