@@ -6,6 +6,7 @@ from tzlocal import get_localzone
 from geopy.geocoders import Nominatim
 import os
 from gi.repository import Gtk
+from gi.repository import GLib
 
 from ngb.modules import WidgetBox, DropDownWindow
 
@@ -152,6 +153,7 @@ class Weather(WidgetBox):
         self.get_weather_data()
         self.parse_weather_data()
         self.set_text()
+        return True
 
     def update_timeout(self):
-        GLib.timeout_add(self.timer * 1000, update_weather)
+        GLib.timeout_add(self.timer * 1000, self.update_weather)
