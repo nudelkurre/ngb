@@ -91,6 +91,7 @@ class Weather(WidgetBox):
             self.get_location()
             self.populate_dropdown()
             self.update_weather()
+            self.update_timeout()
 
     def on_click(self, user_data):
         self.dropdown.popup()
