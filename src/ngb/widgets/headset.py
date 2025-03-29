@@ -13,7 +13,7 @@ class Headset(WidgetBox):
         self.icon = kwargs.get("icon", "󰋎")
         self.timer = kwargs.get("timer", 5)
         self.icon_size = kwargs.get("icon_size", 20)
-        super().__init__(icon=self.icon, icon_size=self.icon_size)
+        super().__init__(icon=self.icon, icon_size=self.icon_size, timer=self.timer)
 
     def set_text(self):
         path = which("headsetcontrol")
