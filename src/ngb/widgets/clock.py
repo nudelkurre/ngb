@@ -1,7 +1,6 @@
 from gi.repository import Gtk
 from gi.repository import GLib
 from datetime import datetime
-from time import sleep
 
 from ngb.modules import WidgetBox
 
