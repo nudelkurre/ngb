@@ -18,13 +18,14 @@ class Clock(WidgetBox):
         self.show_heading = kwargs.get("show_heading", True)
         self.show_week_numbers = kwargs.get("show_week_numbers", True)
         self.revealer_label = Gtk.Label()
-        self.show_revealer = False
+        self.show_revealer = kwargs.get("show_revealer", False)
         self.calendar = Gtk.Calendar()
         super().__init__(icon=self.icon, spacing=self.spacing, timer=self.timer, icon_size=self.icon_size)
         self.populate_dropdown()
         
         # Create a revealer for smoother transition when hover over
         self.revealer = Gtk.Revealer()
+        self.revealer.set_reveal_child(self.show_revealer)
         self.revealer.set_child(self.revealer_label)
         self.revealer.set_transition_type(Gtk.RevealerTransitionType.SLIDE_LEFT)
         self.revealer.set_transition_duration(self.transition_time)
