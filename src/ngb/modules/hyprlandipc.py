@@ -61,4 +61,4 @@ class HyprlandIpc:
         return " ".join(cmd_list).encode()
 
     def command(self, cmd):
-        self.send_to_socket(self.sock_req, cmd)
+        self.send_to_socket(cmd)
