@@ -2,12 +2,18 @@ from gi.repository import Gtk
 from gi.repository import GLib
 
 import re
+import os
 import i3ipc
+from collections import namedtuple
+import socket
 
-from ngb.modules import WidgetBox
+from ngb.modules import HyprlandIpc, WidgetBox
 
 class WorkspaceBox(WidgetBox):
-    i3 = i3ipc.Connection()
+    if(os.environ["XDG_CURRENT_DESKTOP"] == "sway"):
+        wm = i3ipc.Connection()
+    elif(os.environ["XDG_CURRENT_DESKTOP"] == "Hyprland"):
+        wm = HyprlandIpc()
     def __init__(self, **kwargs):
         self.name = kwargs.get("name", "")
         self.show_name = kwargs.get("show_name", "")
@@ -33,12 +39,15 @@ class WorkspaceBox(WidgetBox):
 
     def on_click(self, user_data):
         if(self.name):
-            self.i3.command(f"workspace {self.name}")
+            self.wm.command(f"workspace {self.name}")
 
 class Workspaces(Gtk.Box):
     workspaces = []
     old_workspaces = []
-    i3 = i3ipc.Connection()
+    if(os.environ["XDG_CURRENT_DESKTOP"] == "sway"):
+        wm = i3ipc.Connection()
+    elif(os.environ["XDG_CURRENT_DESKTOP"] == "Hyprland"):
+        wm = HyprlandIpc()
     def __init__(self, **kwargs):
         self.spacing = kwargs.get("spacing", 5)
         self.icon_size = kwargs.get("icon_size", 20)
@@ -61,7 +70,7 @@ class Workspaces(Gtk.Box):
 
     def get_ws(self):
         ws_list = []
-        workspaces = self.i3.get_workspaces()
+        workspaces = self.wm.get_workspaces()
         for ws in workspaces:
             ws_list.append({
                 "name": ws.name,
@@ -92,6 +101,6 @@ class Workspaces(Gtk.Box):
 
     def on_scroll(self, controller, x, y):
         if(y < 0):
-            self.i3.command("workspace next_on_output")
+            self.wm.command("workspace next_on_output")
         elif(y > 0):
-            self.i3.command("workspace prev_on_output")
+            self.wm.command("workspace prev_on_output")
