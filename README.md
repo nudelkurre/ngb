@@ -39,7 +39,7 @@ sudo dnf install python3 python3-pip git gtk4-devel gtk4-layer-shell-devel glib2
 ### Install ngb
 Build from source and install.
 ```console
-pip install git+https://github.com/nudelkurre/ngb.git@0.1.3
+pip install git+https://github.com/nudelkurre/ngb.git@0.2.0
 ```
 
 ### Nixos
@@ -52,7 +52,7 @@ nix run github:nudelkurre/ngb#ngb
 
 To run latest release
 ```console
-nix run github:nudelkurre/ngb/0.1.3#ngb
+nix run github:nudelkurre/ngb/0.2.0#ngb
 ```
 
 #### Add to nix flake
@@ -210,7 +210,7 @@ Currently only gets the data from SMHI API and only work in Sweden. YR.no (for n
 
 ##### Workspace
 Show active workspaces and highlight the focused one. Can be set to show only a specific monitor or show all workspaces from all monitors.
-Currently only works with SwayWM. Hyprland is planned for future.
+Works with SwayWM and Hyprland.
 |configureation key|description|data type|
 |---|---|---|
 |monitor|Set either specific monitor or "all" for all workspaces|String|
