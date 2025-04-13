@@ -36,8 +36,12 @@ class Volume(WidgetBox):
         return True
 
     def get_sinks(self):
+        new_sinks = []
+        new_sink_names = []
+        old_sink_names = []
         if(self.path):
-            self.sinks.clear()
+            for i in self.sinks:
+                old_sink_names.append(i["name"])
             wpctl = subprocess.run("wpctl status".split(), capture_output=True, text=True).stdout#.split("\n\n")
 
             sinks = re.search(r"Audio\n([\W\w]*)Video", wpctl).group(1)
@@ -52,7 +56,11 @@ class Volume(WidgetBox):
                         "muted": True if match.group("muted") == "MUTED" else False,
                         "default": True if match.group("default") == "*" else False
                     }
-                    self.sinks.append(sink)
+                    new_sinks.append(sink)
+                    new_sink_names.append(sink["name"])
+            if(new_sink_names != old_sink_names):
+                self.sinks = new_sinks
+                self.populate_dropdown()
         return True
 
     def set_volume(self, sink, volume):
@@ -79,7 +87,6 @@ class Volume(WidgetBox):
 
     def populate_dropdown(self):
         self.dropdown.clear()
-        self.get_sinks()
         for sink in self.sinks:
             sink_label = Gtk.Label()
             # Split string to insert new line at every 25 character
@@ -129,4 +136,4 @@ class Volume(WidgetBox):
         self.change_default_sink()
 
     def update_sinks(self):
-        GLib.timeout_add(1000, self.populate_dropdown)
+        GLib.timeout_add(1000, self.get_sinks)
