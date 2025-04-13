@@ -18,7 +18,7 @@ class HyprlandIpc:
             except socket.error as e:
                 print(e)
         except ConnectionRefusedError:
-            print("CONNCETION REFUSED!!!!!!!!!!!!!")
+            print("Connection to the UNIX socket refused.")
         except socket.error as e:
             print(f"Error open socket: {e}")
         finally:
