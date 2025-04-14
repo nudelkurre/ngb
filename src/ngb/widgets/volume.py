@@ -39,9 +39,13 @@ class Volume(WidgetBox):
         new_sinks = []
         new_sink_names = []
         old_sink_names = []
+        new_default = 0
+        old_default = 0
         if(self.path):
             for i in self.sinks:
                 old_sink_names.append(i["name"])
+                if(i["default"]):
+                    old_default = i["id"]
             wpctl = subprocess.run("wpctl status".split(), capture_output=True, text=True).stdout#.split("\n\n")
 
             sinks = re.search(r"Audio\n([\W\w]*)Video", wpctl).group(1)
@@ -58,7 +62,9 @@ class Volume(WidgetBox):
                     }
                     new_sinks.append(sink)
                     new_sink_names.append(sink["name"])
-            if(new_sink_names != old_sink_names):
+                    if(sink["default"]):
+                        new_default = sink["id"]
+            if(new_sink_names != old_sink_names or new_default != old_default):
                 self.sinks = new_sinks
                 self.populate_dropdown()
         return True
