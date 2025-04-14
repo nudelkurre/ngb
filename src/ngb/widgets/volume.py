@@ -101,7 +101,8 @@ class Volume(WidgetBox):
             slider.set_draw_value(True)
             slider.set_value_pos(Gtk.PositionType.RIGHT)
             slider.set_value(sink["volume"])
-            slider.connect("value-changed", lambda scale: self.on_slider_change(scale, sink["id"]))
+            slider.set_name(sink["id"])
+            slider.connect("value-changed", self.on_slider_change)
             slider_box.append(slider)
             self.dropdown.add(slider_box)
         return True
@@ -110,9 +111,9 @@ class Volume(WidgetBox):
         self.get_volume("@DEFAULT_AUDIO_SINK@")
         return True
 
-    def on_slider_change(self, scale, sink):
+    def on_slider_change(self, scale):
         volume = scale.get_value() / 100
-        self.set_volume(sink, volume)
+        self.set_volume(scale.get_name(), volume)
 
     def on_scroll(self, controller, x, y):
         if(y < 0):
