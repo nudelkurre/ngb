@@ -13,6 +13,7 @@ from gi.repository import Gio
 from gi.repository import GLib
 
 import sys
+import uuid
 
 from ngb.widgets import Bluetooth, Clock, Cpu, Disk, Headset, Network, Volume, Weather, Workspaces
 from ngb.modules import Bar, Config
@@ -20,7 +21,9 @@ from ngb import __about__
 
 class MainWindow(Gtk.Application):
     def __init__(self):
-        super().__init__(application_id="com.github.nudelkurre.ngb",
+        app_id = f"com.github.nudelkurre.ngb-{uuid.uuid4()}"
+        print(app_id)
+        super().__init__(application_id=app_id,
                         flags=Gio.ApplicationFlags.FLAGS_NONE |
                         Gio.ApplicationFlags.HANDLES_COMMAND_LINE)
         self.config = Config()
