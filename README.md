@@ -39,7 +39,7 @@ sudo dnf install python3 python3-pip git gtk4-devel gtk4-layer-shell-devel glib2
 ### Install ngb
 Build from source and install.
 ```console
-pip install git+https://github.com/nudelkurre/ngb.git@0.2.2
+pip install git+https://github.com/nudelkurre/ngb.git
 ```
 
 ### Nixos
@@ -50,9 +50,14 @@ To run latest version from main branch without installing ngb
 nix run github:nudelkurre/ngb#ngb
 ```
 
-To run latest release
+To run latest commits
 ```console
-nix run github:nudelkurre/ngb/0.2.2#ngb
+nix run github:nudelkurre/ngb/develop#ngb
+```
+
+To run specific release
+```console
+nix run github:nudelkurre/ngb/<version>
 ```
 
 #### Add to nix flake
@@ -60,8 +65,11 @@ Add flake as input to flake.nix
 
 ```nix
 inputs = {
-    # Use this for master branch
+    # Use this for latest release
     ngb.url = "github:nudelkurre/ngb";
+
+    # Use this for latest commits
+    ngb.url = "github:nudelkurre/ngb/develop#ngb"
 
     # Use this to pin to specific version
     ngb.url = "github:nudelkurre/ngb/<version>";

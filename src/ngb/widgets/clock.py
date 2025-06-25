@@ -48,8 +48,8 @@ class Clock(WidgetBox):
         return True
 
     def on_click(self, user_data):
-        self.show_revealer = not self.show_revealer
-        self.revealer.set_reveal_child(self.show_revealer)
+        self.reset_calendar_date()
+        self.dropdown.popup()
 
     def on_today_clicked(self, user_data):
         self.reset_calendar_date()
@@ -62,5 +62,5 @@ class Clock(WidgetBox):
         self.calendar.set_month(month - 1)
 
     def on_right_click(self, sequence, user_data):
-        self.reset_calendar_date()
-        self.dropdown.popup()
+        self.show_revealer = not self.show_revealer
+        self.revealer.set_reveal_child(self.show_revealer)
