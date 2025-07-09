@@ -22,7 +22,6 @@ from ngb import __about__
 class MainWindow(Gtk.Application):
     def __init__(self):
         app_id = f"com.github.nudelkurre.ngb-{uuid.uuid4()}"
-        print(app_id)
         super().__init__(application_id=app_id,
                         flags=Gio.ApplicationFlags.FLAGS_NONE |
                         Gio.ApplicationFlags.HANDLES_COMMAND_LINE)
