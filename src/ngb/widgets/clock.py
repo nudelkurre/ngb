@@ -58,8 +58,10 @@ class Clock(WidgetBox):
         today = datetime.now()
         day = int(today.strftime("%d"))
         month = int(today.strftime("%m"))
+        year = int(today.strftime("%Y"))
         self.calendar.set_day(day)
         self.calendar.set_month(month - 1)
+        self.calendar.set_year(year)
 
     def on_right_click(self, sequence, user_data):
         self.show_revealer = not self.show_revealer
