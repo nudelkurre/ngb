@@ -11,14 +11,16 @@ class Volume(WidgetBox):
     path = which("wpctl")
     def __init__(self, **kwargs):
         self.icon = kwargs.get("icon", "")
-        self.timer = kwargs.get("timer", 0.2)
+        self.timer = kwargs.get("timer", 5)
         self.icon_size = kwargs.get("icon_size", 20)
         self.click_to_mute = kwargs.get("click_to_mute", False)
         self.sinks = []
         super().__init__(icon=self.icon, timer=self.timer, icon_size=self.icon_size)
         self.get_sinks()
-        self.populate_dropdown()
-        self.update_sinks()
+        
+        # Connect signals for dropdown
+        self.dropdown.connect("show", self.on_show)
+        self.dropdown.connect("closed", self.on_close)
 
     def get_volume(self, sink):
         if(self.path):
@@ -46,12 +48,16 @@ class Volume(WidgetBox):
                 old_sink_names.append(i["name"])
                 if(i["default"]):
                     old_default = i["id"]
-            wpctl = subprocess.run("wpctl status".split(), capture_output=True, text=True).stdout#.split("\n\n")
+            # Get output from wpctl
+            wpctl = subprocess.run("wpctl status".split(), capture_output=True, text=True).stdout
 
+            # Get only parts that are in the Audio section of wpctl output
             sinks = re.search(r"Audio\n([\W\w]*)Video", wpctl).group(1)
+            # Get only audio sinks
             sinks = re.search(r"Sinks:\n([\W\w]*)Sources", sinks).group(1).split("\n")[:-2]
 
             for i in sinks:
+                # Search each sink for id, name, volume, if muted and if default
                 match = re.search(r"\s*(?P<default>\*?)\s*(?P<id>\d+)\.\s*(?P<name>[\w\s\d\[\]\(\)-\/]+)\s*\[vol:\s*(?P<volume>\d+\.\d+)\s?(?P<muted>MUTED)*\]", i)
                 if(match):
                     sink = {"id": match.group("id"),
@@ -64,9 +70,7 @@ class Volume(WidgetBox):
                     new_sink_names.append(sink["name"])
                     if(sink["default"]):
                         new_default = sink["id"]
-            if(new_sink_names != old_sink_names or new_default != old_default):
-                self.sinks = new_sinks
-                self.populate_dropdown()
+            self.sinks = new_sinks
         return True
 
     def set_volume(self, sink, volume):
@@ -79,20 +83,26 @@ class Volume(WidgetBox):
             subprocess.run(f"wpctl set-mute {sink} toggle".split())
 
     def change_default_sink(self):
+        default = self.get_default_sink()
+        # Set the new default sink by move to next id in sink list
+        # or to first if current is last
+        self.set_default_sink(self.sinks[(default + 1) % len(self.sinks)]['id'])
+    
+    def get_default_sink(self):
         self.get_sinks()
         if(len(self.sinks) > 0):
             default = 0
+            # Iterate the sink list and if sink is default get index of deafult sink
             for index, sink in enumerate(self.sinks):
                 if(sink["default"]):
                     default = index
-        
-        self.set_default_sink(self.sinks[(default + 1) % len(self.sinks)]['id'])
-    
+        return default
+
     def set_default_sink(self, sink):
         subprocess.run(f"wpctl set-default {sink}".split())
 
     def populate_dropdown(self):
-        self.dropdown.clear()
+        self.get_sinks()
         for sink in self.sinks:
             sink_label = Gtk.Label()
             # Split string to insert new line at every 25 character
@@ -120,12 +130,17 @@ class Volume(WidgetBox):
     def on_slider_change(self, scale):
         volume = scale.get_value() / 100
         self.set_volume(scale.get_name(), volume)
+        # Only update label if slider change is for default sink
+        if(scale.get_name() == self.sinks[self.get_default_sink()]["id"]):
+            self.set_text()
 
     def on_scroll(self, controller, x, y):
         if(y < 0):
             self.set_volume("@DEFAULT_AUDIO_SINK@", "5%+")
+            self.set_text()
         elif(y > 0):
             self.set_volume("@DEFAULT_AUDIO_SINK@", "5%-")
+            self.set_text()
 
     def on_click(self, user_data):
         if(self.click_to_mute):
@@ -141,6 +156,12 @@ class Volume(WidgetBox):
 
     def on_right_click(self, sequence, user_data):
         self.change_default_sink()
+
+    def on_show(self, user_data):
+        self.populate_dropdown()
+    
+    def on_close(self, user_data):
+        self.dropdown.clear()
 
     def update_sinks(self):
         GLib.timeout_add(1000, self.get_sinks)
