@@ -17,6 +17,8 @@ class Volume(WidgetBox):
         self.sinks = []
         super().__init__(icon=self.icon, timer=self.timer, icon_size=self.icon_size)
         self.get_sinks()
+        
+        # Connect signals for dropdown
         self.dropdown.connect("show", self.on_show)
         self.dropdown.connect("closed", self.on_close)
 
@@ -46,12 +48,16 @@ class Volume(WidgetBox):
                 old_sink_names.append(i["name"])
                 if(i["default"]):
                     old_default = i["id"]
-            wpctl = subprocess.run("wpctl status".split(), capture_output=True, text=True).stdout#.split("\n\n")
+            # Get output from wpctl
+            wpctl = subprocess.run("wpctl status".split(), capture_output=True, text=True).stdout
 
+            # Get only parts that are in the Audio section of wpctl output
             sinks = re.search(r"Audio\n([\W\w]*)Video", wpctl).group(1)
+            # Get only audio sinks
             sinks = re.search(r"Sinks:\n([\W\w]*)Sources", sinks).group(1).split("\n")[:-2]
 
             for i in sinks:
+                # Search each sink for id, name, volume, if muted and if default
                 match = re.search(r"\s*(?P<default>\*?)\s*(?P<id>\d+)\.\s*(?P<name>[\w\s\d\[\]\(\)-\/]+)\s*\[vol:\s*(?P<volume>\d+\.\d+)\s?(?P<muted>MUTED)*\]", i)
                 if(match):
                     sink = {"id": match.group("id"),
@@ -78,12 +84,15 @@ class Volume(WidgetBox):
 
     def change_default_sink(self):
         default = self.get_default_sink()
+        # Set the new default sink by move to next id in sink list
+        # or to first if current is last
         self.set_default_sink(self.sinks[(default + 1) % len(self.sinks)]['id'])
     
     def get_default_sink(self):
         self.get_sinks()
         if(len(self.sinks) > 0):
             default = 0
+            # Iterate the sink list and if sink is default get index of deafult sink
             for index, sink in enumerate(self.sinks):
                 if(sink["default"]):
                     default = index
@@ -121,6 +130,7 @@ class Volume(WidgetBox):
     def on_slider_change(self, scale):
         volume = scale.get_value() / 100
         self.set_volume(scale.get_name(), volume)
+        # Only update label if slider change is for default sink
         if(scale.get_name() == self.sinks[self.get_default_sink()]["id"]):
             self.set_text()
 
