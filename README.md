@@ -218,7 +218,7 @@ Currently only gets the data from SMHI API and only work in Sweden. YR.no (for n
 
 ##### Workspace
 Show active workspaces and highlight the focused one. Can be set to show only a specific monitor or show all workspaces from all monitors.
-Works with SwayWM and Hyprland.
+Works with SwayWM, Hyprland and Niri (requires xwayland-satellite for the moment).
 |configureation key|description|data type|
 |---|---|---|
 |monitor|Set either specific monitor or "all" for all workspaces|String|
