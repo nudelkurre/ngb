@@ -3,7 +3,7 @@ with pkgs.python3Packages;
 
 buildPythonApplication rec {
   pname = "ngb";
-  version = "0.3.0";
+  version = "0.3.1";
   pyproject = true;
   src = ./.;
 
