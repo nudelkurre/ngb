@@ -3,7 +3,9 @@ import socket
 import re
 import os
 
-class HyprlandIpc:
+from .windowmanageripc import WindowManagerIPC
+
+class HyprlandIpc(WindowManagerIPC):
     def __init__(self):
         socket_location = f"{os.environ['XDG_RUNTIME_DIR']}/hypr/{os.environ['HYPRLAND_INSTANCE_SIGNATURE']}"
         self.sock_req = f"{socket_location}/.socket.sock"

@@ -7,13 +7,16 @@ import i3ipc
 from collections import namedtuple
 import socket
 
-from ngb.modules import HyprlandIpc, WidgetBox
+from ngb.modules import HyprlandIpc, WidgetBox, WindowManagerIPC
 
 class WorkspaceBox(WidgetBox):
     if(os.environ["XDG_CURRENT_DESKTOP"] == "sway"):
         wm = i3ipc.Connection()
     elif(os.environ["XDG_CURRENT_DESKTOP"] == "Hyprland"):
         wm = HyprlandIpc()
+    # If using a non-supported window manager and show empty space instead of giving error
+    else:
+        wm = WindowManagerIPC()
     def __init__(self, **kwargs):
         self.name = kwargs.get("name", "")
         self.show_name = kwargs.get("show_name", "")
@@ -48,6 +51,9 @@ class Workspaces(Gtk.Box):
         wm = i3ipc.Connection()
     elif(os.environ["XDG_CURRENT_DESKTOP"] == "Hyprland"):
         wm = HyprlandIpc()
+    # If using a non-supported window manager and show empty space instead of giving error
+    else:
+        wm = WindowManagerIPC()
     def __init__(self, **kwargs):
         self.spacing = kwargs.get("spacing", 5)
         self.icon_size = kwargs.get("icon_size", 20)
