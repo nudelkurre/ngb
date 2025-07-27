@@ -3,15 +3,14 @@ from gi.repository import GLib
 
 import re
 import os
-import i3ipc
 from collections import namedtuple
 import socket
 
-from ngb.modules import HyprlandIpc, NiriIPC, WidgetBox, WindowManagerIPC
+from ngb.modules import HyprlandIpc, NiriIPC, SwayIPC, WidgetBox, WindowManagerIPC
 
 class WorkspaceBox(WidgetBox):
     if(os.environ["XDG_CURRENT_DESKTOP"] == "sway"):
-        wm = i3ipc.Connection()
+        wm = SwayIPC()
     elif(os.environ["XDG_CURRENT_DESKTOP"] == "Hyprland"):
         wm = HyprlandIpc()
     elif(os.environ["XDG_CURRENT_DESKTOP"] == "niri"):
@@ -50,7 +49,7 @@ class Workspaces(Gtk.Box):
     workspaces = []
     old_workspaces = []
     if(os.environ["XDG_CURRENT_DESKTOP"] == "sway"):
-        wm = i3ipc.Connection()
+        wm = SwayIPC()
     elif(os.environ["XDG_CURRENT_DESKTOP"] == "Hyprland"):
         wm = HyprlandIpc()
     elif(os.environ["XDG_CURRENT_DESKTOP"] == "niri"):
