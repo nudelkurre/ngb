@@ -26,7 +26,6 @@ classifiers = [
 ]
 dependencies = [
   "geopy",
-  "i3ipc",
   "meson-python",
   "meson",
   "ninja",
