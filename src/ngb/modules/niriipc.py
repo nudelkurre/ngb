@@ -48,7 +48,7 @@ class NiriIPC(WindowManagerIPC):
             ws_dict = dict()
             if(wss != {} and wss["name"] != None and wss["active_window_id"] != None or (wss["is_active"] and wss["active_window_id"] == None)):
                 pass
-                ws_dict["id"] = wss["id"]
+                ws_dict["id"] = wss["idx"]
                 ws_dict["name"] = wss["name"]
                 ws_dict["monitor"] = wss["output"]
                 ws_dict["active"] = wss["is_active"]
@@ -65,13 +65,13 @@ class NiriIPC(WindowManagerIPC):
         return parsed_ws
 
     def get_workspaces(self):
-        workspace = namedtuple("workspace", ["name", "focused", "output", "urgent"])
+        workspace = namedtuple("workspace", ["id", "name", "focused", "output", "urgent"])
         workspaces = self.send_to_socket("Workspaces")
         if(workspaces and "Ok" in workspaces):
             parsed_ws = self.parse_workspace(workspaces["Ok"]["Workspaces"])
             ws_list = list()
             for p in parsed_ws:
-                ws_list.append(workspace(name=p["name"], focused=p["focused"], output=p["monitor"], urgent=p["urgent"]))
+                ws_list.append(workspace(id=p["id"], name=p["name"], focused=p["focused"], output=p["monitor"], urgent=p["urgent"]))
             return ws_list
         return []
 
