@@ -46,10 +46,9 @@ class NiriIPC(WindowManagerIPC):
         self.get_outputs()
         for wss in ws:
             ws_dict = dict()
-            if(wss != {} and wss["name"] != None and wss["active_window_id"] != None or (wss["is_active"] and wss["active_window_id"] == None)):
-                pass
+            if(wss != {} and wss["active_window_id"] != None or (wss["is_active"] and wss["active_window_id"] == None)):
                 ws_dict["id"] = wss["idx"]
-                ws_dict["name"] = wss["name"]
+                ws_dict["name"] = wss["name"] if wss["name"] else str(wss["id"])
                 ws_dict["monitor"] = wss["output"]
                 ws_dict["active"] = wss["is_active"]
                 ws_dict["urgent"] = wss["is_urgent"]
