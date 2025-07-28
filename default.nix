@@ -25,7 +25,6 @@ buildPythonApplication rec {
 
   dependencies = [
     geopy
-    i3ipc
     meson
     meson-python
     ninja

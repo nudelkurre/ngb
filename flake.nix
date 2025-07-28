@@ -53,7 +53,6 @@
           makeWrapper
           (python3.withPackages (python-pkgs: with python-pkgs; [
             geopy
-            i3ipc
             meson
             meson-python
             ninja

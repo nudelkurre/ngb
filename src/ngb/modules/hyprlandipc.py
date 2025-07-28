@@ -41,14 +41,14 @@ class HyprlandIpc(WindowManagerIPC):
         return parsed_ws
 
     def get_workspaces(self):
-        workspace = namedtuple("workspace", ["name", "focused", "output", "urgent"])
+        workspace = namedtuple("workspace", ["id", "name", "focused", "output", "urgent"])
         workspaces = self.send_to_socket("workspaces")
         active_workspace = self.send_to_socket("activeworkspace")
         active_id = self.parse_workspace(active_workspace)[0]["id"]
         parsed_ws = self.parse_workspace(workspaces)
         ws_list = list()
         for p in parsed_ws:
-            ws_list.append(workspace(name=p["name"], focused=p["id"] == active_id, output=p["monitor"], urgent=False))
+            ws_list.append(workspace(id=p["id"], name=p["name"], focused=p["id"] == active_id, output=p["monitor"], urgent=False))
         return ws_list
 
     def translate_cmd(self, cmd):
