@@ -3,15 +3,14 @@ from gi.repository import GLib
 
 import re
 import os
-import i3ipc
 from collections import namedtuple
 import socket
 
-from ngb.modules import HyprlandIpc, NiriIPC, WidgetBox, WindowManagerIPC
+from ngb.modules import HyprlandIpc, NiriIPC, SwayIPC, WidgetBox, WindowManagerIPC
 
 class WorkspaceBox(WidgetBox):
     if(os.environ["XDG_CURRENT_DESKTOP"] == "sway"):
-        wm = i3ipc.Connection()
+        wm = SwayIPC()
     elif(os.environ["XDG_CURRENT_DESKTOP"] == "Hyprland"):
         wm = HyprlandIpc()
     elif(os.environ["XDG_CURRENT_DESKTOP"] == "niri"):
@@ -50,7 +49,7 @@ class Workspaces(Gtk.Box):
     workspaces = []
     old_workspaces = []
     if(os.environ["XDG_CURRENT_DESKTOP"] == "sway"):
-        wm = i3ipc.Connection()
+        wm = SwayIPC()
     elif(os.environ["XDG_CURRENT_DESKTOP"] == "Hyprland"):
         wm = HyprlandIpc()
     elif(os.environ["XDG_CURRENT_DESKTOP"] == "niri"):
@@ -71,25 +70,19 @@ class Workspaces(Gtk.Box):
         self.scroll_controller.connect("scroll", self.on_scroll)
         self.add_controller(self.scroll_controller)
 
-    def sort_key(self, item):
-        name = item['name']
-        # Use regex to separate numeric and non-numeric parts
-        numeric_part = int(re.match(r'(\d+)', name).group(0)) if re.match(r'(\d+)', name) else float('inf')
-        non_numeric_part = re.sub(r'^\d+', '', name)  # Remove numeric part for sorting
-        return (numeric_part, non_numeric_part)
-
     def get_ws(self):
         ws_list = []
         workspaces = self.wm.get_workspaces()
         for ws in workspaces:
             ws_list.append({
+                "id": ws.id,
                 "name": ws.name,
                 "focused": ws.focused,
                 "output": ws.output,
                 "urgent": ws.urgent
             })
 
-        ws_list = sorted(ws_list, key=self.sort_key)
+        ws_list = sorted(ws_list, key=lambda d: int(d["id"]))
         self.workspaces = ws_list
 
     def update_boxes(self):
@@ -102,7 +95,8 @@ class Workspaces(Gtk.Box):
             for ws in self.workspaces:
                 if(self.monitor == "all" or ws["output"] == self.monitor):
                     show_name = self.ws_names[ws["name"]] if ws["name"] in self.ws_names else ""
-                    self.append(WorkspaceBox(name=ws["name"], show_name=show_name, focused=ws["focused"], urgent=ws["urgent"], icon_size=self.icon_size))
+                    if(ws["name"]):
+                        self.append(WorkspaceBox(id=ws["id"], name=ws["name"], show_name=show_name, focused=ws["focused"], urgent=ws["urgent"], icon_size=self.icon_size))
         
         return True
 
