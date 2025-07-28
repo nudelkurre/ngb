@@ -8,7 +8,9 @@ import json
 from .windowmanageripc import WindowManagerIPC
 
 class SwayIPC(WindowManagerIPC):
-    sock_req = f"{os.environ['SWAYSOCK']}"
+
+    def __init__(self):
+        self.sock_req = f"{os.environ['SWAYSOCK']}"
 
     def send_to_socket(self, cmd):
         usocket = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
