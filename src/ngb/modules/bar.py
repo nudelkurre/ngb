@@ -10,6 +10,7 @@ class Bar(Gtk.ApplicationWindow):
     def __init__(self, **kwargs):
         self.app = kwargs.get("app")
         self.monitor = kwargs.get("monitor")
+        self.location = kwargs.get("location").lower()
         self.gaps = kwargs.get("gaps")
         super().__init__(application=self.app)
 
@@ -23,7 +24,10 @@ class Bar(Gtk.ApplicationWindow):
 
         LayerShell.init_for_window(self)
         LayerShell.set_layer(self, LayerShell.Layer.BOTTOM)
-        LayerShell.set_anchor(self, LayerShell.Edge.TOP, True)
+        if(self.location == "bottom"):
+            LayerShell.set_anchor(self, LayerShell.Edge.BOTTOM, True)
+        else:
+            LayerShell.set_anchor(self, LayerShell.Edge.TOP, True)
         LayerShell.auto_exclusive_zone_enable(self)
         LayerShell.set_monitor(self, window_monitor)
         LayerShell.set_margin(self, LayerShell.Edge.TOP, self.gaps)
