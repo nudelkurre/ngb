@@ -42,7 +42,8 @@ class MainWindow(Gtk.Application):
 
     def create_window(self, bar_config):
         output = bar_config["output"]
-        window = Bar(app=self, monitor=output)
+        location = bar_config["location"] if "location" in bar_config else "top"
+        window = Bar(app=self, monitor=output, location=location)
         window.show()
 
         valid_widgets = {
