@@ -42,7 +42,8 @@ class MainWindow(Gtk.Application):
 
     def create_window(self, bar_config):
         output = bar_config["output"]
-        window = Bar(app=self, monitor=output)
+        gaps = bar_config["gaps"] if "gaps" in bar_config else 0
+        window = Bar(app=self, monitor=output, gaps=gaps)
         window.show()
 
         valid_widgets = {
