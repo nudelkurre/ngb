@@ -10,8 +10,8 @@ class Bar(Gtk.ApplicationWindow):
     def __init__(self, **kwargs):
         self.app = kwargs.get("app")
         self.monitor = kwargs.get("monitor")
-        self.location = kwargs.get("location").lower()
-        self.gaps = kwargs.get("gaps")
+        self.location = kwargs.get("location", "top").lower()
+        self.gaps = kwargs.get("gaps", 0)
         super().__init__(application=self.app)
 
         self.get_displays()
