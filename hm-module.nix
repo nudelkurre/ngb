@@ -28,6 +28,10 @@ with lib;
                                     type = types.str;
                                     description = "Set the output to show bar on";
                                 };
+                                gaps = mkOption {
+                                    type = types.int;
+                                    description = "Set the size of gap around the bar";
+                                };
                                 widgets = mkOption {
                                     type = types.submodule {
                                         options = {
