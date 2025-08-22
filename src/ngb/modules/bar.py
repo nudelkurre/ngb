@@ -10,6 +10,8 @@ class Bar(Gtk.ApplicationWindow):
     def __init__(self, **kwargs):
         self.app = kwargs.get("app")
         self.monitor = kwargs.get("monitor")
+        self.location = kwargs.get("location", "top").lower()
+        self.gaps = kwargs.get("gaps", 0)
         super().__init__(application=self.app)
 
         self.get_displays()
@@ -18,13 +20,20 @@ class Bar(Gtk.ApplicationWindow):
         window_width = self.monitors[self.active_monitor]["width"]
         window_height = self.monitors[self.active_monitor]["height"]
         window_monitor = self.monitors[self.active_monitor]["monitor"]
-        self.set_default_size(window_width, 25)
+        self.set_default_size(window_width - (self.gaps * 2), 25)
 
         LayerShell.init_for_window(self)
         LayerShell.set_layer(self, LayerShell.Layer.BOTTOM)
-        LayerShell.set_anchor(self, LayerShell.Edge.TOP, True)
+        if(self.location == "bottom"):
+            LayerShell.set_anchor(self, LayerShell.Edge.BOTTOM, True)
+        else:
+            LayerShell.set_anchor(self, LayerShell.Edge.TOP, True)
         LayerShell.auto_exclusive_zone_enable(self)
         LayerShell.set_monitor(self, window_monitor)
+        LayerShell.set_margin(self, LayerShell.Edge.TOP, self.gaps)
+        LayerShell.set_margin(self, LayerShell.Edge.BOTTOM, self.gaps)
+        LayerShell.set_margin(self, LayerShell.Edge.LEFT, self.gaps)
+        LayerShell.set_margin(self, LayerShell.Edge.RIGHT, self.gaps)
 
         bar = Gtk.CenterBox()
 

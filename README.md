@@ -104,6 +104,7 @@ If a configuration file is not found when ngb first run, it will create one in t
   "bars": [
       {
           "output": "DP-1",
+          "gaps": 2,
           "widgets": {
               "left": [
                   {
@@ -149,6 +150,9 @@ Bars is a list of bars containing objects with settings for each bar.
 
 #### output
 Output sets the output to show the bar on.
+
+#### gaps
+Set spacing to use around the bar. Set per bar and can be different for each bar.
 
 #### widgets
 Widgets is an object that keeps three lists, center, left and right. The lists contains the widgets to show on respective position of the bar.
