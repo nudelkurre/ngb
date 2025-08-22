@@ -1,4 +1,10 @@
-self: {config, pkgs, lib, ...}:
+self:
+{
+    config,
+    pkgs,
+    lib,
+    ...
+}:
 with lib;
 {
     options = {
@@ -15,69 +21,77 @@ with lib;
             };
             settings = {
                 bars = mkOption {
-                    type = types.listOf (types.submodule {
-                        options = {
-                            output = mkOption {
-                                type = types.str;
-                                description = "Set the output to show bar on";
-                            };
-                            widgets = mkOption {
-                                type = types.submodule {
-                                    options = {
-                                        center = mkOption {
-                                            type = types.listOf (types.submodule {
-                                                options = {
-                                                    config = mkOption {
-                                                        type = types.attrs;
-                                                        description = "Settings for widget";
-                                                        default = {};
-                                                    };
-                                                    module = mkOption {
-                                                        type = types.str;
-                                                        description = "Name of widget";
-                                                    };
-                                                };
-                                            });
-                                            default = [];
-                                        };
-                                        left = mkOption {
-                                            type = types.listOf (types.submodule {
-                                                options = {
-                                                    config = mkOption {
-                                                        type = types.attrs;
-                                                        description = "Settings for widget";
-                                                        default = {};
-                                                    };
-                                                    module = mkOption {
-                                                        type = types.str;
-                                                        description = "Name of widget";
-                                                    };
-                                                };
-                                            });
-                                            default = [];
-                                        };
-                                        right = mkOption {
-                                            type = types.listOf (types.submodule {
-                                                options = {
-                                                    config = mkOption {
-                                                        type = types.attrs;
-                                                        description = "Settings for widget";
-                                                        default = {};
-                                                    };
-                                                    module = mkOption {
-                                                        type = types.str;
-                                                        description = "Name of widget";
-                                                    };
-                                                };
-                                            });
-                                            default = [];
+                    type = types.listOf (
+                        types.submodule {
+                            options = {
+                                output = mkOption {
+                                    type = types.str;
+                                    description = "Set the output to show bar on";
+                                };
+                                widgets = mkOption {
+                                    type = types.submodule {
+                                        options = {
+                                            center = mkOption {
+                                                type = types.listOf (
+                                                    types.submodule {
+                                                        options = {
+                                                            config = mkOption {
+                                                                type = types.attrs;
+                                                                description = "Settings for widget";
+                                                                default = { };
+                                                            };
+                                                            module = mkOption {
+                                                                type = types.str;
+                                                                description = "Name of widget";
+                                                            };
+                                                        };
+                                                    }
+                                                );
+                                                default = [ ];
+                                            };
+                                            left = mkOption {
+                                                type = types.listOf (
+                                                    types.submodule {
+                                                        options = {
+                                                            config = mkOption {
+                                                                type = types.attrs;
+                                                                description = "Settings for widget";
+                                                                default = { };
+                                                            };
+                                                            module = mkOption {
+                                                                type = types.str;
+                                                                description = "Name of widget";
+                                                            };
+                                                        };
+                                                    }
+                                                );
+                                                default = [ ];
+                                            };
+                                            right = mkOption {
+                                                type = types.listOf (
+                                                    types.submodule {
+                                                        options = {
+                                                            config = mkOption {
+                                                                type = types.attrs;
+                                                                description = "Settings for widget";
+                                                                default = { };
+                                                            };
+                                                            module = mkOption {
+                                                                type = types.str;
+                                                                description = "Name of widget";
+                                                            };
+                                                        };
+                                                    }
+                                                );
+                                                default = [ ];
+                                            };
                                         };
                                     };
                                 };
                             };
-                        };
-                    });
-                    default = [];
+                        }
+                    );
+                    default = [ ];
                 };
                 icon_size = mkOption {
                     type = types.int;
