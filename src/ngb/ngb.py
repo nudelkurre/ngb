@@ -116,6 +116,10 @@ class MainWindow(Gtk.Application):
         .dropdown {{
             padding: 10px 0;
         }}
+
+        window {{
+            border-radius: {self.config.data["corner_radius"]}px;
+        }}
         """
         css_provider.load_from_data(css.encode("utf-8"))
 
