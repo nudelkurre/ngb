@@ -234,6 +234,9 @@ Set icon size for every widget in all bars.
 ### Spacing
 Set spacing to use for every bar. Spacing is used between each widget, between label and icon for each widget (can be overridden in each widget module, described [above](#widget-modules)) and as margin in top and bottom of dropdowns.
 
+### Corner_radius
+Set the corner radius to use for all bars. Set in pixels.
+
 ## License
 
 `ngb` is distributed under the terms of the [MIT](https://spdx.org/licenses/MIT.html) license.

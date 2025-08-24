@@ -107,6 +107,11 @@ with lib;
                     default = 5;
                     description = "Set spacing to use in widgets";
                 };
+                corner_radius = mkOption {
+                    type = types.int;
+                    default = 0;
+                    description = "Set corner radius to all bars";
+                };
             };
         };
     };
