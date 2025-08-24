@@ -34,6 +34,7 @@ class Bar(Gtk.ApplicationWindow):
         LayerShell.set_margin(self, LayerShell.Edge.BOTTOM, self.gaps)
         LayerShell.set_margin(self, LayerShell.Edge.LEFT, self.gaps)
         LayerShell.set_margin(self, LayerShell.Edge.RIGHT, self.gaps)
+        LayerShell.set_namespace(self, "ngb")
 
         bar = Gtk.CenterBox()
 
