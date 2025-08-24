@@ -12,6 +12,7 @@ class Bar(Gtk.ApplicationWindow):
         self.monitor = kwargs.get("monitor")
         self.location = kwargs.get("location", "top").lower()
         self.gaps = kwargs.get("gaps", 0)
+        self.layer = kwargs.get("layer", "bottom").lower()
         super().__init__(application=self.app)
 
         self.get_displays()
@@ -23,7 +24,14 @@ class Bar(Gtk.ApplicationWindow):
         self.set_default_size(window_width - (self.gaps * 2), 25)
 
         LayerShell.init_for_window(self)
-        LayerShell.set_layer(self, LayerShell.Layer.BOTTOM)
+        if(self.layer == "top"):
+            LayerShell.set_layer(self, LayerShell.Layer.TOP)
+        elif(self.layer == "overlay"):
+            LayerShell.set_layer(self, LayerShell.Layer.OVERLAY)
+        elif(self.layer == "background"):
+            LayerShell.set_layer(self, LayerShell.Layer.BACKGROUND)
+        else:
+            LayerShell.set_layer(self, LayerShell.Layer.BOTTOM)
         if(self.location == "bottom"):
             LayerShell.set_anchor(self, LayerShell.Edge.BOTTOM, True)
         else:

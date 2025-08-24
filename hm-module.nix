@@ -32,6 +32,15 @@ with lib;
                                     type = types.int;
                                     description = "Set the size of gap around the bar";
                                 };
+                                layer = mkOption {
+                                    type = types.enum [
+                                        "background"
+                                        "bottom"
+                                        "overlay"
+                                        "top"
+                                    ];
+                                    description = "Set which layer shell layer to show the bar";
+                                };
                                 widgets = mkOption {
                                     type = types.submodule {
                                         options = {
