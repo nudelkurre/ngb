@@ -32,6 +32,10 @@ with lib;
                                     type = types.int;
                                     description = "Set the size of gap around the bar";
                                 };
+                                height = mkOption {
+                                    type = types.int;
+                                    description = "Set the height to use for the bar (minimum height, if font size is to big bar will get bigger)";
+                                };
                                 widgets = mkOption {
                                     type = types.submodule {
                                         options = {
