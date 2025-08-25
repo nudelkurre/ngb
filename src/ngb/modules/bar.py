@@ -12,6 +12,7 @@ class Bar(Gtk.ApplicationWindow):
         self.monitor = kwargs.get("monitor")
         self.location = kwargs.get("location", "top").lower()
         self.gaps = kwargs.get("gaps", 0)
+        self.height = kwargs.get("height", 25)
         self.layer = kwargs.get("layer", "bottom").lower()
         super().__init__(application=self.app)
 
@@ -21,7 +22,7 @@ class Bar(Gtk.ApplicationWindow):
         window_width = self.monitors[self.active_monitor]["width"]
         window_height = self.monitors[self.active_monitor]["height"]
         window_monitor = self.monitors[self.active_monitor]["monitor"]
-        self.set_default_size(window_width - (self.gaps * 2), 25)
+        self.set_default_size(window_width - (self.gaps * 2), self.height)
 
         LayerShell.init_for_window(self)
         if(self.layer == "top"):
@@ -36,7 +37,7 @@ class Bar(Gtk.ApplicationWindow):
             LayerShell.set_anchor(self, LayerShell.Edge.BOTTOM, True)
         else:
             LayerShell.set_anchor(self, LayerShell.Edge.TOP, True)
-        LayerShell.auto_exclusive_zone_enable(self)
+        LayerShell.set_exclusive_zone(self, self.height + (self.gaps * 2))
         LayerShell.set_monitor(self, window_monitor)
         LayerShell.set_margin(self, LayerShell.Edge.TOP, self.gaps)
         LayerShell.set_margin(self, LayerShell.Edge.BOTTOM, self.gaps)

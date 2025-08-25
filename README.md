@@ -105,6 +105,7 @@ If a configuration file is not found when ngb first run, it will create one in t
       {
           "output": "DP-1",
           "gaps": 2,
+          "height": 25,
           "layer": "bottom",
           "widgets": {
               "left": [
@@ -154,6 +155,9 @@ Output sets the output to show the bar on.
 
 #### gaps
 Set spacing to use around the bar. Set per bar and can be different for each bar.
+
+#### height
+Set the height to use for the bar. If font size is to big, the bar will get bigger to fit the text.
 
 #### layer
 Set the layer shell layer to show the bar at. Valid layers are background, bottom, overlay and top.

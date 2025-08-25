@@ -47,6 +47,8 @@ class MainWindow(Gtk.Application):
             local_bar_config["gaps"] = bar_config["gaps"]
         if("location" in bar_config):
             local_bar_config["location"] = bar_config["location"]
+        if("height" in bar_config):
+            local_bar_config["height"] = bar_config["height"]
         if("layer" in bar_config):
             local_bar_config["layer"] = bar_config["layer"]
         window = Bar(app=self, **local_bar_config)
