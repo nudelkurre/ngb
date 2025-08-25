@@ -55,6 +55,8 @@ class MainWindow(Gtk.Application):
             local_bar_config["height"] = self.config.data["height"]
         if("layer" in bar_config):
             local_bar_config["layer"] = bar_config["layer"]
+        elif("layer" in self.config.data):
+            local_bar_config["layer"] = self.config.data["layer"]
         window = Bar(app=self, **local_bar_config)
         window.show()
 

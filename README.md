@@ -245,6 +245,9 @@ Set the height to use for the bar. If font size is to big, the bar will get bigg
 ### Icon_size
 Set icon size for every widget in all bars.
 
+### layer
+Set the layer shell layer to show the bar at. Valid layers are background, bottom, overlay and top. Can be overridden by setting it on a bar.
+
 ### Spacing
 Set spacing to use for every bar. Spacing is used between each widget, between label and icon for each widget (can be overridden in each widget module, described [above](#widget-modules)) and as margin in top and bottom of dropdowns.
 

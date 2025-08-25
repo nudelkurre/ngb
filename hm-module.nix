@@ -123,6 +123,15 @@ with lib;
                     default = 20;
                     description = "Set font size of icons";
                 };
+                layer = mkOption {
+                    type = types.enum [
+                        "background"
+                        "bottom"
+                        "overlay"
+                        "top"
+                    ];
+                    description = "Set which layer shell layer to show the bar";
+                };
                 spacing = mkOption {
                     type = types.int;
                     default = 5;
