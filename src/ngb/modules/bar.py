@@ -13,6 +13,7 @@ class Bar(Gtk.ApplicationWindow):
         self.location = kwargs.get("location", "top").lower()
         self.gaps = kwargs.get("gaps", 0)
         self.height = kwargs.get("height", 25)
+        self.layer = kwargs.get("layer", "bottom").lower()
         super().__init__(application=self.app)
 
         self.get_displays()
@@ -24,7 +25,14 @@ class Bar(Gtk.ApplicationWindow):
         self.set_default_size(window_width - (self.gaps * 2), self.height)
 
         LayerShell.init_for_window(self)
-        LayerShell.set_layer(self, LayerShell.Layer.BOTTOM)
+        if(self.layer == "top"):
+            LayerShell.set_layer(self, LayerShell.Layer.TOP)
+        elif(self.layer == "overlay"):
+            LayerShell.set_layer(self, LayerShell.Layer.OVERLAY)
+        elif(self.layer == "background"):
+            LayerShell.set_layer(self, LayerShell.Layer.BACKGROUND)
+        else:
+            LayerShell.set_layer(self, LayerShell.Layer.BOTTOM)
         if(self.location == "bottom"):
             LayerShell.set_anchor(self, LayerShell.Edge.BOTTOM, True)
         else:
@@ -35,6 +43,7 @@ class Bar(Gtk.ApplicationWindow):
         LayerShell.set_margin(self, LayerShell.Edge.BOTTOM, self.gaps)
         LayerShell.set_margin(self, LayerShell.Edge.LEFT, self.gaps)
         LayerShell.set_margin(self, LayerShell.Edge.RIGHT, self.gaps)
+        LayerShell.set_namespace(self, "ngb")
 
         bar = Gtk.CenterBox()
 

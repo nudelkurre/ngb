@@ -49,6 +49,8 @@ class MainWindow(Gtk.Application):
             local_bar_config["location"] = bar_config["location"]
         if("height" in bar_config):
             local_bar_config["height"] = bar_config["height"]
+        if("layer" in bar_config):
+            local_bar_config["layer"] = bar_config["layer"]
         window = Bar(app=self, **local_bar_config)
         window.show()
 
@@ -117,6 +119,10 @@ class MainWindow(Gtk.Application):
 
         .dropdown {{
             padding: 10px 0;
+        }}
+
+        window {{
+            border-radius: {self.config.data["corner_radius"]}px;
         }}
         """
         css_provider.load_from_data(css.encode("utf-8"))

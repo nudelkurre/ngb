@@ -35,6 +35,14 @@ with lib;
                                 height = mkOption {
                                     type = types.int;
                                     description = "Set the height to use for the bar (minimum height, if font size is to big bar will get bigger)";
+                                layer = mkOption {
+                                    type = types.enum [
+                                        "background"
+                                        "bottom"
+                                        "overlay"
+                                        "top"
+                                    ];
+                                    description = "Set which layer shell layer to show the bar";
                                 };
                                 widgets = mkOption {
                                     type = types.submodule {
@@ -110,6 +118,11 @@ with lib;
                     type = types.int;
                     default = 5;
                     description = "Set spacing to use in widgets";
+                };
+                corner_radius = mkOption {
+                    type = types.int;
+                    default = 0;
+                    description = "Set corner radius to all bars";
                 };
             };
         };
