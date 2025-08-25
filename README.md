@@ -236,6 +236,12 @@ Works with SwayWM, Hyprland and Niri (requires xwayland-satellite for the moment
 |monitor|Set either specific monitor or "all" for all workspaces|String|
 |names|Can be used if workspace names is numbers but want to change to icons|Object of key-value pairs with strings as value|
 
+### gaps
+Set spacing to use around the bar. Set per bar and can be different for each bar. Can be overridden by setting it on a bar.
+
+### height
+Set the height to use for the bar. If font size is to big, the bar will get bigger to fit the text. Can be overridden by setting it on a bar.
+
 ### Icon_size
 Set icon size for every widget in all bars.
 
