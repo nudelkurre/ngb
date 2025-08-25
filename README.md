@@ -105,6 +105,7 @@ If a configuration file is not found when ngb first run, it will create one in t
       {
           "output": "DP-1",
           "gaps": 2,
+          "height": 25,
           "widgets": {
               "left": [
                   {
@@ -153,6 +154,9 @@ Output sets the output to show the bar on.
 
 #### gaps
 Set spacing to use around the bar. Set per bar and can be different for each bar.
+
+#### height
+Set the height to use for the bar. If font size is to big, the bar will get bigger to fit the text.
 
 #### widgets
 Widgets is an object that keeps three lists, center, left and right. The lists contains the widgets to show on respective position of the bar.
