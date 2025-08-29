@@ -29,12 +29,12 @@ with lib;
                                     description = "Set the output to show bar on";
                                 };
                                 gaps = mkOption {
-                                    type = types.int;
+                                    type = types.nullOr types.int;
                                     default = null;
                                     description = "Set the size of gap around the bar";
                                 };
                                 height = mkOption {
-                                    type = types.int;
+                                    type = types.nullOr types.int;
                                     default = null;
                                     description = "Set the height to use for the bar (minimum height, if font size is to big bar will get bigger)";
                                 };
@@ -114,12 +114,12 @@ with lib;
                     default = [ ];
                 };
                 gaps = mkOption {
-                    type = types.int;
+                    type = types.nullOr types.int;
                     default = null;
                     description = "Set the size of gap around the bar";
                 };
                 height = mkOption {
-                    type = types.int;
+                    type = types.nullOr types.int;
                     default = null;
                     description = "Set the height to use for the bar (minimum height, if font size is to big bar will get bigger)";
                 };
