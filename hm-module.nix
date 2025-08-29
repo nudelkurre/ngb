@@ -39,12 +39,12 @@ with lib;
                                     description = "Set the height to use for the bar (minimum height, if font size is to big bar will get bigger)";
                                 };
                                 layer = mkOption {
-                                    type = types.nullOr types.enum [
+                                    type = types.nullOr (types.enum [
                                         "background"
                                         "bottom"
                                         "overlay"
                                         "top"
-                                    ];
+                                    ]);
                                     default = null;
                                     description = "Set which layer shell layer to show the bar";
                                 };
@@ -129,12 +129,12 @@ with lib;
                     description = "Set font size of icons";
                 };
                 layer = mkOption {
-                    type = types.nullOr types.enum [
+                    type = types.nullOr (types.enum [
                         "background"
                         "bottom"
                         "overlay"
                         "top"
-                    ];
+                    ]);
                     default = null;
                     description = "Set which layer shell layer to show the bar";
                 };
