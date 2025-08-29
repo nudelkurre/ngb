@@ -39,7 +39,7 @@ with lib;
                                     description = "Set the height to use for the bar (minimum height, if font size is to big bar will get bigger)";
                                 };
                                 layer = mkOption {
-                                    type = types.enum [
+                                    type = types.nullOr types.enum [
                                         "background"
                                         "bottom"
                                         "overlay"
@@ -129,7 +129,7 @@ with lib;
                     description = "Set font size of icons";
                 };
                 layer = mkOption {
-                    type = types.enum [
+                    type = types.nullOr types.enum [
                         "background"
                         "bottom"
                         "overlay"
