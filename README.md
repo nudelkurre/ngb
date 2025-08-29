@@ -105,6 +105,8 @@ If a configuration file is not found when ngb first run, it will create one in t
       {
           "output": "DP-1",
           "gaps": 2,
+          "height": 25,
+          "layer": "bottom",
           "widgets": {
               "left": [
                   {
@@ -153,6 +155,12 @@ Output sets the output to show the bar on.
 
 #### gaps
 Set spacing to use around the bar. Set per bar and can be different for each bar.
+
+#### height
+Set the height to use for the bar. If font size is to big, the bar will get bigger to fit the text.
+
+#### layer
+Set the layer shell layer to show the bar at. Valid layers are background, bottom, overlay and top.
 
 #### widgets
 Widgets is an object that keeps three lists, center, left and right. The lists contains the widgets to show on respective position of the bar.
@@ -228,11 +236,23 @@ Works with SwayWM, Hyprland and Niri (requires xwayland-satellite for the moment
 |monitor|Set either specific monitor or "all" for all workspaces|String|
 |names|Can be used if workspace names is numbers but want to change to icons|Object of key-value pairs with strings as value|
 
+### gaps
+Set spacing to use around the bar. Set per bar and can be different for each bar. Can be overridden by setting it on a bar.
+
+### height
+Set the height to use for the bar. If font size is to big, the bar will get bigger to fit the text. Can be overridden by setting it on a bar.
+
 ### Icon_size
 Set icon size for every widget in all bars.
 
+### layer
+Set the layer shell layer to show the bar at. Valid layers are background, bottom, overlay and top. Can be overridden by setting it on a bar.
+
 ### Spacing
 Set spacing to use for every bar. Spacing is used between each widget, between label and icon for each widget (can be overridden in each widget module, described [above](#widget-modules)) and as margin in top and bottom of dropdowns.
+
+### Corner_radius
+Set the corner radius to use for all bars. Set in pixels.
 
 ## License
 

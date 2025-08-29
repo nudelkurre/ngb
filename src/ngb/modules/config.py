@@ -58,7 +58,8 @@ class Config:
                 }
             ],
             "icon_size": 20,
-            "spacing": 5
+            "spacing": 5,
+            "corner_radius": 0
         }
         if(not os.path.exists(self.file_dir)):
             os.makedirs(self.file_dir)
@@ -70,3 +71,9 @@ class Config:
     def load_config(self, config_file):
         with open(config_file, "r") as file:
             self.data = json.load(file)
+            if("spacing" not in self.data):
+                self.data["spacing"] = 5
+            if("icon_size" not in self.data):
+                self.data["icon_size"] = 20
+            if("corner_radius" not in self.data):
+                self.data["corner_radius"] = 0

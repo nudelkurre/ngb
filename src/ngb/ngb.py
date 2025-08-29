@@ -45,8 +45,18 @@ class MainWindow(Gtk.Application):
         local_bar_config["monitor"] = bar_config["output"]
         if("gaps" in bar_config):
             local_bar_config["gaps"] = bar_config["gaps"]
+        elif("gaps" in self.config.data):
+            local_bar_config["gaps"] = self.config.data["gaps"]
         if("location" in bar_config):
             local_bar_config["location"] = bar_config["location"]
+        if("height" in bar_config):
+            local_bar_config["height"] = bar_config["height"]
+        elif("height" in self.config.data):
+            local_bar_config["height"] = self.config.data["height"]
+        if("layer" in bar_config):
+            local_bar_config["layer"] = bar_config["layer"]
+        elif("layer" in self.config.data):
+            local_bar_config["layer"] = self.config.data["layer"]
         window = Bar(app=self, **local_bar_config)
         window.show()
 
@@ -115,6 +125,10 @@ class MainWindow(Gtk.Application):
 
         .dropdown {{
             padding: 10px 0;
+        }}
+
+        window {{
+            border-radius: {self.config.data["corner_radius"]}px;
         }}
         """
         css_provider.load_from_data(css.encode("utf-8"))
