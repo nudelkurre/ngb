@@ -29,20 +29,23 @@ with lib;
                                     description = "Set the output to show bar on";
                                 };
                                 gaps = mkOption {
-                                    type = types.int;
+                                    type = types.nullOr types.int;
+                                    default = null;
                                     description = "Set the size of gap around the bar";
                                 };
                                 height = mkOption {
-                                    type = types.int;
+                                    type = types.nullOr types.int;
+                                    default = null;
                                     description = "Set the height to use for the bar (minimum height, if font size is to big bar will get bigger)";
                                 };
                                 layer = mkOption {
-                                    type = types.enum [
+                                    type = types.nullOr (types.enum [
                                         "background"
                                         "bottom"
                                         "overlay"
                                         "top"
-                                    ];
+                                    ]);
+                                    default = null;
                                     description = "Set which layer shell layer to show the bar";
                                 };
                                 widgets = mkOption {
@@ -111,11 +114,13 @@ with lib;
                     default = [ ];
                 };
                 gaps = mkOption {
-                    type = types.int;
+                    type = types.nullOr types.int;
+                    default = null;
                     description = "Set the size of gap around the bar";
                 };
                 height = mkOption {
-                    type = types.int;
+                    type = types.nullOr types.int;
+                    default = null;
                     description = "Set the height to use for the bar (minimum height, if font size is to big bar will get bigger)";
                 };
                 icon_size = mkOption {
@@ -124,12 +129,13 @@ with lib;
                     description = "Set font size of icons";
                 };
                 layer = mkOption {
-                    type = types.enum [
+                    type = types.nullOr (types.enum [
                         "background"
                         "bottom"
                         "overlay"
                         "top"
-                    ];
+                    ]);
+                    default = null;
                     description = "Set which layer shell layer to show the bar";
                 };
                 spacing = mkOption {
@@ -150,7 +156,7 @@ with lib;
             (optionalString (config.programs.ngb.package != null) config.programs.ngb.package)
         ];
         xdg.configFile."ngb/config.json".text = ''
-            ${builtins.toJSON config.programs.ngb.settings}
+            ${builtins.toJSON (lib.attrsets.filterAttrsRecursive (name: value: value != null) config.programs.ngb.settings)}
         '';
     };
 }
