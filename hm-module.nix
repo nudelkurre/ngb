@@ -155,8 +155,14 @@ with lib;
         home.packages = [
             (optionalString (config.programs.ngb.package != null) config.programs.ngb.package)
         ];
-        xdg.configFile."ngb/config.json".text = ''
-            ${builtins.toJSON (lib.attrsets.filterAttrsRecursive (name: value: value != null) config.programs.ngb.settings)}
-        '';
+        xdg.configFile."ngb/config.json" = 
+            let
+                filterNulls = attrs: lib.filterAttrs (key: value: value != null) attrs;
+                filtered = filterNulls (config.programs.ngb.settings // { bars = map filterNulls config.programs.ngb.settings.bars; });
+            in{
+            text = ''
+                ${builtins.toJSON filtered}
+            '';
+        };
     };
 }
