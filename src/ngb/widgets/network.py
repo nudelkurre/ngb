@@ -2,6 +2,7 @@ from gi.repository import Gtk
 from gi.repository import GLib
 import psutil
 import socket
+import requests
 
 from ngb.modules import WidgetBox
 
@@ -14,7 +15,12 @@ class Network(WidgetBox):
         self.timer = kwargs.get("timer", 10)
         self.icon = kwargs.get("icon", "󰈀")
         self.icon_size = kwargs.get("icon_size", 20)
+        self.show_public_ip = kwargs.get("show_public_ip", True)
+        self.show_ipv6 = kwargs.get("show_ipv6", False)
         self.interface_label = Gtk.Label(label=f"Interface: {self.interface_name}")
+        self.public_ip_header_label = Gtk.Label(label="Public IP:")
+        self.public_ip_label = Gtk.Label()
+        self.public_ip_label.set_justify(Gtk.Justification.CENTER)
         self.ipv4_header_label = Gtk.Label(label="IPv4:")
         self.ipv6_header_label = Gtk.Label(label="IPv6:")
         self.ipv4_label = Gtk.Label()
@@ -28,17 +34,24 @@ class Network(WidgetBox):
 
     def set_text(self):
         self.get_ipv4_addr()
-        self.get_ipv6_addrs()
+        if(self.show_public_ip):
+            self.get_public_ip()
+        if(self.show_ipv6):
+            self.get_ipv6_addrs()
         self.get_mac_address()
         return True
 
     def populate_dropdown(self):
         self.dropdown.add(self.interface_label)
         self.dropdown.add(self.mac_address_label)
+        if(self.show_public_ip):
+            self.dropdown.add(self.public_ip_header_label)
+            self.dropdown.add(self.public_ip_label)
         self.dropdown.add(self.ipv4_header_label)
         self.dropdown.add(self.ipv4_label)
-        self.dropdown.add(self.ipv6_header_label)
-        self.dropdown.add(self.ipv6_label)
+        if(self.show_ipv6):
+            self.dropdown.add(self.ipv6_header_label)
+            self.dropdown.add(self.ipv6_label)
 
     def get_ipv4_addr(self):
         address = ""
@@ -68,6 +81,11 @@ class Network(WidgetBox):
         else:
             self.ipv6_label.set_visible(False)
             self.ipv6_header_label.set_visible(False)
+        return True
+
+    def get_public_ip(self):
+        req = requests.get("https://ipinfo.io").json()
+        self.public_ip_label.set_label(req.get("ip"))
         return True
 
     def get_mac_address(self):
