@@ -82,7 +82,6 @@ class Network(WidgetBox):
         return True
 
     def get_public_ip(self):
-        print("Get public ip")
         req = requests.get("https://ipinfo.io").json()
         self.public_ip_label.set_label(req.get("ip"))
         return True
@@ -103,6 +102,5 @@ class Network(WidgetBox):
         return True
 
     def on_close(self, user_data):
-        print("Clear dropdown")
         self.dropdown.clear()
         return True
