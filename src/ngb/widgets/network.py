@@ -30,26 +30,24 @@ class Network(WidgetBox):
         self.ipv6_label.add_css_class("multi-line")
         self.mac_address_label = Gtk.Label()
         super().__init__(icon=self.icon, timer=self.timer, icon_size=self.icon_size)
-        self.populate_dropdown()
+        self.dropdown.connect("closed", self.on_close)
 
     def set_text(self):
         self.get_ipv4_addr()
-        if(self.show_public_ip):
-            self.get_public_ip()
-        if(self.show_ipv6):
-            self.get_ipv6_addrs()
-        self.get_mac_address()
         return True
 
     def populate_dropdown(self):
         self.dropdown.add(self.interface_label)
+        self.get_mac_address()
         self.dropdown.add(self.mac_address_label)
         if(self.show_public_ip):
+            self.get_public_ip()
             self.dropdown.add(self.public_ip_header_label)
             self.dropdown.add(self.public_ip_label)
         self.dropdown.add(self.ipv4_header_label)
         self.dropdown.add(self.ipv4_label)
         if(self.show_ipv6):
+            self.get_ipv6_addrs()
             self.dropdown.add(self.ipv6_header_label)
             self.dropdown.add(self.ipv6_label)
 
@@ -84,6 +82,7 @@ class Network(WidgetBox):
         return True
 
     def get_public_ip(self):
+        print("Get public ip")
         req = requests.get("https://ipinfo.io").json()
         self.public_ip_label.set_label(req.get("ip"))
         return True
@@ -99,5 +98,11 @@ class Network(WidgetBox):
             self.mac_address_label.set_label("Mac: N/A")
 
     def on_click(self, user_data):
+        self.populate_dropdown()
         self.dropdown.popup()
+        return True
+
+    def on_close(self, user_data):
+        print("Clear dropdown")
+        self.dropdown.clear()
         return True
