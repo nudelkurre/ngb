@@ -8,7 +8,7 @@ self:
 with lib;
 {
     options = {
-        programs.ngb = {
+        services.ngb = {
             enable = mkOption {
                 type = types.bool;
                 default = false;
@@ -152,9 +152,26 @@ with lib;
         };
     };
     config = lib.mkIf config.programs.ngb.enable {
-        home.packages = [
-            (optionalString (config.programs.ngb.package != null) config.programs.ngb.package)
-        ];
+        systemd = {
+            user = {
+                services = {
+                    "ngb" = {
+                        Unit = {
+                            Description = "ngb status bar";
+                            PartOf = "graphical-session.target";
+                        };
+                        Install = {
+                            WantedBy = [ "graphical-session.target" ];
+                        };
+                        Service = {
+                            ExecStart = "${config.programs.ngb.package}/bin/ngb";
+                            Restart = "always";
+                            RestartSec = "5s";
+                        };
+                    };
+                };
+            };
+        };
         xdg.configFile."ngb/config.json" = 
             let
                 filterNulls = attrs: lib.filterAttrs (key: value: value != null) attrs;
