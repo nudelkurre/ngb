@@ -7,6 +7,7 @@ import json
 
 from .windowmanageripc import WindowManagerIPC
 
+
 class SwayIPC(WindowManagerIPC):
 
     def __init__(self):
@@ -19,14 +20,15 @@ class SwayIPC(WindowManagerIPC):
             try:
                 usocket.sendall(self.translate_cmd(cmd))
                 usocket.sendall("\n".encode("utf-8"))
-                response = ""
+                response = bytes()
                 while True:
                     part = usocket.recv(1024)
-                    response += part.decode("utf-8")
-                    if(len(part) < 1024):
+                    response += part
+                    if len(part) < 1024:
                         break
+                response = response[14:].decode("utf-8")
                 match = re.search(r"\[[\W\w]*\]", response).group(0)
-                if(match):
+                if match:
                     parsed_response = json.loads(match)
                 else:
                     parsed_response = []
@@ -41,11 +43,21 @@ class SwayIPC(WindowManagerIPC):
             usocket.close()
 
     def get_workspaces(self):
-        workspace = namedtuple("workspace", ["id", "name", "focused", "output", "urgent"])
+        workspace = namedtuple(
+            "workspace", ["id", "name", "focused", "output", "urgent"]
+        )
         wss = self.send_to_socket("GET_WORKSPACES")
         ws_list = list()
         for p in wss:
-            ws_list.append(workspace(id=p["num"], name=p["name"], focused=p["focused"], output=p["output"], urgent=p["urgent"]))
+            ws_list.append(
+                workspace(
+                    id=p["num"],
+                    name=p["name"],
+                    focused=p["focused"],
+                    output=p["output"],
+                    urgent=p["urgent"],
+                )
+            )
         return ws_list
 
     def translate_cmd(self, cmd):
