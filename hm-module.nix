@@ -151,7 +151,7 @@ with lib;
             };
         };
     };
-    config = lib.mkIf config.programs.ngb.enable {
+    config = lib.mkIf config.services.ngb.enable {
         systemd = {
             user = {
                 services = {
