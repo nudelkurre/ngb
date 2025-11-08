@@ -164,7 +164,7 @@ with lib;
                             WantedBy = [ "graphical-session.target" ];
                         };
                         Service = {
-                            ExecStart = "${config.programs.ngb.package}/bin/ngb";
+                            ExecStart = "${config.services.ngb.package}/bin/ngb";
                             Restart = "always";
                             RestartSec = "5s";
                         };
@@ -175,7 +175,7 @@ with lib;
         xdg.configFile."ngb/config.json" = 
             let
                 filterNulls = attrs: lib.filterAttrs (key: value: value != null) attrs;
-                filtered = filterNulls (config.programs.ngb.settings // { bars = map filterNulls config.programs.ngb.settings.bars; });
+                filtered = filterNulls (config.services.ngb.settings // { bars = map filterNulls config.services.ngb.settings.bars; });
             in{
             text = ''
                 ${builtins.toJSON filtered}
