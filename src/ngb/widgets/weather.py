@@ -10,10 +10,12 @@ from gi.repository import GLib
 
 from ngb.modules import WidgetBox, DropDownWindow
 
-class Weather(WidgetBox):
-    lat = 0
-    lon = 0
+
+class Weather_Base:
+    city = ""
+    location = {"lat": 0, "lon": 0}
     user_agent = "Weather widget"
+    url = ""
     weather_data = dict()
     parsed_data = dict()
 
@@ -44,9 +46,8 @@ class Weather(WidgetBox):
         24: "🌨️🌧️",
         25: "🌨️",
         26: "🌨️",
-        27: "🌨️"
+        27: "🌨️",
     }
-
     descriptions = {
         1: "Clear sky",
         2: "Nearly clear sky",
@@ -74,85 +75,112 @@ class Weather(WidgetBox):
         24: "Heavy sleet",
         25: "Light snowfall",
         26: "Moderate snowfall",
-        27: "Heavy snowfall"
+        27: "Heavy snowfall",
     }
 
     def __init__(self, **kwargs):
         self.city = kwargs.get("city", "")
+
+    def get_location(self):
+        if self.city == "":
+            self.city = self.get_city()
+        loc = Nominatim(user_agent=self.user_agent)
+        g = loc.geocode(self.city)
+        self.location["lat"] = float(str(g.latitude)[0:7])
+        self.location["lon"] = float(str(g.longitude)[0:7])
+
+    def get_city(self):
+        info = requests.get("https://ipconfig.io/json").json()
+        city = info["city"]
+        return city
+
+    def get_weather_data(self):
+        if self.location["lat"] != 0 and self.location["lon"] != 0:
+            headers = {"User-Agent": self.user_agent}
+            req = requests.get(self.url, headers=headers)
+            if req.status_code == 200:
+                self.weather_data = req.json()
+                return req.status_code
+            else:
+                return req.status_code
+
+    def parse_weather_data(self):
+        pass
+
+
+class SMHI(Weather_Base):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.get_location()
+        self.url = f"https://opendata-download-metfcst.smhi.se/api/category/pmp3g/version/2/geotype/point/lon/{self.location['lon']}/lat/{self.location['lat']}/data.json"
+
+    def parse_weather_data(self):
+        data = self.weather_data["timeSeries"][0]["parameters"]
+        for d in data:
+            if d["name"] == "t":
+                self.parsed_data["temperature"] = d["values"][0]
+                self.parsed_data["temperature_unit"] = d["unit"][0]
+            elif d["name"] == "ws":
+                self.parsed_data["wind_speed"] = d["values"][0]
+            elif d["name"] == "Wsymb2":
+                self.parsed_data["weather_code"] = d["values"][0]
+
+
+class Weather(WidgetBox):
+    def __init__(self, **kwargs):
+        self.api = kwargs.get("api", "YR")
         self.timer = kwargs.get("timer", 600)
         self.icon_size = kwargs.get("icon_size", 20)
+        if self.api.lower() == "smhi":
+            self.weather = SMHI(**kwargs)
+        else:
+            self.text_label.set_label("No API set")
         super().__init__(timer=self.timer, icon_size=self.icon_size)
         self.city_label = Gtk.Label()
         self.temperature_label = Gtk.Label()
         self.wind_speed_label = Gtk.Label()
         self.weather_description_label = Gtk.Label()
-        if(self.city == ""):
-            self.text_label.set_label("City not set")
-        else:
-            self.get_location()
-            self.populate_dropdown()
-            self.update_weather()
-            self.update_timeout()
+        self.populate_dropdown()
+        self.update_weather()
+        self.update_timeout()
 
     def on_click(self, user_data):
         self.dropdown.popup()
         return True
 
-    def get_location(self):
-        loc = Nominatim(user_agent=self.user_agent)
-        g = loc.geocode(self.city)
-        self.lat = float(str(g.latitude)[0:7])
-        self.lon = float(str(g.longitude)[0:7])
-        return True
-
-    def get_weather_data(self):
-        if(self.lat != 0 and self.lon != 0):
-            headers = {
-                'User-Agent': self.user_agent
-            }
-            url = f"https://opendata-download-metfcst.smhi.se/api/category/pmp3g/version/2/geotype/point/lon/{self.lon}/lat/{self.lat}/data.json"
-            req = requests.get(url, headers=headers)
-            if(req.status_code == 200):
-                self.weather_data = req.json()
-            else:
-                self.text_label.set_label(req.status_code)
-
-    def parse_weather_data(self):
-        data = self.weather_data["timeSeries"][0]["parameters"]
-        for d in data:
-            if(d["name"] == "t"):
-                self.parsed_data["temperature"] = d["values"][0]
-                self.parsed_data["temperature_unit"] = d["unit"][0]
-            elif(d["name"] == "ws"):
-                self.parsed_data["wind_speed"] = d["values"][0]
-            elif(d["name"] == "Wsymb2"):
-                self.parsed_data["weather_code"] = d["values"][0]
-
     def populate_dropdown(self):
         self.dropdown.add(self.city_label)
-        self.city_label.set_label(self.city)
+        self.city_label.set_label(self.weather.city)
         self.dropdown.add(self.temperature_label)
         self.dropdown.add(self.wind_speed_label)
         self.dropdown.add(self.weather_description_label)
         return True
 
     def set_text(self):
-        if("temperature" in self.parsed_data):
-            temperature = f"{self.parsed_data['temperature']} {self.parsed_data['temperature_unit']}"
+        parsed_data = self.weather.parsed_data
+        if "temperature" in parsed_data:
+            temperature = (
+                f"{parsed_data['temperature']} {parsed_data['temperature_unit']}"
+            )
             self.text_label.set_label(temperature)
-            self.icon = self.icons[self.parsed_data["weather_code"]]
+            self.icon = self.weather.icons[parsed_data["weather_code"]]
             self.set_icon()
             self.temperature_label.set_label(f"Temperature {temperature}")
-        if("wind_speed" in self.parsed_data):
-            self.wind_speed_label.set_label(f"Wind speed {self.parsed_data['wind_speed']} m/s")
-        if("weather_code" in self.parsed_data):
-            self.weather_description_label.set_label(f"{self.descriptions[self.parsed_data['weather_code']]}")
+        if "wind_speed" in parsed_data:
+            self.wind_speed_label.set_label(
+                f"Wind speed {parsed_data['wind_speed']} m/s"
+            )
+        if "weather_code" in parsed_data:
+            self.weather_description_label.set_label(
+                f"{self.weather.descriptions[parsed_data['weather_code']]}"
+            )
         return True
 
     def update_weather(self):
-        self.get_weather_data()
-        self.parse_weather_data()
-        self.set_text()
+        return_code = self.weather.get_weather_data()
+        if return_code == 200:
+            self.weather.parse_weather_data()
+            self.set_text()
         return True
 
     def update_timeout(self):
