@@ -126,6 +126,71 @@ class SMHI(Weather_Base):
                 self.parsed_data["weather_code"] = d["values"][0]
 
 
+class YR(Weather_Base):
+    weather_id = {
+        "clearsky": 1,
+        "cloudy": 5,
+        "fair": 2,
+        "fog": 7,
+        "heavyrain": 10,
+        "heavyrainandthunder": 11,
+        "heavyrainshowers": 20,
+        "heavyrainshowersandthunder": 11,
+        "heavysleet": 24,
+        "heavysleetandthunder": 11,
+        "heavysleetshowers": 14,
+        "heavysleetshowersandthunder": 11,
+        "heavysnow": 27,
+        "heavysnowandthunder": 11,
+        "heavysnowshowers": 17,
+        "heavysnowshowersandthunder": 11,
+        "lightrain": 18,
+        "lightrainandthunder": 11,
+        "lightrainshowers": 8,
+        "lightrainshowersandthunder": 11,
+        "lightsleet": 22,
+        "lightsleetandthunder": 11,
+        "lightsleetshowers": 12,
+        "lightsnow": 25,
+        "lightsnowandthunder": 11,
+        "lightsnowshowers": 15,
+        "lightssleetshowersandthunder": 11,
+        "lightssnowshowersandthunder": 11,
+        "partlycloudy": 3,
+        "rain": 19,
+        "rainandthunder": 11,
+        "rainshowers": 9,
+        "rainshowersandthunder": 11,
+        "sleet": 23,
+        "sleetandthunder": 11,
+        "sleetshowers": 14,
+        "sleetshowersandthunder": 11,
+        "snow": 26,
+        "snowandthunder": 11,
+        "snowshowers": 16,
+        "snowshowersandthunder": 11,
+    }
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.get_location()
+        self.url = f"https://api.met.no/weatherapi/locationforecast/2.0/compact?lat={self.location['lat']}&lon={self.location['lon']}"
+
+    def parse_weather_data(self):
+        data = self.weather_data["properties"]
+        weather = data["timeseries"][0]["data"]
+        details = weather["instant"]["details"]
+        code = weather["next_1_hours"]["summary"]["symbol_code"]
+        units = data["meta"]["units"]
+        for d in details:
+            if d == "air_temperature":
+                self.parsed_data["temperature"] = details[d]
+                self.parsed_data["temperature_unit"] = units[d][0].upper()
+            elif d == "wind_speed":
+                self.parsed_data["wind_speed"] = details[d]
+        self.parsed_data["weather_code"] = self.weather_id[code]
+
+
 class Weather(WidgetBox):
     def __init__(self, **kwargs):
         self.api = kwargs.get("api", "YR")
@@ -133,6 +198,8 @@ class Weather(WidgetBox):
         self.icon_size = kwargs.get("icon_size", 20)
         if self.api.lower() == "smhi":
             self.weather = SMHI(**kwargs)
+        elif self.api.lower() == "yr":
+            self.weather = YR(**kwargs)
         else:
             self.text_label.set_label("No API set")
         super().__init__(timer=self.timer, icon_size=self.icon_size)
