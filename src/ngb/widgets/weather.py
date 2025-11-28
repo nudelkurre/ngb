@@ -201,6 +201,7 @@ class Weather(WidgetBox):
         self.api = kwargs.get("api", "YR")
         self.timer = kwargs.get("timer", 600)
         self.icon_size = kwargs.get("icon_size", 20)
+        self.small_text = kwargs.get("small_text_size", 7)
         if self.api.lower() in self.apis:
             self.weather = self.apis.get(self.api.lower())(**kwargs)
         else:
@@ -212,6 +213,11 @@ class Weather(WidgetBox):
         self.temperature_label = Gtk.Label()
         self.wind_speed_label = Gtk.Label()
         self.weather_description_label = Gtk.Label()
+        self.api_label = Gtk.Label()
+        self.api_label.set_markup(
+            f"<span font='{self.small_text}'>API in use: {self.api}</span>"
+        )
+        self.last_updated_label = Gtk.Label(label="test")
         self.populate_dropdown()
         self.update_weather()
         self.update_timeout()
@@ -226,9 +232,12 @@ class Weather(WidgetBox):
 
     def populate_dropdown(self):
         self.dropdown.add(self.city_label)
+        self.dropdown.add(self.weather_icon)
         self.dropdown.add(self.temperature_label)
         self.dropdown.add(self.wind_speed_label)
         self.dropdown.add(self.weather_description_label)
+        self.dropdown.add(self.api_label)
+        self.dropdown.add(self.last_updated_label)
         return True
 
     def set_text(self):
@@ -255,7 +264,9 @@ class Weather(WidgetBox):
                 self.weather_description_label.set_label(
                     f"{self.weather.descriptions[parsed_data['weather_code']]}"
                 )
-            )
+                self.weather_icon.set_markup(
+                    f'<span font="{self.icon_size}">{self.weather.icons[parsed_data["weather_code"]]}</span>'
+                )
         return True
 
     def update_weather(self):
@@ -263,6 +274,9 @@ class Weather(WidgetBox):
         if return_code == 200:
             self.weather.parse_weather_data()
             self.set_text()
+            self.last_updated_label.set_markup(
+                f'<span font="{self.small_text}">Last updated: {datetime.now().strftime("%H:%M")}</span>'
+            )
         return True
 
     def update_timeout(self):
