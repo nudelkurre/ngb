@@ -192,18 +192,23 @@ class YR(Weather_Base):
 
 
 class Weather(WidgetBox):
+    apis = {
+        "smhi": SMHI,
+        "yr": YR,
+    }
+
     def __init__(self, **kwargs):
         self.api = kwargs.get("api", "YR")
         self.timer = kwargs.get("timer", 600)
         self.icon_size = kwargs.get("icon_size", 20)
-        if self.api.lower() == "smhi":
-            self.weather = SMHI(**kwargs)
-        elif self.api.lower() == "yr":
-            self.weather = YR(**kwargs)
+        if self.api.lower() in self.apis:
+            self.weather = self.apis.get(self.api.lower())(**kwargs)
         else:
-            self.text_label.set_label("No API set")
+            self.weather = Weather_Base()
         super().__init__(timer=self.timer, icon_size=self.icon_size)
         self.city_label = Gtk.Label()
+        self.city_label.set_label(self.weather.city)
+        self.weather_icon = Gtk.Label()
         self.temperature_label = Gtk.Label()
         self.wind_speed_label = Gtk.Label()
         self.weather_description_label = Gtk.Label()
@@ -212,34 +217,44 @@ class Weather(WidgetBox):
         self.update_timeout()
 
     def on_click(self, user_data):
-        self.dropdown.popup()
+        if not (
+            isinstance(self.weather, Weather_Base)
+            and type(self.weather) is Weather_Base
+        ):
+            self.dropdown.popup()
         return True
 
     def populate_dropdown(self):
         self.dropdown.add(self.city_label)
-        self.city_label.set_label(self.weather.city)
         self.dropdown.add(self.temperature_label)
         self.dropdown.add(self.wind_speed_label)
         self.dropdown.add(self.weather_description_label)
         return True
 
     def set_text(self):
-        parsed_data = self.weather.parsed_data
-        if "temperature" in parsed_data:
-            temperature = (
-                f"{parsed_data['temperature']} {parsed_data['temperature_unit']}"
-            )
-            self.text_label.set_label(temperature)
-            self.icon = self.weather.icons[parsed_data["weather_code"]]
-            self.set_icon()
-            self.temperature_label.set_label(f"Temperature {temperature}")
-        if "wind_speed" in parsed_data:
-            self.wind_speed_label.set_label(
-                f"Wind speed {parsed_data['wind_speed']} m/s"
-            )
-        if "weather_code" in parsed_data:
-            self.weather_description_label.set_label(
-                f"{self.weather.descriptions[parsed_data['weather_code']]}"
+        if (
+            isinstance(self.weather, Weather_Base)
+            and type(self.weather) is Weather_Base
+        ):
+            self.text_label.set_label("No API set")
+        else:
+            parsed_data = self.weather.parsed_data
+            if "temperature" in parsed_data:
+                temperature = (
+                    f"{parsed_data['temperature']} {parsed_data['temperature_unit']}"
+                )
+                self.text_label.set_label(temperature)
+                self.icon = self.weather.icons[parsed_data["weather_code"]]
+                self.set_icon()
+                self.temperature_label.set_label(f"Temperature {temperature}")
+            if "wind_speed" in parsed_data:
+                self.wind_speed_label.set_label(
+                    f"Wind speed {parsed_data['wind_speed']} m/s"
+                )
+            if "weather_code" in parsed_data:
+                self.weather_description_label.set_label(
+                    f"{self.weather.descriptions[parsed_data['weather_code']]}"
+                )
             )
         return True
 
