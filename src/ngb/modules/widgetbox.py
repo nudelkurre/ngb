@@ -5,8 +5,10 @@ from gi.repository import Gio
 
 from ngb.modules import DropDownWindow
 
+
 class WidgetBox(Gtk.Button):
-    icon_size = 0
+    # icon_size = 0
+
     def __init__(self, **kwargs):
         self.spacing = kwargs.get("spacing", 10)
         self.timer = kwargs.get("timer", 1)
@@ -31,7 +33,9 @@ class WidgetBox(Gtk.Button):
         self.append(self.dropdown)
 
         # Create a controller for scroll events
-        self.scroll_controller = Gtk.EventControllerScroll.new(Gtk.EventControllerScrollFlags.VERTICAL)
+        self.scroll_controller = Gtk.EventControllerScroll.new(
+            Gtk.EventControllerScrollFlags.VERTICAL
+        )
         self.scroll_controller.connect("scroll", self.on_scroll)
         self.box.add_controller(self.scroll_controller)
 
@@ -87,7 +91,7 @@ class WidgetBox(Gtk.Button):
         return True
 
     def set_icon(self):
-        self.icon_label.set_markup(f"<span size=\"{self.icon_size * 1000}\">{self.icon}</span>")
+        self.icon_label.set_markup(f'<span font="{self.icon_size}">{self.icon}</span>')
         return True
 
     def set_text(self):
