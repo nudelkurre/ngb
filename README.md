@@ -174,11 +174,11 @@ Each widget module contain an object with a module name and config object.
 }
 ```
 Every widget can set the following for each module.
-|configureation key|description|data type|
-|---|---|---|
-|icon_size|Set the icons font size|Integer|
-|spacing|Number of pixels to set as spacing between icon and text|Integer|
-|timer|How often the module should be updated in seconds|Integer|
+|configureation key|description|data type|default|
+|---|---|---|---|
+|icon_size|Set the icons font size|Integer|20|
+|spacing|Number of pixels to set as spacing between icon and text|Integer|10|
+|timer|How often the module should be updated in seconds|Integer|1|
 If icon_size and spacing is not set in the module, it will use the global set value or if not set at all, will use the default value (icon_size=20, spacing=5)
 
 ##### Bluetooth
@@ -187,22 +187,22 @@ Bluetoothctl is needed to be in $PATH to work.
 
 ##### Clock
 Show a clock and can be configured to show different formats and also show additional format if clicked on. If right click on clock, a calendar is shown in a dropdown.
-|configureation key|description|data type|
-|---|---|---|
-|timeformat_normal||String using date format|
-|timeformat_revealer||String using date format|
-|show_heading||Boolean|
-|show_day_names||Boolean|
-|show_week_numbers||Boolean|
+|configureation key|description|data type|default|
+|---|---|---|---|
+|timeformat_normal||String using date format|"%T"|
+|timeformat_revealer||String using date format|"%A %Y-%m-%d"|
+|show_heading||Boolean|True|
+|show_day_names||Boolean|True|
+|show_week_numbers||Boolean|True|
 
 ##### Cpu
 Show current cpu usage in percent
 
 ##### Disk
 Show the percentage used of the chosen mountpoint, and if clicked on will show a dropdown with which mountpoint it shows, a bar visualize disk usage and text showing amount used/total space.
-|configureation key|description|data type|
-|---|---|---|
-|mountpoint|Mountpoint to use|String|
+|configureation key|description|data type|default|
+|---|---|---|---|
+|mountpoint|Mountpoint to use|String|"/"|
 
 ##### Headset
 Use the command headsetcontrol to show current battery level of compatible headset.
@@ -210,31 +210,37 @@ headsetcontrol is needed to be in $PATH to work.
 
 ##### Network
 Show ipv4 address of chosen interface. When clicked on show a dropdown with interface name, mac address, ipv4 address and ipv6 addresses of interface.
-|configureation key|description|data type|
-|---|---|---|
-|interface|Set interface name to show|String|
+|configureation key|description|data type|default|
+|---|---|---|---|
+|interface|Set interface name to show|String|""|
+|show_public_ip|Set to show public ip|Boolean|True|
+|show_ipv6|Set to show ipv6 address|Boolean|False|
 
 ##### Volume
 Show the current volume of default sink. By default, click on widget will show a dropdown with all sinks and be able to use slider to set volume, middle click will mute and right click will change default sink to the next in the list. Left click and middle click action can be swapped in config.
 wpctl is needed to be in $PATH to work.
-|configureation key|description|data type|
-|---|---|---|
-|click_to_mute|Swap left and middle click action, to make left click toggle mute|Boolean|
+|configureation key|description|data type|default|
+|---|---|---|---|
+|click_to_mute|Swap left and middle click action, to make left click toggle mute|Boolean|False|
 
 ##### Weather
 Show current temperature of specified city. Left click will show a dropdown with city name, current temperature, current wind speed and current weather description.
-Currently only gets the data from SMHI API and only work in Sweden. YR.no (for nordic countries) and OpenWeatherMap (for global) is planned for future.
-|configureation key|description|data type|
-|---|---|---|
-|city|City to show weather info for|String|
+Currently only gets the data from SMHI API (for Sweden) and YR.no (for nordic countries). 
+OpenWeatherMap (for global) is planned for future.
+|configureation key|description|data type|default|
+|---|---|---|---|
+|city|City to show weather info for|String|""|
+|api|Set which api to use|String|"YR"|
+|show_big_icon|Set to show larger weather icon in dropdown|Boolean|False|
+|big_icon_size|Set size of large weather icon|Integer|60|
 
 ##### Workspace
 Show active workspaces and highlight the focused one. Can be set to show only a specific monitor or show all workspaces from all monitors.
 Works with SwayWM, Hyprland and Niri (requires xwayland-satellite for the moment).
-|configureation key|description|data type|
-|---|---|---|
-|monitor|Set either specific monitor or "all" for all workspaces|String|
-|names|Can be used if workspace names is numbers but want to change to icons|Object of key-value pairs with strings as value|
+|configureation key|description|data type|default|
+|---|---|---|---|
+|monitor|Set either specific monitor or "all" for all workspaces|String|"all"|
+|names|Can be used if workspace names is numbers but want to change to icons|Object of key-value pairs with strings as value|{}|
 
 ### gaps
 Set spacing to use around the bar. Set per bar and can be different for each bar. Can be overridden by setting it on a bar.

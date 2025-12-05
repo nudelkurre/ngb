@@ -10,10 +10,12 @@ from gi.repository import GLib
 
 from ngb.modules import WidgetBox, DropDownWindow
 
-class Weather(WidgetBox):
-    lat = 0
-    lon = 0
+
+class Weather_Base:
+    city = ""
+    location = {"lat": 0, "lon": 0}
     user_agent = "Weather widget"
+    url = ""
     weather_data = dict()
     parsed_data = dict()
 
@@ -44,9 +46,8 @@ class Weather(WidgetBox):
         24: "🌨️🌧️",
         25: "🌨️",
         26: "🌨️",
-        27: "🌨️"
+        27: "🌨️",
     }
-
     descriptions = {
         1: "Clear sky",
         2: "Nearly clear sky",
@@ -74,85 +75,212 @@ class Weather(WidgetBox):
         24: "Heavy sleet",
         25: "Light snowfall",
         26: "Moderate snowfall",
-        27: "Heavy snowfall"
+        27: "Heavy snowfall",
     }
 
     def __init__(self, **kwargs):
         self.city = kwargs.get("city", "")
-        self.timer = kwargs.get("timer", 600)
-        self.icon_size = kwargs.get("icon_size", 20)
-        super().__init__(timer=self.timer, icon_size=self.icon_size)
-        self.city_label = Gtk.Label()
-        self.temperature_label = Gtk.Label()
-        self.wind_speed_label = Gtk.Label()
-        self.weather_description_label = Gtk.Label()
-        if(self.city == ""):
-            self.text_label.set_label("City not set")
-        else:
-            self.get_location()
-            self.populate_dropdown()
-            self.update_weather()
-            self.update_timeout()
-
-    def on_click(self, user_data):
-        self.dropdown.popup()
-        return True
 
     def get_location(self):
+        if self.city == "":
+            self.city = self.get_city()
         loc = Nominatim(user_agent=self.user_agent)
         g = loc.geocode(self.city)
-        self.lat = float(str(g.latitude)[0:7])
-        self.lon = float(str(g.longitude)[0:7])
-        return True
+        self.location["lat"] = float(str(g.latitude)[0:7])
+        self.location["lon"] = float(str(g.longitude)[0:7])
+
+    def get_city(self):
+        info = requests.get("https://ipconfig.io/json").json()
+        city = info["city"]
+        return city
 
     def get_weather_data(self):
-        if(self.lat != 0 and self.lon != 0):
-            headers = {
-                'User-Agent': self.user_agent
-            }
-            url = f"https://opendata-download-metfcst.smhi.se/api/category/pmp3g/version/2/geotype/point/lon/{self.lon}/lat/{self.lat}/data.json"
-            req = requests.get(url, headers=headers)
-            if(req.status_code == 200):
+        if self.location["lat"] != 0 and self.location["lon"] != 0:
+            headers = {"User-Agent": self.user_agent}
+            req = requests.get(self.url, headers=headers)
+            if req.status_code == 200:
                 self.weather_data = req.json()
+                return req.status_code
             else:
-                self.text_label.set_label(req.status_code)
+                return req.status_code
+
+    def parse_weather_data(self):
+        pass
+
+
+class SMHI(Weather_Base):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.get_location()
+        self.url = f"https://opendata-download-metfcst.smhi.se/api/category/pmp3g/version/2/geotype/point/lon/{self.location['lon']}/lat/{self.location['lat']}/data.json"
 
     def parse_weather_data(self):
         data = self.weather_data["timeSeries"][0]["parameters"]
         for d in data:
-            if(d["name"] == "t"):
+            if d["name"] == "t":
                 self.parsed_data["temperature"] = d["values"][0]
                 self.parsed_data["temperature_unit"] = d["unit"][0]
-            elif(d["name"] == "ws"):
+            elif d["name"] == "ws":
                 self.parsed_data["wind_speed"] = d["values"][0]
-            elif(d["name"] == "Wsymb2"):
+            elif d["name"] == "Wsymb2":
                 self.parsed_data["weather_code"] = d["values"][0]
+
+
+class YR(Weather_Base):
+    weather_id = {
+        "clearsky": 1,
+        "cloudy": 5,
+        "fair": 2,
+        "fog": 7,
+        "heavyrain": 10,
+        "heavyrainandthunder": 11,
+        "heavyrainshowers": 20,
+        "heavyrainshowersandthunder": 11,
+        "heavysleet": 24,
+        "heavysleetandthunder": 11,
+        "heavysleetshowers": 14,
+        "heavysleetshowersandthunder": 11,
+        "heavysnow": 27,
+        "heavysnowandthunder": 11,
+        "heavysnowshowers": 17,
+        "heavysnowshowersandthunder": 11,
+        "lightrain": 18,
+        "lightrainandthunder": 11,
+        "lightrainshowers": 8,
+        "lightrainshowersandthunder": 11,
+        "lightsleet": 22,
+        "lightsleetandthunder": 11,
+        "lightsleetshowers": 12,
+        "lightsnow": 25,
+        "lightsnowandthunder": 11,
+        "lightsnowshowers": 15,
+        "lightssleetshowersandthunder": 11,
+        "lightssnowshowersandthunder": 11,
+        "partlycloudy": 3,
+        "rain": 19,
+        "rainandthunder": 11,
+        "rainshowers": 9,
+        "rainshowersandthunder": 11,
+        "sleet": 23,
+        "sleetandthunder": 11,
+        "sleetshowers": 14,
+        "sleetshowersandthunder": 11,
+        "snow": 26,
+        "snowandthunder": 11,
+        "snowshowers": 16,
+        "snowshowersandthunder": 11,
+    }
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.get_location()
+        self.url = f"https://api.met.no/weatherapi/locationforecast/2.0/compact?lat={self.location['lat']}&lon={self.location['lon']}"
+
+    def parse_weather_data(self):
+        data = self.weather_data["properties"]
+        weather = data["timeseries"][0]["data"]
+        details = weather["instant"]["details"]
+        code = weather["next_1_hours"]["summary"]["symbol_code"]
+        units = data["meta"]["units"]
+        for d in details:
+            if d == "air_temperature":
+                self.parsed_data["temperature"] = details[d]
+                self.parsed_data["temperature_unit"] = units[d][0].upper()
+            elif d == "wind_speed":
+                self.parsed_data["wind_speed"] = details[d]
+        self.parsed_data["weather_code"] = self.weather_id[code]
+
+
+class Weather(WidgetBox):
+    apis = {
+        "smhi": SMHI,
+        "yr": YR,
+    }
+
+    def __init__(self, **kwargs):
+        self.api = kwargs.get("api", "YR")
+        self.timer = kwargs.get("timer", 600)
+        self.icon_size = kwargs.get("icon_size", 20)
+        self.small_text = kwargs.get("small_text_size", 7)
+        self.show_big_icon = kwargs.get("show_big_icon", False)
+        self.big_icon_size = kwargs.get("big_icon_size", 60)
+        if self.api.lower() in self.apis:
+            self.weather = self.apis.get(self.api.lower())(**kwargs)
+        else:
+            self.weather = Weather_Base()
+        super().__init__(timer=self.timer, icon_size=self.icon_size)
+        self.city_label = Gtk.Label()
+        self.city_label.set_label(self.weather.city)
+        self.weather_icon = Gtk.Label()
+        self.temperature_label = Gtk.Label()
+        self.wind_speed_label = Gtk.Label()
+        self.weather_description_label = Gtk.Label()
+        self.api_label = Gtk.Label()
+        self.api_label.set_markup(
+            f"<span font='{self.small_text}'>API in use: {self.api}</span>"
+        )
+        self.last_updated_label = Gtk.Label(label="test")
+        self.populate_dropdown()
+        self.update_weather()
+        self.update_timeout()
+
+    def on_click(self, user_data):
+        if not (
+            isinstance(self.weather, Weather_Base)
+            and type(self.weather) is Weather_Base
+        ):
+            self.dropdown.popup()
+        return True
 
     def populate_dropdown(self):
         self.dropdown.add(self.city_label)
-        self.city_label.set_label(self.city)
+        if self.show_big_icon:
+            self.dropdown.add(self.weather_icon)
         self.dropdown.add(self.temperature_label)
         self.dropdown.add(self.wind_speed_label)
         self.dropdown.add(self.weather_description_label)
+        self.dropdown.add(self.api_label)
+        self.dropdown.add(self.last_updated_label)
         return True
 
     def set_text(self):
-        if("temperature" in self.parsed_data):
-            temperature = f"{self.parsed_data['temperature']} {self.parsed_data['temperature_unit']}"
-            self.text_label.set_label(temperature)
-            self.icon = self.icons[self.parsed_data["weather_code"]]
-            self.set_icon()
-            self.temperature_label.set_label(f"Temperature {temperature}")
-        if("wind_speed" in self.parsed_data):
-            self.wind_speed_label.set_label(f"Wind speed {self.parsed_data['wind_speed']} m/s")
-        if("weather_code" in self.parsed_data):
-            self.weather_description_label.set_label(f"{self.descriptions[self.parsed_data['weather_code']]}")
+        if (
+            isinstance(self.weather, Weather_Base)
+            and type(self.weather) is Weather_Base
+        ):
+            self.text_label.set_label("No API set")
+        else:
+            parsed_data = self.weather.parsed_data
+            if "temperature" in parsed_data:
+                temperature = (
+                    f"{parsed_data['temperature']} {parsed_data['temperature_unit']}"
+                )
+                self.text_label.set_label(temperature)
+                self.icon = self.weather.icons[parsed_data["weather_code"]]
+                self.set_icon()
+                self.temperature_label.set_label(f"Temperature {temperature}")
+            if "wind_speed" in parsed_data:
+                self.wind_speed_label.set_label(
+                    f"Wind speed {parsed_data['wind_speed']} m/s"
+                )
+            if "weather_code" in parsed_data:
+                self.weather_description_label.set_label(
+                    f"{self.weather.descriptions[parsed_data['weather_code']]}"
+                )
+                if self.show_big_icon:
+                    self.weather_icon.set_markup(
+                        f'<span font="{self.big_icon_size}">{self.weather.icons[parsed_data["weather_code"]]}</span>'
+                    )
         return True
 
     def update_weather(self):
-        self.get_weather_data()
-        self.parse_weather_data()
-        self.set_text()
+        return_code = self.weather.get_weather_data()
+        if return_code == 200:
+            self.weather.parse_weather_data()
+            self.set_text()
+            self.last_updated_label.set_markup(
+                f'<span font="{self.small_text}">Last updated: {datetime.now().strftime("%H:%M")}</span>'
+            )
         return True
 
     def update_timeout(self):
