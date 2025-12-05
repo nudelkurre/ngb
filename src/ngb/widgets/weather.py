@@ -202,6 +202,8 @@ class Weather(WidgetBox):
         self.timer = kwargs.get("timer", 600)
         self.icon_size = kwargs.get("icon_size", 20)
         self.small_text = kwargs.get("small_text_size", 7)
+        self.show_big_icon = kwargs.get("show_big_icon", False)
+        self.big_icon_size = kwargs.get("big_icon_size", 60)
         if self.api.lower() in self.apis:
             self.weather = self.apis.get(self.api.lower())(**kwargs)
         else:
@@ -232,7 +234,8 @@ class Weather(WidgetBox):
 
     def populate_dropdown(self):
         self.dropdown.add(self.city_label)
-        self.dropdown.add(self.weather_icon)
+        if self.show_big_icon:
+            self.dropdown.add(self.weather_icon)
         self.dropdown.add(self.temperature_label)
         self.dropdown.add(self.wind_speed_label)
         self.dropdown.add(self.weather_description_label)
@@ -264,9 +267,10 @@ class Weather(WidgetBox):
                 self.weather_description_label.set_label(
                     f"{self.weather.descriptions[parsed_data['weather_code']]}"
                 )
-                self.weather_icon.set_markup(
-                    f'<span font="{self.icon_size}">{self.weather.icons[parsed_data["weather_code"]]}</span>'
-                )
+                if self.show_big_icon:
+                    self.weather_icon.set_markup(
+                        f'<span font="{self.big_icon_size}">{self.weather.icons[parsed_data["weather_code"]]}</span>'
+                    )
         return True
 
     def update_weather(self):
