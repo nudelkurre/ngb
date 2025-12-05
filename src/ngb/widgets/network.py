@@ -22,7 +22,6 @@ class Network(WidgetBox):
             if self.interface_name in psutil.net_if_stats()
             else False
         )
-        self.is_up = False
         self.timer = kwargs.get("timer", 10)
         self.icon = kwargs.get("icon", "󰈀")
         self.icon_size = kwargs.get("icon_size", 20)
