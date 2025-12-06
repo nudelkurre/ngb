@@ -12,7 +12,7 @@ buildPythonApplication {
     ];
 
     nativeBuildInputs = with pkgs; [
-        wrapGAppsHook3
+        wrapGAppsHook4
         gobject-introspection
         pkg-config
         makeWrapper
