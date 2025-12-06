@@ -3,7 +3,7 @@ with pkgs.python3Packages;
 
 buildPythonApplication {
     pname = "ngb";
-    version = "0.4.0";
+    version = "0.4.1";
     pyproject = true;
     src = ./.;
 
@@ -12,7 +12,7 @@ buildPythonApplication {
     ];
 
     nativeBuildInputs = with pkgs; [
-        wrapGAppsHook
+        wrapGAppsHook4
         gobject-introspection
         pkg-config
         makeWrapper
