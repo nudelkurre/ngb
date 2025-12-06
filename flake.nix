@@ -65,7 +65,7 @@
                                     tzlocal
                                 ]
                             ))
-                            wrapGAppsHook
+                            wrapGAppsHook4
                         ];
                         shellHook = ''
                             export PS1='\[\e[1;32m\][\u@\h:\w]\[\e[1;31m\](dev)\[\e[1;32m\]$\[\e[0m\] '
