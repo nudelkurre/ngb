@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 from ctypes import CDLL
+
 CDLL("libgtk4-layer-shell.so")
 
 import gi
+
 gi.require_version("Gtk", "4.0")
 gi.require_version("Gtk4LayerShell", "1.0")
 gi.require_version("Gdk", "4.0")
@@ -15,16 +17,30 @@ from gi.repository import GLib
 import sys
 import uuid
 
-from ngb.widgets import Bluetooth, Clock, Cpu, Disk, Headset, Network, Volume, Weather, Workspaces
+from ngb.widgets import (
+    Battery,
+    Bluetooth,
+    Clock,
+    Cpu,
+    Disk,
+    Headset,
+    Network,
+    Volume,
+    Weather,
+    Workspaces,
+)
 from ngb.modules import Bar, Config
 from ngb import __about__
+
 
 class MainWindow(Gtk.Application):
     def __init__(self):
         app_id = f"com.github.nudelkurre.ngb-{uuid.uuid4()}"
-        super().__init__(application_id=app_id,
-                        flags=Gio.ApplicationFlags.FLAGS_NONE |
-                        Gio.ApplicationFlags.HANDLES_COMMAND_LINE)
+        super().__init__(
+            application_id=app_id,
+            flags=Gio.ApplicationFlags.FLAGS_NONE
+            | Gio.ApplicationFlags.HANDLES_COMMAND_LINE,
+        )
         self.config = Config()
         self.load_css()
         self.add_main_option(
@@ -37,30 +53,31 @@ class MainWindow(Gtk.Application):
         )
 
     def do_activate(self):
-        for i in self.config.data['bars']:
+        for i in self.config.data["bars"]:
             self.create_window(i)
 
     def create_window(self, bar_config):
         local_bar_config = {}
         local_bar_config["monitor"] = bar_config["output"]
-        if("gaps" in bar_config):
+        if "gaps" in bar_config:
             local_bar_config["gaps"] = bar_config["gaps"]
-        elif("gaps" in self.config.data):
+        elif "gaps" in self.config.data:
             local_bar_config["gaps"] = self.config.data["gaps"]
-        if("location" in bar_config):
+        if "location" in bar_config:
             local_bar_config["location"] = bar_config["location"]
-        if("height" in bar_config):
+        if "height" in bar_config:
             local_bar_config["height"] = bar_config["height"]
-        elif("height" in self.config.data):
+        elif "height" in self.config.data:
             local_bar_config["height"] = self.config.data["height"]
-        if("layer" in bar_config):
+        if "layer" in bar_config:
             local_bar_config["layer"] = bar_config["layer"]
-        elif("layer" in self.config.data):
+        elif "layer" in self.config.data:
             local_bar_config["layer"] = self.config.data["layer"]
         window = Bar(app=self, **local_bar_config)
         window.show()
 
         valid_widgets = {
+            "battery": Battery,
             "bluetooth": Bluetooth,
             "clock": Clock,
             "cpu": Cpu,
@@ -69,31 +86,31 @@ class MainWindow(Gtk.Application):
             "network": Network,
             "volume": Volume,
             "weather": Weather,
-            "workspace": Workspaces
+            "workspace": Workspaces,
         }
 
         for widget in bar_config["widgets"]["left"]:
             config = widget["config"]
-            if("icon_size" not in config and "icon_size" in self.config.data):
+            if "icon_size" not in config and "icon_size" in self.config.data:
                 config["icon_size"] = self.config.data["icon_size"]
             module = widget["module"]
-            if(module in valid_widgets):
+            if module in valid_widgets:
                 window.left(valid_widgets.get(module)(**config))
 
         for widget in bar_config["widgets"]["center"]:
             config = widget["config"]
-            if("icon_size" not in config and "icon_size" in self.config.data):
+            if "icon_size" not in config and "icon_size" in self.config.data:
                 config["icon_size"] = self.config.data["icon_size"]
             module = widget["module"]
-            if(module in valid_widgets):
+            if module in valid_widgets:
                 window.center(valid_widgets.get(module)(**config))
 
         for widget in bar_config["widgets"]["right"]:
             config = widget["config"]
-            if("icon_size" not in config and "icon_size" in self.config.data):
+            if "icon_size" not in config and "icon_size" in self.config.data:
                 config["icon_size"] = self.config.data["icon_size"]
             module = widget["module"]
-            if(module in valid_widgets):
+            if module in valid_widgets:
                 window.right(valid_widgets.get(module)(**config))
 
     def load_css(self):
@@ -134,19 +151,18 @@ class MainWindow(Gtk.Application):
         css_provider.load_from_data(css.encode("utf-8"))
 
         Gtk.StyleContext.add_provider_for_display(
-            Gdk.Display.get_default(),
-            css_provider,
-            Gtk.STYLE_PROVIDER_PRIORITY_USER
+            Gdk.Display.get_default(), css_provider, Gtk.STYLE_PROVIDER_PRIORITY_USER
         )
 
     def do_command_line(self, command_line):
         options = command_line.get_options_dict()
         options = options.end().unpack()
-        if("version" in options):
+        if "version" in options:
             print(f"Version: {__about__.__version__}")
         else:
             self.activate()
         return True
+
 
 def main():
     try:
@@ -154,6 +170,7 @@ def main():
         app.run(sys.argv)
     except KeyboardInterrupt:
         pass
+
 
 if __name__ == "__main__":
     main()
