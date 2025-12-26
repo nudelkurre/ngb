@@ -181,6 +181,9 @@ Every widget can set the following for each module.
 |timer|How often the module should be updated in seconds|Integer|1|
 If icon_size and spacing is not set in the module, it will use the global set value or if not set at all, will use the default value (icon_size=20, spacing=5)
 
+##### Battery
+Show battery level of connected laptop battery and show charging status.
+
 ##### Bluetooth
 Show battery level of all connected bluetooth devices.
 Bluetoothctl is needed to be in $PATH to work.
