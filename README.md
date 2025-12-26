@@ -218,6 +218,7 @@ Show ipv4 address of chosen interface. When clicked on show a dropdown with inte
 |interface|Set interface name to show|String|""|
 |show_public_ip|Set to show public ip|Boolean|True|
 |show_ipv6|Set to show ipv6 address|Boolean|False|
+|show_disconnected|Set to show disconnected network interface|Boolean|False|
 
 ##### Volume
 Show the current volume of default sink. By default, click on widget will show a dropdown with all sinks and be able to use slider to set volume, middle click will mute and right click will change default sink to the next in the list. Left click and middle click action can be swapped in config.
