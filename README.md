@@ -181,6 +181,9 @@ Every widget can set the following for each module.
 |timer|How often the module should be updated in seconds|Integer|1|
 If icon_size and spacing is not set in the module, it will use the global set value or if not set at all, will use the default value (icon_size=20, spacing=5)
 
+##### Battery
+Show battery level of connected laptop battery and show charging status.
+
 ##### Bluetooth
 Show battery level of all connected bluetooth devices.
 Bluetoothctl is needed to be in $PATH to work.
@@ -215,6 +218,7 @@ Show ipv4 address of chosen interface. When clicked on show a dropdown with inte
 |interface|Set interface name to show|String|""|
 |show_public_ip|Set to show public ip|Boolean|True|
 |show_ipv6|Set to show ipv6 address|Boolean|False|
+|show_disconnected|Set to show disconnected network interface|Boolean|False|
 
 ##### Volume
 Show the current volume of default sink. By default, click on widget will show a dropdown with all sinks and be able to use slider to set volume, middle click will mute and right click will change default sink to the next in the list. Left click and middle click action can be swapped in config.
@@ -240,6 +244,8 @@ Works with SwayWM, Hyprland and Niri (requires xwayland-satellite for the moment
 |configureation key|description|data type|default|
 |---|---|---|---|
 |monitor|Set either specific monitor or "all" for all workspaces|String|"all"|
+|use_workspace_names|Use workspace name set by window manager|Boolean|False|
+|default_name|Set default name to use for workspaces|String|"*"|
 |names|Can be used if workspace names is numbers but want to change to icons|Object of key-value pairs with strings as value|{}|
 
 ### gaps

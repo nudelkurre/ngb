@@ -27,6 +27,7 @@ class Network(WidgetBox):
         self.icon_size = kwargs.get("icon_size", 20)
         self.show_public_ip = kwargs.get("show_public_ip", True)
         self.show_ipv6 = kwargs.get("show_ipv6", False)
+        self.show_disconnected = kwargs.get("show_disconnected", False)
         self.interface_label = Gtk.Label(label=f"Interface: {self.interface_name}")
         self.public_ip_header_label = Gtk.Label(label="Public IP:")
         self.public_ip_label = Gtk.Label()
@@ -63,6 +64,7 @@ class Network(WidgetBox):
 
     def get_ipv4_addr(self):
         if self.is_up:
+            self.set_visible(True)
             address = ""
             for addr in self.interface:
                 if addr.family == socket.AF_INET and address == "":
@@ -77,6 +79,7 @@ class Network(WidgetBox):
                 self.ipv4_label.set_visible(False)
                 self.ipv4_header_label.set_visible(False)
         else:
+            self.set_visible(self.show_disconnected)
             self.text_label.set_label("Not connected")
         return True
 

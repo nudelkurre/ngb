@@ -1,3 +1,4 @@
+from .battery import Battery
 from .bluetooth import Bluetooth
 from .clock import Clock
 from .cpu import Cpu
