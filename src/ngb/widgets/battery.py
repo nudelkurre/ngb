@@ -19,15 +19,33 @@ class Battery(WidgetBox):
 
     def get_battery_level(self):
         battery = psutil.sensors_battery()
+        if battery == None:
+            self.icon = "󱃍"
+            self.set_icon()
+            self.text_label.set_text("-")
+            return True
         battery_level = int(battery.percent)
         charging = battery.power_plugged
         if charging:
             if battery_level == 100:
                 self.icon = "󰚥"
+            elif battery_level >= 75:
+                self.icon = "󱊦"
+            elif battery_level >= 50:
+                self.icon = "󱊥"
+            elif battery_level >= 25:
+                self.icon = "󱊤"
             else:
-                self.icon = "󰂄"
+                self.icon = "󰢟"
         else:
-            self.icon = "󰁹"
+            if battery_level >= 75:
+                self.icon = "󱊣"
+            elif battery_level >= 50:
+                self.icon = "󱊢"
+            elif battery_level >= 25:
+                self.icon = "󱊡"
+            else:
+                self.icon = "󰂎"
         self.set_icon()
         self.text_label.set_label(f"{battery_level}%")
         return True
