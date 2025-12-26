@@ -244,6 +244,8 @@ Works with SwayWM, Hyprland and Niri (requires xwayland-satellite for the moment
 |configureation key|description|data type|default|
 |---|---|---|---|
 |monitor|Set either specific monitor or "all" for all workspaces|String|"all"|
+|use_workspace_names|Use workspace name set by window manager|Boolean|False|
+|default_name|Set default name to use for workspaces|String|"*"|
 |names|Can be used if workspace names is numbers but want to change to icons|Object of key-value pairs with strings as value|{}|
 
 ### gaps
