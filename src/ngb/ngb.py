@@ -41,8 +41,7 @@ class MainWindow(Gtk.Application):
             flags=Gio.ApplicationFlags.FLAGS_NONE
             | Gio.ApplicationFlags.HANDLES_COMMAND_LINE,
         )
-        self.config = Config()
-        self.load_css()
+        self.config_file_path = ""
         self.add_main_option(
             "version",
             ord("v"),
@@ -51,8 +50,21 @@ class MainWindow(Gtk.Application):
             "Show application version",
             None,
         )
+        self.add_main_option(
+            "config",
+            ord("c"),
+            GLib.OptionFlags.IN_MAIN,
+            GLib.OptionArg.STRING,
+            "Specify path to config file",
+            None,
+        )
 
     def do_activate(self):
+        if self.config_file_path:
+            self.config = Config(file_path=self.config_file_path)
+        else:
+            self.config = Config()
+        self.load_css()
         for i in self.config.data["bars"]:
             self.create_window(i)
 
@@ -159,6 +171,9 @@ class MainWindow(Gtk.Application):
         options = options.end().unpack()
         if "version" in options:
             print(f"Version: {__about__.__version__}")
+        elif "config" in options:
+            self.config_file_path = options["config"]
+            self.activate()
         else:
             self.activate()
         return True

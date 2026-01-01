@@ -3,12 +3,18 @@ import json
 from screeninfo import get_monitors
 import psutil
 
+
 class Config:
     data = dict()
-    file_dir = f"{os.environ['XDG_CONFIG_HOME']}/ngb/" if os.environ['XDG_CONFIG_HOME'] else f"{os.environ['HOME']}/.config/ngb"
-    file_path = f"{file_dir}/config.json"
-    def __init__(self):
-        if(os.path.isfile(self.file_path)):
+    file_dir = (
+        f"{os.environ['XDG_CONFIG_HOME']}/ngb/"
+        if os.environ["XDG_CONFIG_HOME"]
+        else f"{os.environ['HOME']}/.config/ngb"
+    )
+
+    def __init__(self, **kwargs):
+        self.file_path = kwargs.get("file_path", f"{self.file_dir}/config.json")
+        if os.path.isfile(self.file_path):
             self.load_config(self.file_path)
         else:
             self.load_default()
@@ -16,52 +22,41 @@ class Config:
     def load_default(self):
         first_monitor = get_monitors()[0].name
         # Get first first interface after loopback if more than loopback exist
-        first_network_interface = list(psutil.net_if_addrs())[1] if len(list(psutil.net_if_addrs())) > 1 else list(psutil.net_if_addrs())[0]
+        first_network_interface = (
+            list(psutil.net_if_addrs())[1]
+            if len(list(psutil.net_if_addrs())) > 1
+            else list(psutil.net_if_addrs())[0]
+        )
         default_data = {
             "bars": [
                 {
                     "output": first_monitor,
                     "widgets": {
-                        "left": [
-                            {
-                                "config": {},
-                                "module": "workspace"
-                            }
-                        ],
+                        "left": [{"config": {}, "module": "workspace"}],
                         "center": [],
                         "right": [
+                            {"config": {"mountpoint": "/"}, "module": "disk"},
                             {
-                                "config": {
-                                    "mountpoint": "/"
-                                },
-                                "module": "disk"
+                                "config": {"interface": first_network_interface},
+                                "module": "network",
                             },
-                            {
-                                "config": {
-                                    "interface": first_network_interface
-                                },
-                                "module": "network"
-                            },
-                            {
-                                "config": {},
-                                "module": "volume"
-                            },
+                            {"config": {}, "module": "volume"},
                             {
                                 "config": {
                                     "timeformat_normal": "%H:%M:%S",
-                                    "timeformat_revealer": "%Y-%m-%d"
+                                    "timeformat_revealer": "%Y-%m-%d",
                                 },
-                                "module": "clock"
-                            }
-                        ]
-                    }
+                                "module": "clock",
+                            },
+                        ],
+                    },
                 }
             ],
             "icon_size": 20,
             "spacing": 5,
-            "corner_radius": 0
+            "corner_radius": 0,
         }
-        if(not os.path.exists(self.file_dir)):
+        if not os.path.exists(self.file_dir):
             os.makedirs(self.file_dir)
         f = open(self.file_path, "w")
         f.write(json.dumps(default_data))
@@ -71,9 +66,9 @@ class Config:
     def load_config(self, config_file):
         with open(config_file, "r") as file:
             self.data = json.load(file)
-            if("spacing" not in self.data):
+            if "spacing" not in self.data:
                 self.data["spacing"] = 5
-            if("icon_size" not in self.data):
+            if "icon_size" not in self.data:
                 self.data["icon_size"] = 20
-            if("corner_radius" not in self.data):
+            if "corner_radius" not in self.data:
                 self.data["corner_radius"] = 0
