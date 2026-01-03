@@ -42,6 +42,7 @@ class MainWindow(Gtk.Application):
             | Gio.ApplicationFlags.HANDLES_COMMAND_LINE,
         )
         self.config_file_path = ""
+        self.config_file_type = ""
         self.add_main_option(
             "version",
             ord("v"),
@@ -58,10 +59,20 @@ class MainWindow(Gtk.Application):
             "Specify path to config file",
             None,
         )
+        self.add_main_option(
+            "type",
+            ord("t"),
+            GLib.OptionFlags.IN_MAIN,
+            GLib.OptionArg.STRING,
+            "Specify file type for config file (suppported are json, toml, yaml)",
+            None,
+        )
 
     def do_activate(self):
         if self.config_file_path:
-            self.config = Config(file_path=self.config_file_path)
+            self.config = Config(
+                file_path=self.config_file_path, file_type=self.config_file_type
+            )
         else:
             self.config = Config()
         self.load_css()
@@ -171,10 +182,11 @@ class MainWindow(Gtk.Application):
         options = options.end().unpack()
         if "version" in options:
             print(f"Version: {__about__.__version__}")
-        elif "config" in options:
-            self.config_file_path = options["config"]
-            self.activate()
         else:
+            if "config" in options:
+                self.config_file_path = options["config"]
+            if "type" in options:
+                self.config_file_type = options["type"]
             self.activate()
         return True
 
