@@ -1,6 +1,7 @@
 import os
 import json
-import tomllib
+import tomli
+import tomli_w
 import yaml
 from screeninfo import get_monitors
 import psutil
@@ -68,9 +69,15 @@ class Config:
         }
         if not os.path.exists(self.file_dir):
             os.makedirs(self.file_dir)
-        f = open(self.file_path, "w")
-        f.write(json.dumps(default_data))
-        f.close()
+        write_mode = "wb" if self.file_type == "toml" else "w"
+        with open(self.file_path, write_mode) as file:
+            if self.file_type == "json":
+                file.write(json.dumps(default_data))
+            elif self.file_type == "toml":
+                tomli_w.dump(default_data, file)
+            elif self.file_type == "yaml":
+                file.write(yaml.dump(default_data))
+            file.close()
         self.data = default_data
 
     def load_config(self, config_file):
@@ -80,7 +87,7 @@ class Config:
                 if self.file_type == "json":
                     self.data = json.load(file)
                 elif self.file_type == "toml":
-                    self.data = tomllib.load(file)
+                    self.data = tomli.load(file)
                 elif self.file_type == "yaml":
                     self.data = yaml.safe_load(file)
                 if "bars" not in self.data:
@@ -93,5 +100,5 @@ class Config:
                     self.data["corner_radius"] = 0
             except json.decoder.JSONDecodeError:
                 print("File type is not in valid JSON format")
-            except tomllib.TOMLDecodeError:
+            except tomli._parser.TOMLDecodeError:
                 print("File type is not in valid TOML format")

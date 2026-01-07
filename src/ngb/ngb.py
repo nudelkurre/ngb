@@ -76,7 +76,7 @@ class MainWindow(Gtk.Application):
         else:
             self.config = Config()
         self.load_css()
-        for i in self.config.data["bars"]:
+        for i in self.config.data.get("bars", {}):
             self.create_window(i)
 
     def create_window(self, bar_config):
@@ -138,12 +138,11 @@ class MainWindow(Gtk.Application):
 
     def load_css(self):
         css_provider = Gtk.CssProvider()
-
         css = f"""
         .widget-button {{
             background-color: transparent;
             border: none;
-            padding: 0 {self.config.data["spacing"]}px;
+            padding: 0 {self.config.data.get("spacing", 0)}px;
             outline: none;
         }}
 
@@ -156,7 +155,7 @@ class MainWindow(Gtk.Application):
         }}
 
         .widget-box {{
-            margin: 0 {self.config.data["spacing"]}px;
+            margin: 0 {self.config.data.get("spacing", 0)}px;
         }}
 
         scale {{
@@ -168,7 +167,7 @@ class MainWindow(Gtk.Application):
         }}
 
         window {{
-            border-radius: {self.config.data["corner_radius"]}px;
+            border-radius: {self.config.data.get("corner_radius", 0)}px;
         }}
         """
         css_provider.load_from_data(css.encode("utf-8"))
