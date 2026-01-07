@@ -64,6 +64,8 @@
                                     requests
                                     screeninfo
                                     shutilwhich
+                                    tomli
+                                    tomli-w
                                     tzlocal
                                 ]
                             ))

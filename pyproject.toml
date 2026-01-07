@@ -36,6 +36,8 @@ dependencies = [
   "requests",
   "screeninfo",
   "shutilwhich",
+  "tomli",
+  "tomli_w",
   "tzlocal",
 ]
 
