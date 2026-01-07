@@ -17,6 +17,8 @@ class Bluetooth(Gtk.Box):
         self.spacing = kwargs.get("spacing", 10)
         self.icon_size = kwargs.get("icon_size", 20)
         super().__init__(spacing=self.spacing)
+
+    def run(self):
         self.update_boxes()
         self.update_list()
 

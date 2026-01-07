@@ -5,6 +5,7 @@ from psutil._common import bytes2human
 
 from ngb.modules import WidgetBox
 
+
 class Disk(WidgetBox):
     def __init__(self, **kwargs):
         self.mountpoint = kwargs.get("mountpoint", "/")
@@ -15,6 +16,8 @@ class Disk(WidgetBox):
         self.storage_label = Gtk.Label()
         self.used_bar = Gtk.ProgressBar()
         super().__init__(timer=self.timer, icon=self.icon, icon_size=self.icon_size)
+
+    def run(self):
         self.populate_dropdown()
 
     def set_text(self):
@@ -31,7 +34,9 @@ class Disk(WidgetBox):
         percent = disk_data.percent
         self.text_label.set_label(f"{percent}%")
         self.mountpoint_label.set_label(f"{self.mountpoint}")
-        self.storage_label.set_label(f"{bytes2human(disk_data.used)}iB/{bytes2human(disk_data.total)}iB")
+        self.storage_label.set_label(
+            f"{bytes2human(disk_data.used)}iB/{bytes2human(disk_data.total)}iB"
+        )
         self.used_bar.set_fraction(disk_data.used / disk_data.total)
         return True
 

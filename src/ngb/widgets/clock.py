@@ -4,8 +4,10 @@ from datetime import datetime
 
 from ngb.modules import WidgetBox
 
+
 class Clock(WidgetBox):
     timeformat = ""
+
     def __init__(self, **kwargs):
         self.icon = kwargs.get("icon", "")
         self.spacing = kwargs.get("spacing", 4)
@@ -20,9 +22,16 @@ class Clock(WidgetBox):
         self.revealer_label = Gtk.Label()
         self.show_revealer = kwargs.get("show_revealer", False)
         self.calendar = Gtk.Calendar()
-        super().__init__(icon=self.icon, spacing=self.spacing, timer=self.timer, icon_size=self.icon_size)
+        super().__init__(
+            icon=self.icon,
+            spacing=self.spacing,
+            timer=self.timer,
+            icon_size=self.icon_size,
+        )
+
+    def run(self):
         self.populate_dropdown()
-        
+
         # Create a revealer for smoother transition when hover over
         self.revealer = Gtk.Revealer()
         self.revealer.set_reveal_child(self.show_revealer)

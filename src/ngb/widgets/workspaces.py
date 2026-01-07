@@ -78,6 +78,9 @@ class Workspaces(Gtk.Box):
         self.scroll_controller.connect("scroll", self.on_scroll)
         self.add_controller(self.scroll_controller)
 
+    def run(self):
+        pass
+
     def get_ws(self):
         ws_list = []
         workspaces = self.wm.get_workspaces()
