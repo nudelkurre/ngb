@@ -30,6 +30,7 @@ dependencies = [
   "meson",
   "ninja",
   "psutil",
+  "pydbus",
   "pygobject",
   "requests",
   "screeninfo",
