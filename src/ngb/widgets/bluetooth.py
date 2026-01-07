@@ -1,58 +1,82 @@
 from gi.repository import Gtk
 from gi.repository import GLib
-from shutil import which
+from pydbus import SystemBus
 
-import subprocess
 import re
 
 from ngb.modules import WidgetBox
 
-class  Bluetooth(Gtk.Box):
+
+class Bluetooth(Gtk.Box):
+    system_bus = SystemBus()
+    dbus_interface = "org.bluez"
+    icons = {"audio-headset": "󰋎", "input-gaming": "󰊗"}
+
     def __init__(self, **kwargs):
         self.timer = kwargs.get("timer", 5)
         self.spacing = kwargs.get("spacing", 10)
         self.icon_size = kwargs.get("icon_size", 20)
         super().__init__(spacing=self.spacing)
-        self.label = Gtk.Label(label="bluetoothctl is not installed")
-        self.append(self.label)
         self.update_boxes()
         self.update_list()
 
     def update_boxes(self):
-        path = which("bluetoothctl")
-        if(path):
-            while self.get_first_accessible_child() is not None:
-                self.remove(self.get_first_accessible_child())
-
-            for device in self.get_devices():
-                if(device["connected"]):
-                    self.append(WidgetBox(icon=device["icon"], text=f"{device['battery']}%", spacing=self.spacing, icon_size=self.icon_size))
+        while self.get_first_accessible_child() is not None:
+            self.remove(self.get_first_accessible_child())
+        controllers = self.get_controllers()
+        for controller in controllers:
+            devices = self.get_devices(controller)
+            for device in devices:
+                device = self.get_device_info(device)
+                device_info = self.parse_device_info(device)
+                if device_info["connected"]:
+                    self.append(
+                        WidgetBox(
+                            icon=device_info["icon"],
+                            text=f"{device_info['battery']}%",
+                            spacing=self.spacing,
+                            icon_size=self.icon_size,
+                        )
+                    )
 
         return True
 
-    def get_devices(self):
-        icons = {"input-gaming": "", "audio-headset": "󰋎"}
-        devices = subprocess.run("bluetoothctl devices".split(), capture_output=True, text=True).stdout.split("\n")[:-1]
+    def get_controllers(self):
+        proxy = self.system_bus.get(self.dbus_interface)
+        proxy_data = proxy.Introspect()
+        controllers = re.findall(r"<node name=\"([\w]+)\"/>", proxy_data)
+        return controllers
 
-        dev_list = []
-        for d in devices:
-            match = re.search(r"Device\s([A-F0-9]{2}\:[A-F0-9]{2}\:[A-F0-9]{2}\:[A-F0-9]{2}\:[A-F0-9]{2}\:[A-F0-9]{2})\s([\w\s\d\(\)\-\.]+)", d)
-            if(match):
-                device = {"address": match.group(1), "name": match.group(2)}
-                info = subprocess.run(f"bluetoothctl info {match.group(1)}".split(), capture_output=True, text=True).stdout.split("\n")
-                for i in info:
-                    if("Icon" in i):
-                        device["icon"] = icons[re.match(r"\s*Icon:\s([\w\-]+)", i).group(1)]
-                    elif("Battery Percentage" in i):
-                        device["battery"] = re.match(r"\s*Battery\sPercentage:\s[0-9a-fx]{4}\s\(([\d]+)\)", i).group(1)
-                    elif("Connected" in i):
-                        device["connected"] = True if re.match(r"\s*Connected:\s([\w]+)", i).group(1) == "yes" else False
+    def get_devices(self, controller):
+        proxy = self.system_bus.get(self.dbus_interface, controller)
+        proxy_data = proxy.Introspect()
+        devices = re.findall(r"<node name=\"([\w]+)\"/>", proxy_data)
+        device_controller = []
+        for device in devices:
+            device_controller.append((controller, device))
+        return device_controller
 
-                if("icon" not in device):
-                    device["icon"] = "󰥈"
-                if(device["connected"]):
-                    dev_list.append(device)
-        return (dev_list)
+    def get_device_info(self, device):
+        object_path = f"{device[0]}/{device[1]}"
+        proxy = self.system_bus.get(self.dbus_interface, object_path)
+        proxy_data = proxy
+        return proxy_data
+
+    def parse_device_info(self, device):
+        adapter = device.Adapter if "Adapter" in dir(device) else ""
+        address = device.Address if "Address" in dir(device) else ""
+        battery = device.Percentage if "Percentage" in dir(device) else "0"
+        connected = device.Connected if "Connected" in dir(device) else False
+        icon = self.icons[device.Icon] if "Icon" in dir(device) else ""
+        name = device.Name if "Name" in dir(device) else ""
+        return {
+            "adapter": adapter,
+            "address": address,
+            "battery": battery,
+            "connected": connected,
+            "icon": icon,
+            "name": name,
+        }
 
     def update_list(self):
         GLib.timeout_add(self.timer * 1000, self.update_boxes)
