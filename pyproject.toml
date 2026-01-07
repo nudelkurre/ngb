@@ -32,6 +32,7 @@ dependencies = [
   "psutil",
   "pydbus",
   "pygobject",
+  "pyyaml",
   "requests",
   "screeninfo",
   "shutilwhich",
