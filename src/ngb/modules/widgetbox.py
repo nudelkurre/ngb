@@ -68,6 +68,9 @@ class WidgetBox(Gtk.Button):
         # Start timer to update the label
         self.update_label()
 
+    def run(self):
+        pass
+
     def on_scroll(self, controller, x, y):
         pass
 

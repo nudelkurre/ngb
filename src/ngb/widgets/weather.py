@@ -12,13 +12,6 @@ from ngb.modules import WidgetBox, DropDownWindow
 
 
 class Weather_Base:
-    city = ""
-    location = {"lat": 0, "lon": 0}
-    user_agent = "Weather widget"
-    url = ""
-    weather_data = dict()
-    parsed_data = dict()
-
     icons = {
         1: "☀️",
         2: "🌤️",
@@ -80,6 +73,14 @@ class Weather_Base:
 
     def __init__(self, **kwargs):
         self.city = kwargs.get("city", "")
+        self.location = {"lat": 0, "lon": 0}
+        self.user_agent = "Weather widget"
+        self.url = ""
+        self.weather_data = dict()
+        self.parsed_data = dict()
+
+    def run(self):
+        pass
 
     def get_location(self):
         if self.city == "":
@@ -111,6 +112,8 @@ class Weather_Base:
 class SMHI(Weather_Base):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+
+    def run(self):
         self.get_location()
         self.url = f"https://opendata-download-metfcst.smhi.se/api/category/pmp3g/version/2/geotype/point/lon/{self.location['lon']}/lat/{self.location['lat']}/data.json"
 
@@ -215,6 +218,8 @@ class YR(Weather_Base):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+
+    def run(self):
         self.get_location()
         self.url = f"https://api.met.no/weatherapi/locationforecast/2.0/compact?lat={self.location['lat']}&lon={self.location['lon']}"
 
@@ -262,6 +267,9 @@ class Weather(WidgetBox):
             f"<span font='{self.small_text}'>API in use: {self.api}</span>"
         )
         self.last_updated_label = Gtk.Label(label="test")
+
+    def run(self):
+        self.weather.run()
         self.populate_dropdown()
         self.update_weather()
         self.update_timeout()
