@@ -68,9 +68,15 @@ class Config:
         }
         if not os.path.exists(self.file_dir):
             os.makedirs(self.file_dir)
-        f = open(self.file_path, "w")
-        f.write(json.dumps(default_data))
-        f.close()
+        if self.file_type == "toml":
+            print("Can not write default config to toml format")
+        else:
+            with open(self.file_path, "w") as file:
+                if self.file_type == "json":
+                    file.write(json.dumps(default_data))
+                elif self.file_type == "yaml":
+                    file.write(yaml.dump(default_data))
+                file.close()
         self.data = default_data
 
     def load_config(self, config_file):
