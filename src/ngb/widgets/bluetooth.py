@@ -67,7 +67,11 @@ class Bluetooth(Gtk.Box):
         address = device.Address if "Address" in dir(device) else ""
         battery = device.Percentage if "Percentage" in dir(device) else "0"
         connected = device.Connected if "Connected" in dir(device) else False
-        icon = self.icons[device.Icon] if "Icon" in dir(device) else ""
+        icon = (
+            self.icons[device.Icon]
+            if "Icon" in dir(device) and device.Icon in self.icons
+            else "󰥈"
+        )
         name = device.Name if "Name" in dir(device) else ""
         return {
             "adapter": adapter,
