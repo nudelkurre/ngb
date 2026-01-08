@@ -96,7 +96,7 @@ class Weather_Base:
         return city
 
     def get_weather_data(self):
-        if self.location["lat"] != 0 and self.location["lon"] != 0:
+        if self.location.get("lat", 0) != 0 and self.location.get("lon", 0) != 0:
             headers = {"User-Agent": self.user_agent}
             req = requests.get(self.url, headers=headers)
             if req.status_code == 200:
@@ -118,7 +118,9 @@ class SMHI(Weather_Base):
         self.url = f"https://opendata-download-metfcst.smhi.se/api/category/pmp3g/version/2/geotype/point/lon/{self.location['lon']}/lat/{self.location['lat']}/data.json"
 
     def parse_weather_data(self):
-        data = self.weather_data["timeSeries"][0]["parameters"]
+        # data = self.weather_data["timeSeries"][0]["parameters"]
+        data = self.weather_data.get("timeSeries", [{}])[0].get("parameters", {})
+
         for d in data:
             if d["name"] == "t":
                 self.parsed_data["temperature"] = d["values"][0]
@@ -224,11 +226,13 @@ class YR(Weather_Base):
         self.url = f"https://api.met.no/weatherapi/locationforecast/2.0/compact?lat={self.location['lat']}&lon={self.location['lon']}"
 
     def parse_weather_data(self):
-        data = self.weather_data["properties"]
-        weather = data["timeseries"][0]["data"]
-        details = weather["instant"]["details"]
-        code = weather["next_1_hours"]["summary"]["symbol_code"]
-        units = data["meta"]["units"]
+        data = self.weather_data.get("properties", {})
+        weather = data.get("timeseries", [{}])[0].get("data", {})
+        details = weather.get("instant", {}).get("details", {})
+        code = (
+            weather.get("next_1_hours", {}).get("summary", {}).get("symbol_code", None)
+        )
+        units = data.get("meta", {}).get("units", None)
         for d in details:
             if d == "air_temperature":
                 self.parsed_data["temperature"] = details[d]
@@ -302,24 +306,24 @@ class Weather(WidgetBox):
         else:
             parsed_data = self.weather.parsed_data
             if "temperature" in parsed_data:
-                temperature = (
-                    f"{parsed_data['temperature']} {parsed_data['temperature_unit']}"
-                )
+                temperature = f"{parsed_data.get('temperature', '0')} {parsed_data.get('temperature_unit', 'C')}"
                 self.text_label.set_label(temperature)
-                self.icon = self.weather.icons[parsed_data["weather_code"]]
+                self.icon = self.weather.icons.get(
+                    parsed_data.get("weather_code", 1), ""
+                )
                 self.set_icon()
                 self.temperature_label.set_label(f"Temperature {temperature}")
             if "wind_speed" in parsed_data:
                 self.wind_speed_label.set_label(
-                    f"Wind speed {parsed_data['wind_speed']} m/s"
+                    f"Wind speed {parsed_data.get('wind_speed', "0")} m/s"
                 )
             if "weather_code" in parsed_data:
                 self.weather_description_label.set_label(
-                    f"{self.weather.descriptions[parsed_data['weather_code']]}"
+                    f"{self.weather.descriptions.get(parsed_data.get('weather_code', 1), "")}"
                 )
                 if self.show_big_icon:
                     self.weather_icon.set_markup(
-                        f'<span font="{self.big_icon_size}">{self.weather.icons[parsed_data["weather_code"]]}</span>'
+                        f'<span font="{self.big_icon_size}">{self.weather.icons.get(parsed_data.get("weather_code", 1), "")}</span>'
                     )
         return True
 

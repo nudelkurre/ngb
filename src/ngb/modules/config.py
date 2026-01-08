@@ -9,11 +9,7 @@ import psutil
 
 class Config:
     data = dict()
-    file_dir = (
-        f"{os.environ['XDG_CONFIG_HOME']}/ngb/"
-        if os.environ["XDG_CONFIG_HOME"]
-        else f"{os.environ['HOME']}/.config/ngb"
-    )
+    file_dir = f"{os.environ.get('XDG_CONFIG_HOME', os.path.join(os.environ.get('HOME', ''), '.config'))}/ngb"
 
     def __init__(self, **kwargs):
         self.file_path = kwargs.get("file_path", f"{self.file_dir}/config.json")

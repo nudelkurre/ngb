@@ -34,8 +34,8 @@ class Bluetooth(Gtk.Box):
                 if device_info["connected"]:
                     self.append(
                         WidgetBox(
-                            icon=device_info["icon"],
-                            text=f"{device_info['battery']}%",
+                            icon=device_info.get("icon", "No"),
+                            text=f"{device_info.get('battery', "0")}%",
                             spacing=self.spacing,
                             icon_size=self.icon_size,
                         )
@@ -69,11 +69,7 @@ class Bluetooth(Gtk.Box):
         address = device.Address if "Address" in dir(device) else ""
         battery = device.Percentage if "Percentage" in dir(device) else "0"
         connected = device.Connected if "Connected" in dir(device) else False
-        icon = (
-            self.icons[device.Icon]
-            if "Icon" in dir(device) and device.Icon in self.icons
-            else "󰥈"
-        )
+        icon = self.icons.get(device.Icon, "󰥈")
         name = device.Name if "Name" in dir(device) else ""
         return {
             "adapter": adapter,

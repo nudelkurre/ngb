@@ -81,21 +81,21 @@ class MainWindow(Gtk.Application):
 
     def create_window(self, bar_config):
         local_bar_config = {}
-        local_bar_config["monitor"] = bar_config["output"]
+        local_bar_config["monitor"] = bar_config.get("output", "")
         if "gaps" in bar_config:
-            local_bar_config["gaps"] = bar_config["gaps"]
+            local_bar_config["gaps"] = bar_config.get("gaps", 0)
         elif "gaps" in self.config.data:
-            local_bar_config["gaps"] = self.config.data["gaps"]
+            local_bar_config["gaps"] = self.config.data.get("gaps", 0)
         if "location" in bar_config:
-            local_bar_config["location"] = bar_config["location"]
+            local_bar_config["location"] = bar_config.get("location", "top")
         if "height" in bar_config:
-            local_bar_config["height"] = bar_config["height"]
+            local_bar_config["height"] = bar_config.get("height", 25)
         elif "height" in self.config.data:
-            local_bar_config["height"] = self.config.data["height"]
+            local_bar_config["height"] = self.config.data.get("height", 25)
         if "layer" in bar_config:
-            local_bar_config["layer"] = bar_config["layer"]
+            local_bar_config["layer"] = bar_config.get("layer", "bottom")
         elif "layer" in self.config.data:
-            local_bar_config["layer"] = self.config.data["layer"]
+            local_bar_config["layer"] = self.config.data.get("layer", "bottom")
         window = Bar(app=self, **local_bar_config)
         window.show()
 
@@ -112,11 +112,11 @@ class MainWindow(Gtk.Application):
             "workspace": Workspaces,
         }
 
-        for widget in bar_config["widgets"]["left"]:
-            config = widget["config"]
+        for widget in bar_config.get("widgets", {}).get("left", {}):
+            config = widget.get("config", {})
             if "icon_size" not in config and "icon_size" in self.config.data:
-                config["icon_size"] = self.config.data["icon_size"]
-            module = widget["module"]
+                config["icon_size"] = self.config.data.get("icon_size", 20)
+            module = widget.get("module", [])
             if module in valid_widgets:
                 new_module = valid_widgets.get(module)(**config)
                 window.left(new_module)
@@ -125,8 +125,8 @@ class MainWindow(Gtk.Application):
         for widget in bar_config["widgets"]["center"]:
             config = widget["config"]
             if "icon_size" not in config and "icon_size" in self.config.data:
-                config["icon_size"] = self.config.data["icon_size"]
-            module = widget["module"]
+                config["icon_size"] = self.config.data.get("icon_size", 20)
+            module = widget.get("module", [])
             if module in valid_widgets:
                 new_module = valid_widgets.get(module)(**config)
                 window.center(new_module)
@@ -135,8 +135,8 @@ class MainWindow(Gtk.Application):
         for widget in bar_config["widgets"]["right"]:
             config = widget["config"]
             if "icon_size" not in config and "icon_size" in self.config.data:
-                config["icon_size"] = self.config.data["icon_size"]
-            module = widget["module"]
+                config["icon_size"] = self.config.data.get("icon_size", 20)
+            module = widget.get("module", [])
             if module in valid_widgets:
                 new_module = valid_widgets.get(module)(**config)
                 window.right(new_module)
