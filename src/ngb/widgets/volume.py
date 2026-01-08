@@ -51,9 +51,9 @@ class Volume(WidgetBox):
         old_default = 0
         if self.path:
             for i in self.sinks:
-                old_sink_names.append(i["name"])
-                if i["default"]:
-                    old_default = i["id"]
+                old_sink_names.append(i.get("name", ""))
+                if i.get("default"):
+                    old_default = i.get("id")
             # Get output from wpctl
             wpctl = subprocess.run(
                 "wpctl status".split(), capture_output=True, text=True
@@ -81,9 +81,9 @@ class Volume(WidgetBox):
                         "default": True if match.group("default") == "*" else False,
                     }
                     new_sinks.append(sink)
-                    new_sink_names.append(sink["name"])
-                    if sink["default"]:
-                        new_default = sink["id"]
+                    new_sink_names.append(sink.get("name"))
+                    if sink.get("default"):
+                        new_default = sink.get("id")
             self.sinks = new_sinks
         return True
 
@@ -100,7 +100,7 @@ class Volume(WidgetBox):
         default = self.get_default_sink()
         # Set the new default sink by move to next id in sink list
         # or to first if current is last
-        self.set_default_sink(self.sinks[(default + 1) % len(self.sinks)]["id"])
+        self.set_default_sink(self.sinks[(default + 1) % len(self.sinks)].get("id"))
 
     def get_default_sink(self):
         self.get_sinks()
@@ -108,7 +108,7 @@ class Volume(WidgetBox):
             default = 0
             # Iterate the sink list and if sink is default get index of deafult sink
             for index, sink in enumerate(self.sinks):
-                if sink["default"]:
+                if sink.get("default"):
                     default = index
         return default
 
@@ -121,7 +121,7 @@ class Volume(WidgetBox):
             sink_label = Gtk.Label()
             # Split string to insert new line at every 25 character
             # to line wrap long sink names
-            sink_text = "\n".join(re.findall(".{1,25}", sink["name"]))
+            sink_text = "\n".join(re.findall(".{1,25}", sink.get("name")))
             sink_label.set_label(sink_text)
             self.dropdown.add(sink_label)
             slider_box = Gtk.Box(
@@ -147,7 +147,7 @@ class Volume(WidgetBox):
         volume = scale.get_value() / 100
         self.set_volume(scale.get_name(), volume)
         # Only update label if slider change is for default sink
-        if scale.get_name() == self.sinks[self.get_default_sink()]["id"]:
+        if scale.get_name() == self.sinks[self.get_default_sink()].get("id"):
             self.set_text()
 
     def on_scroll(self, controller, x, y):

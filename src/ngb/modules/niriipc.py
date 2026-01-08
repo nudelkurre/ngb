@@ -7,12 +7,14 @@ from operator import itemgetter
 
 from .windowmanageripc import WindowManagerIPC
 
+
 class NiriIPC(WindowManagerIPC):
     focused_output = ""
     focused_workspace_id = ""
     active_workspaces = {}
+
     def __init__(self):
-        self.sock_req = f"{os.environ['NIRI_SOCKET']}"
+        self.sock_req = f"{os.environ.get('NIRI_SOCKET')}"
 
     def send_to_socket(self, cmd):
         usocket = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
@@ -25,7 +27,7 @@ class NiriIPC(WindowManagerIPC):
                 while True:
                     part = usocket.recv(1024)
                     response += part.decode("utf-8")
-                    if(len(part) < 1024):
+                    if len(part) < 1024:
                         break
                 return json.loads(response)
             except socket.error as e:
@@ -46,45 +48,65 @@ class NiriIPC(WindowManagerIPC):
         self.get_outputs()
         for wss in ws:
             ws_dict = dict()
-            if(wss != {} and wss["active_window_id"] != None or (wss["is_active"] and wss["active_window_id"] == None)):
-                ws_dict["id"] = wss["idx"]
-                ws_dict["name"] = wss["name"] if wss["name"] else str(wss["id"])
-                ws_dict["monitor"] = wss["output"]
-                ws_dict["active"] = wss["is_active"]
-                ws_dict["urgent"] = wss["is_urgent"]
-                ws_dict["focused"] = wss["is_focused"]
-                self.active_workspaces[wss["output"]].append([wss["name"], wss["idx"]])
-                if(wss["is_focused"]):
-                    self.focused_output = wss["output"]
-                    self.focused_workspace_id = wss["idx"]
-            if(ws_dict != {}):
+            if (
+                wss != {}
+                and wss["active_window_id"] != None
+                or (wss["is_active"] and wss["active_window_id"] == None)
+            ):
+                ws_dict["id"] = wss.get("idx", 0)
+                ws_dict["name"] = wss.get("name", str(wss.get("id", 0)))
+                ws_dict["monitor"] = wss.get("output", "")
+                ws_dict["active"] = wss.get("is_active", False)
+                ws_dict["urgent"] = wss.get("is_urgent", False)
+                ws_dict["focused"] = wss.get("is_focused", False)
+                self.active_workspaces.get(wss.get("output", "")).append(
+                    [wss.get("name", "0"), wss.get("idx", 0)]
+                )
+                if wss["is_focused"]:
+                    self.focused_output = wss.get("output", "")
+                    self.focused_workspace_id = wss.get("idx", 0)
+            if ws_dict != {}:
                 parsed_ws.append(ws_dict)
         for out in self.active_workspaces.keys():
-            self.active_workspaces[out] = sorted(self.active_workspaces[out], key=itemgetter(1))
+            self.active_workspaces[out] = sorted(
+                self.active_workspaces[out], key=itemgetter(1)
+            )
         return parsed_ws
 
     def get_workspaces(self):
-        workspace = namedtuple("workspace", ["id", "name", "focused", "output", "urgent"])
+        workspace = namedtuple(
+            "workspace", ["id", "name", "focused", "output", "urgent"]
+        )
         workspaces = self.send_to_socket("Workspaces")
-        if(workspaces and "Ok" in workspaces):
-            parsed_ws = self.parse_workspace(workspaces["Ok"]["Workspaces"])
+        if workspaces and "Ok" in workspaces:
+            parsed_ws = self.parse_workspace(
+                workspaces.get("Ok", {}).get("Workspaces", [])
+            )
             ws_list = list()
             for p in parsed_ws:
-                ws_list.append(workspace(id=p["id"], name=p["name"], focused=p["focused"], output=p["monitor"], urgent=p["urgent"]))
+                ws_list.append(
+                    workspace(
+                        id=p.get("id", 0),
+                        name=p.get("name", "0"),
+                        focused=p.get("focused", False),
+                        output=p.get("monitor", ""),
+                        urgent=p.get("urgent", False),
+                    )
+                )
             return ws_list
         return []
 
     def get_outputs(self):
         outputs = self.send_to_socket("Outputs")
-        if(outputs and "Ok" in outputs):
-            parsed_outputs = list(outputs["Ok"]["Outputs"].keys())
+        if outputs and "Ok" in outputs:
+            parsed_outputs = list(outputs.get("Ok", {}).get("Outputs", {}).keys())
             for out in parsed_outputs:
                 self.active_workspaces[out] = []
 
     def translate_cmd(self, cmd):
         cmd_list = cmd.split()
         new_cmd = ""
-        if(cmd_list[0] == "workspace"):
+        if cmd_list[0] == "workspace":
             new_cmd = self.goto_workspace(cmd_list[1])
         else:
             new_cmd = cmd
@@ -92,18 +114,30 @@ class NiriIPC(WindowManagerIPC):
         return cmd_json
 
     def goto_workspace(self, workspace):
-        if(workspace == "next_on_output"):
+        if workspace == "next_on_output":
             for index, idx in enumerate(self.active_workspaces[self.focused_output]):
-                if(self.focused_workspace_id == idx[1]):
-                    next_ws = self.active_workspaces[self.focused_output][(index + 1) % len(self.active_workspaces[self.focused_output])]
-                    return {"Action":{"FocusWorkspace": {"reference": {"Name": next_ws[0]}}}}
-        elif(workspace == "prev_on_output"):
+                if self.focused_workspace_id == idx[1]:
+                    next_ws = self.active_workspaces[self.focused_output][
+                        (index + 1) % len(self.active_workspaces[self.focused_output])
+                    ]
+                    return {
+                        "Action": {
+                            "FocusWorkspace": {"reference": {"Name": next_ws[0]}}
+                        }
+                    }
+        elif workspace == "prev_on_output":
             for index, idx in enumerate(self.active_workspaces[self.focused_output]):
-                if(self.focused_workspace_id == idx[1]):
-                    prev_ws = self.active_workspaces[self.focused_output][(index - 1) % len(self.active_workspaces[self.focused_output])]
-                    return {"Action":{"FocusWorkspace": {"reference": {"Name": prev_ws[0]}}}}
+                if self.focused_workspace_id == idx[1]:
+                    prev_ws = self.active_workspaces[self.focused_output][
+                        (index - 1) % len(self.active_workspaces[self.focused_output])
+                    ]
+                    return {
+                        "Action": {
+                            "FocusWorkspace": {"reference": {"Name": prev_ws[0]}}
+                        }
+                    }
         else:
-            return {"Action":{"FocusWorkspace": {"reference": {"Name": workspace}}}}
+            return {"Action": {"FocusWorkspace": {"reference": {"Name": workspace}}}}
 
     def command(self, cmd):
         self.send_to_socket(cmd)

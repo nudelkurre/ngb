@@ -11,7 +11,7 @@ from .windowmanageripc import WindowManagerIPC
 class SwayIPC(WindowManagerIPC):
 
     def __init__(self):
-        self.sock_req = f"{os.environ['SWAYSOCK']}"
+        self.sock_req = f"{os.environ.get('SWAYSOCK')}"
 
     def send_to_socket(self, cmd):
         usocket = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
@@ -51,11 +51,11 @@ class SwayIPC(WindowManagerIPC):
         for p in wss:
             ws_list.append(
                 workspace(
-                    id=p["num"],
-                    name=p["name"],
-                    focused=p["focused"],
-                    output=p["output"],
-                    urgent=p["urgent"],
+                    id=p.get("num", 0),
+                    name=p.get("name", "0"),
+                    focused=p.get("focused", False),
+                    output=p.get("output", ""),
+                    urgent=p.get("urgent", False),
                 )
             )
         return ws_list
