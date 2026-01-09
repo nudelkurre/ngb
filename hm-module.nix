@@ -14,6 +14,16 @@ with lib;
                 default = false;
                 description = "Enable ngb";
             };
+            file-type = mkOption {
+                type = types.enum [
+                    "json"
+                    "toml"
+                    "yaml"
+                ];
+                default = "json";
+                description = "Specify file format to use for config";
+                example = "toml";
+            };
             package = mkOption {
                 type = types.package;
                 default = pkgs.ngb;
@@ -39,12 +49,14 @@ with lib;
                                     description = "Set the height to use for the bar (minimum height, if font size is to big bar will get bigger)";
                                 };
                                 layer = mkOption {
-                                    type = types.nullOr (types.enum [
-                                        "background"
-                                        "bottom"
-                                        "overlay"
-                                        "top"
-                                    ]);
+                                    type = types.nullOr (
+                                        types.enum [
+                                            "background"
+                                            "bottom"
+                                            "overlay"
+                                            "top"
+                                        ]
+                                    );
                                     default = null;
                                     description = "Set which layer shell layer to show the bar";
                                 };
@@ -129,12 +141,14 @@ with lib;
                     description = "Set font size of icons";
                 };
                 layer = mkOption {
-                    type = types.nullOr (types.enum [
-                        "background"
-                        "bottom"
-                        "overlay"
-                        "top"
-                    ]);
+                    type = types.nullOr (
+                        types.enum [
+                            "background"
+                            "bottom"
+                            "overlay"
+                            "top"
+                        ]
+                    );
                     default = null;
                     description = "Set which layer shell layer to show the bar";
                 };
@@ -164,7 +178,7 @@ with lib;
                             WantedBy = [ "graphical-session.target" ];
                         };
                         Service = {
-                            ExecStart = "${config.services.ngb.package}/bin/ngb";
+                            ExecStart = "${config.services.ngb.package}/bin/ngb --type ${config.services.ngb.file-type}";
                             Restart = "always";
                             RestartSec = "5s";
                         };
@@ -172,14 +186,17 @@ with lib;
                 };
             };
         };
-        xdg.configFile."ngb/config.json" = 
+        xdg.configFile."ngb/config.${config.services.ngb.file-type}" =
             let
                 filterNulls = attrs: lib.filterAttrs (key: value: value != null) attrs;
-                filtered = filterNulls (config.services.ngb.settings // { bars = map filterNulls config.services.ngb.settings.bars; });
-            in{
-            text = ''
-                ${builtins.toJSON filtered}
-            '';
-        };
+                filtered = filterNulls (
+                    config.services.ngb.settings // { bars = map filterNulls config.services.ngb.settings.bars; }
+                );
+                format = config.services.ngb.file-type;
+                fileFormat = if format == "json" then pkgs.formats.json {} else if format == "toml" then pkgs.formats.toml {} else pkgs.formats.yaml {};
+            in
+            {
+                source = fileFormat.generate "ngb-config" filtered;
+            };
     };
 }

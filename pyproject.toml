@@ -30,10 +30,14 @@ dependencies = [
   "meson",
   "ninja",
   "psutil",
+  "pydbus",
   "pygobject",
+  "pyyaml",
   "requests",
   "screeninfo",
   "shutilwhich",
+  "tomli",
+  "tomli_w",
   "tzlocal",
 ]
 

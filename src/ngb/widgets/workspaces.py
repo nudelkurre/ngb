@@ -78,6 +78,9 @@ class Workspaces(Gtk.Box):
         self.scroll_controller.connect("scroll", self.on_scroll)
         self.add_controller(self.scroll_controller)
 
+    def run(self):
+        pass
+
     def get_ws(self):
         ws_list = []
         workspaces = self.wm.get_workspaces()
@@ -108,16 +111,16 @@ class Workspaces(Gtk.Box):
                         show_name = ws["name"]
                     else:
                         if ws["name"] in self.ws_names:
-                            show_name = self.ws_names[ws["name"]]
+                            show_name = self.ws_names.get(ws.get("name", ""), {})
                         else:
                             show_name = self.default_name
                     self.append(
                         WorkspaceBox(
-                            id=ws["id"],
-                            name=ws["name"],
+                            id=ws.get("id", 0),
+                            name=ws.get("name", ""),
                             show_name=show_name,
-                            focused=ws["focused"],
-                            urgent=ws["urgent"],
+                            focused=ws.get("focused", False),
+                            urgent=ws.get("urgent", False),
                             icon_size=self.icon_size,
                         )
                     )

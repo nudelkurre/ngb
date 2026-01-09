@@ -4,9 +4,11 @@ from gi.repository import Gdk
 from gi.repository import GLib
 from screeninfo import get_monitors
 
+
 class Bar(Gtk.ApplicationWindow):
     monitors = {}
     active_monitor = ""
+
     def __init__(self, **kwargs):
         self.app = kwargs.get("app")
         self.monitor = kwargs.get("monitor")
@@ -19,21 +21,21 @@ class Bar(Gtk.ApplicationWindow):
         self.get_displays()
         self.active_monitor = self.monitor
 
-        window_width = self.monitors[self.active_monitor]["width"]
-        window_height = self.monitors[self.active_monitor]["height"]
-        window_monitor = self.monitors[self.active_monitor]["monitor"]
+        window_width = self.monitors.get(self.active_monitor, {}).get("width", 1920)
+        window_height = self.monitors.get(self.active_monitor, {}).get("height", 1080)
+        window_monitor = self.monitors.get(self.active_monitor, {}).get("monitor")
         self.set_default_size(window_width - (self.gaps * 2), self.height)
 
         LayerShell.init_for_window(self)
-        if(self.layer == "top"):
+        if self.layer == "top":
             LayerShell.set_layer(self, LayerShell.Layer.TOP)
-        elif(self.layer == "overlay"):
+        elif self.layer == "overlay":
             LayerShell.set_layer(self, LayerShell.Layer.OVERLAY)
-        elif(self.layer == "background"):
+        elif self.layer == "background":
             LayerShell.set_layer(self, LayerShell.Layer.BACKGROUND)
         else:
             LayerShell.set_layer(self, LayerShell.Layer.BOTTOM)
-        if(self.location == "bottom"):
+        if self.location == "bottom":
             LayerShell.set_anchor(self, LayerShell.Edge.BOTTOM, True)
         else:
             LayerShell.set_anchor(self, LayerShell.Edge.TOP, True)
@@ -60,20 +62,20 @@ class Bar(Gtk.ApplicationWindow):
         bar.set_start_widget(self.leftbox)
         bar.set_center_widget(self.centerbox)
         bar.set_end_widget(self.rightbox)
-        
+
     def get_displays(self):
         display = Gdk.Display.get_default()
         assert display is not None
 
         gdk_monitors = display.get_monitors()
-        
+
         for m in get_monitors():
             self.monitors[m.name] = {}
             self.monitors[m.name]["width"] = m.width
             self.monitors[m.name]["height"] = m.height
             for gdkm in gdk_monitors:
-                if(gdkm.get_connector() == m.name):
-                    self.monitors[m.name]['monitor'] = gdkm
+                if gdkm.get_connector() == m.name:
+                    self.monitors[m.name]["monitor"] = gdkm
 
     def on_destroy(self, event):
         self.destroy()

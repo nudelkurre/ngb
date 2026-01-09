@@ -58,10 +58,14 @@
                                     meson-python
                                     ninja
                                     psutil
+                                    pydbus
                                     pygobject3
+                                    pyyaml
                                     requests
                                     screeninfo
                                     shutilwhich
+                                    tomli
+                                    tomli-w
                                     tzlocal
                                 ]
                             ))

@@ -41,6 +41,8 @@ class Network(WidgetBox):
         self.ipv6_label.add_css_class("multi-line")
         self.mac_address_label = Gtk.Label()
         super().__init__(icon=self.icon, timer=self.timer, icon_size=self.icon_size)
+
+    def run(self):
         self.dropdown.connect("closed", self.on_close)
 
     def set_text(self):

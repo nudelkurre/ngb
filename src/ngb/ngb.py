@@ -41,8 +41,8 @@ class MainWindow(Gtk.Application):
             flags=Gio.ApplicationFlags.FLAGS_NONE
             | Gio.ApplicationFlags.HANDLES_COMMAND_LINE,
         )
-        self.config = Config()
-        self.load_css()
+        self.config_file_path = ""
+        self.config_file_type = ""
         self.add_main_option(
             "version",
             ord("v"),
@@ -51,28 +51,51 @@ class MainWindow(Gtk.Application):
             "Show application version",
             None,
         )
+        self.add_main_option(
+            "config",
+            ord("c"),
+            GLib.OptionFlags.IN_MAIN,
+            GLib.OptionArg.STRING,
+            "Specify path to config file",
+            None,
+        )
+        self.add_main_option(
+            "type",
+            ord("t"),
+            GLib.OptionFlags.IN_MAIN,
+            GLib.OptionArg.STRING,
+            "Specify file type for config file (suppported are json, toml, yaml)",
+            None,
+        )
 
     def do_activate(self):
-        for i in self.config.data["bars"]:
+        if self.config_file_path:
+            self.config = Config(
+                file_path=self.config_file_path, file_type=self.config_file_type
+            )
+        else:
+            self.config = Config()
+        self.load_css()
+        for i in self.config.data.get("bars", {}):
             self.create_window(i)
 
     def create_window(self, bar_config):
         local_bar_config = {}
-        local_bar_config["monitor"] = bar_config["output"]
+        local_bar_config["monitor"] = bar_config.get("output", "")
         if "gaps" in bar_config:
-            local_bar_config["gaps"] = bar_config["gaps"]
+            local_bar_config["gaps"] = bar_config.get("gaps", 0)
         elif "gaps" in self.config.data:
-            local_bar_config["gaps"] = self.config.data["gaps"]
+            local_bar_config["gaps"] = self.config.data.get("gaps", 0)
         if "location" in bar_config:
-            local_bar_config["location"] = bar_config["location"]
+            local_bar_config["location"] = bar_config.get("location", "top")
         if "height" in bar_config:
-            local_bar_config["height"] = bar_config["height"]
+            local_bar_config["height"] = bar_config.get("height", 25)
         elif "height" in self.config.data:
-            local_bar_config["height"] = self.config.data["height"]
+            local_bar_config["height"] = self.config.data.get("height", 25)
         if "layer" in bar_config:
-            local_bar_config["layer"] = bar_config["layer"]
+            local_bar_config["layer"] = bar_config.get("layer", "bottom")
         elif "layer" in self.config.data:
-            local_bar_config["layer"] = self.config.data["layer"]
+            local_bar_config["layer"] = self.config.data.get("layer", "bottom")
         window = Bar(app=self, **local_bar_config)
         window.show()
 
@@ -89,38 +112,43 @@ class MainWindow(Gtk.Application):
             "workspace": Workspaces,
         }
 
-        for widget in bar_config["widgets"]["left"]:
-            config = widget["config"]
+        for widget in bar_config.get("widgets", {}).get("left", {}):
+            config = widget.get("config", {})
             if "icon_size" not in config and "icon_size" in self.config.data:
-                config["icon_size"] = self.config.data["icon_size"]
-            module = widget["module"]
+                config["icon_size"] = self.config.data.get("icon_size", 20)
+            module = widget.get("module", [])
             if module in valid_widgets:
-                window.left(valid_widgets.get(module)(**config))
+                new_module = valid_widgets.get(module)(**config)
+                window.left(new_module)
+                new_module.run()
 
         for widget in bar_config["widgets"]["center"]:
             config = widget["config"]
             if "icon_size" not in config and "icon_size" in self.config.data:
-                config["icon_size"] = self.config.data["icon_size"]
-            module = widget["module"]
+                config["icon_size"] = self.config.data.get("icon_size", 20)
+            module = widget.get("module", [])
             if module in valid_widgets:
-                window.center(valid_widgets.get(module)(**config))
+                new_module = valid_widgets.get(module)(**config)
+                window.center(new_module)
+                new_module.run()
 
         for widget in bar_config["widgets"]["right"]:
             config = widget["config"]
             if "icon_size" not in config and "icon_size" in self.config.data:
-                config["icon_size"] = self.config.data["icon_size"]
-            module = widget["module"]
+                config["icon_size"] = self.config.data.get("icon_size", 20)
+            module = widget.get("module", [])
             if module in valid_widgets:
-                window.right(valid_widgets.get(module)(**config))
+                new_module = valid_widgets.get(module)(**config)
+                window.right(new_module)
+                new_module.run()
 
     def load_css(self):
         css_provider = Gtk.CssProvider()
-
         css = f"""
         .widget-button {{
             background-color: transparent;
             border: none;
-            padding: 0 {self.config.data["spacing"]}px;
+            padding: 0 {self.config.data.get("spacing", 0)}px;
             outline: none;
         }}
 
@@ -133,7 +161,7 @@ class MainWindow(Gtk.Application):
         }}
 
         .widget-box {{
-            margin: 0 {self.config.data["spacing"]}px;
+            margin: 0 {self.config.data.get("spacing", 0)}px;
         }}
 
         scale {{
@@ -145,7 +173,7 @@ class MainWindow(Gtk.Application):
         }}
 
         window {{
-            border-radius: {self.config.data["corner_radius"]}px;
+            border-radius: {self.config.data.get("corner_radius", 0)}px;
         }}
         """
         css_provider.load_from_data(css.encode("utf-8"))
@@ -160,6 +188,10 @@ class MainWindow(Gtk.Application):
         if "version" in options:
             print(f"Version: {__about__.__version__}")
         else:
+            if "config" in options:
+                self.config_file_path = options["config"]
+            if "type" in options:
+                self.config_file_type = options["type"]
             self.activate()
         return True
 
