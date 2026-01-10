@@ -103,6 +103,19 @@ class NiriIPC(WindowManagerIPC):
             for out in parsed_outputs:
                 self.active_workspaces[out] = []
 
+    def get_windows(self):
+        windows = self.send_to_socket("Windows")
+        windows_list = []
+        if windows and "Ok" in windows:
+            parsed_windows = windows.get("Ok", {}).get("Windows", [])
+            for w in parsed_windows:
+                window_dict = {}
+                window_dict["id"] = w.get("id")
+                window_dict["title"] = w.get("title", "")
+                window_dict["focused"] = w.get("is_focused", False)
+                windows_list.append(window_dict)
+        return windows_list
+
     def translate_cmd(self, cmd):
         cmd_list = cmd.split()
         new_cmd = ""

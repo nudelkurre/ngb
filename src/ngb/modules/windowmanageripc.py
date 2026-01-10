@@ -11,6 +11,9 @@ class WindowManagerIPC:
     def get_workspaces(self):
         return []
 
+    def get_windows(self):
+        return []
+
     def translate_cmd(self, cmd):
         return ""
 

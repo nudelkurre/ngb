@@ -27,6 +27,7 @@ from ngb.widgets import (
     Network,
     Volume,
     Weather,
+    WindowTitle,
     Workspaces,
 )
 from ngb.modules import Bar, Config
@@ -109,6 +110,7 @@ class MainWindow(Gtk.Application):
             "network": Network,
             "volume": Volume,
             "weather": Weather,
+            "windowtitle": WindowTitle,
             "workspace": Workspaces,
         }
 
