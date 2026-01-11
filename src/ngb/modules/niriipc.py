@@ -116,11 +116,20 @@ class NiriIPC(WindowManagerIPC):
                 windows_list.append(window_dict)
         return windows_list
 
+    def get_focused_window(self):
+        windows = self.get_windows()
+        for window in windows:
+            if window.get("focused"):
+                return window.get("title")
+        return ""
+
     def translate_cmd(self, cmd):
         cmd_list = cmd.split()
         new_cmd = ""
         if cmd_list[0] == "workspace":
             new_cmd = self.goto_workspace(cmd_list[1])
+        if cmd_list[0] == "window":
+            new_cmd = self.focus_window(cmd_list[1])
         else:
             new_cmd = cmd
         cmd_json = json.dumps(new_cmd).encode("utf-8")
@@ -151,6 +160,9 @@ class NiriIPC(WindowManagerIPC):
                     }
         else:
             return {"Action": {"FocusWorkspace": {"reference": {"Name": workspace}}}}
+
+    def focus_window(self, id):
+        return {"Action": {"FocusWindow": {"id": int(id)}}}
 
     def command(self, cmd):
         self.send_to_socket(cmd)
