@@ -23,7 +23,7 @@ class WindowButton(Gtk.Box):
         self.append(self.window_button)
 
     def focus_window(self, user_data):
-        self.wm.command(f"window {self.window_id}")
+        self.wm.focus_window(self.window_id)
         self.dropdown.popdown()
 
 
@@ -67,8 +67,9 @@ class WindowTitle(WidgetBox):
         return True
 
     def on_click(self, user_data):
-        self.populate_dropdown()
-        self.dropdown.popup()
+        if not isinstance(self.wm, HyprlandIpc):
+            self.populate_dropdown()
+            self.dropdown.popup()
         return True
 
     def on_close(self, user_data):

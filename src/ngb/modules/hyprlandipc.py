@@ -5,6 +5,7 @@ import os
 
 from .windowmanageripc import WindowManagerIPC
 
+
 class HyprlandIpc(WindowManagerIPC):
     def __init__(self):
         socket_location = f"{os.environ['XDG_RUNTIME_DIR']}/hypr/{os.environ['HYPRLAND_INSTANCE_SIGNATURE']}"
@@ -30,30 +31,50 @@ class HyprlandIpc(WindowManagerIPC):
         ws_list = ws.split("\n\n")
         parsed_ws = list()
         for wss in ws_list:
-            match = re.match(r"workspace ID (?P<id>\d+) \((?P<name>[\w]+)\) on monitor (?P<monitor>[\w-]+):", wss)
+            match = re.match(
+                r"workspace ID (?P<id>\d+) \((?P<name>[\w]+)\) on monitor (?P<monitor>[\w-]+):",
+                wss,
+            )
             ws_dict = dict()
-            if(match):
+            if match:
                 ws_dict["id"] = match.group("id")
                 ws_dict["name"] = match.group("name")
                 ws_dict["monitor"] = match.group("monitor")
-            if(ws_dict != {}):
+            if ws_dict != {}:
                 parsed_ws.append(ws_dict)
         return parsed_ws
 
     def get_workspaces(self):
-        workspace = namedtuple("workspace", ["id", "name", "focused", "output", "urgent"])
+        workspace = namedtuple(
+            "workspace", ["id", "name", "focused", "output", "urgent"]
+        )
         workspaces = self.send_to_socket("workspaces")
         active_workspace = self.send_to_socket("activeworkspace")
         active_id = self.parse_workspace(active_workspace)[0]["id"]
         parsed_ws = self.parse_workspace(workspaces)
         ws_list = list()
         for p in parsed_ws:
-            ws_list.append(workspace(id=p["id"], name=p["name"], focused=p["id"] == active_id, output=p["monitor"], urgent=False))
+            ws_list.append(
+                workspace(
+                    id=p["id"],
+                    name=p["name"],
+                    focused=p["id"] == active_id,
+                    output=p["monitor"],
+                    urgent=False,
+                )
+            )
         return ws_list
+
+    def get_focused_window(self):
+        window = self.send_to_socket("activewindow")
+        match = re.search(r"title: [\W\w]+\n", window).group(0)
+        if match:
+            return match.split("\n")[0].split(":")[1].lstrip().rstrip()
+        return ""
 
     def translate_cmd(self, cmd):
         cmd_list = cmd.split()
-        if(cmd_list[0] == "workspace"):
+        if cmd_list[0] == "workspace":
             match cmd_list[1]:
                 case "next_on_output":
                     cmd_list[1] = "m+1"

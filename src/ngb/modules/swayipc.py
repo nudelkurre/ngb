@@ -27,7 +27,7 @@ class SwayIPC(WindowManagerIPC):
                     if len(part) < 1024:
                         break
                 response = response[14:].decode("utf-8")
-                match = re.search(r"\[[\W\w]*\]", response).group(0)
+                match = re.search(r"^[\[\{][\W\w]*[\]\}]$", response).group(0)
                 if match:
                     parsed_response = json.loads(match)
                 else:
@@ -59,6 +59,28 @@ class SwayIPC(WindowManagerIPC):
                 )
             )
         return ws_list
+
+    def get_windows(self):
+        windows = self.send_to_socket("GET_TREE")
+        root_nodes = windows.get("nodes", [])
+        output_nodes = []
+        for rn in root_nodes:
+            if rn.get("name") != "__i3":
+                output_nodes += rn.get("nodes", [])
+        window_nodes = []
+        for on in output_nodes:
+            window_nodes += on.get("nodes", [])
+        window_list = []
+        for wn in window_nodes:
+            wn_dict = {}
+            wn_dict["id"] = wn.get("id", 0)
+            wn_dict["title"] = wn.get("name", "")
+            wn_dict["focused"] = wn.get("focused", False)
+            window_list.append(wn_dict)
+        return window_list
+
+    def focus_window(self, id):
+        self.send_to_socket(f"[con_id={id}] focus")
 
     def translate_cmd(self, cmd):
         match cmd:
