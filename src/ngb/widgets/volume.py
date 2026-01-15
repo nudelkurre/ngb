@@ -1,11 +1,61 @@
 from gi.repository import Gtk
 from gi.repository import GLib
 from shutil import which
+from collections import namedtuple
 
 import subprocess
 import re
 
 from ngb.modules import WidgetBox
+
+
+class MuteButton(Gtk.Button):
+    def __init__(self, **kwargs):
+        super().__init__()
+        self.id = kwargs.get("id")
+        self.path = kwargs.get("path")
+        self.icon_size = kwargs.get("icon_size", 20)
+        self.muted_icon = kwargs.get("muted_icon", "󰝟")
+        self.unmuted_icon = kwargs.get("unmuted_icon", "󰕾")
+        self.mute_label = Gtk.Label()
+        self.mute_label.set_markup(self.get_muted())
+        self.set_child(self.mute_label)
+        self.connect("clicked", self.on_mute)
+
+    def get_sink(self):
+        sink_tuple = namedtuple(
+            "Sink",
+            ["id", "name", "volume", "muted", "default"],
+            defaults=(0, "", 0.0, False, False),
+        )
+        cmd = f"wpctl status"
+        wpctl = subprocess.run(cmd.split(), capture_output=True, text=True).stdout
+        muted = re.search(
+            rf"(?P<id>{self.id})\.\s(?P<name>[\w\s]+)\[vol:\s(?P<volume>\d+\.\d+)\s?(?P<muted>MUTED)?\]",
+            wpctl,
+        )
+        sink = sink_tuple(
+            id=muted.group("id"),
+            name=muted.group("name").lstrip().rstrip(),
+            volume=float(muted.group("volume")),
+            muted=True if muted.group("muted") == "MUTED" else False,
+        )
+        return sink
+
+    def on_mute(self, user_data):
+        self.toggle_mute()
+        self.mute_label.set_markup(self.get_muted())
+
+    def toggle_mute(self):
+        if self.path:
+            subprocess.run(f"wpctl set-mute {self.id} toggle".split())
+
+    def get_muted(self):
+        sink = self.get_sink()
+        if sink.muted:
+            return f'<span font="{self.icon_size}">{self.muted_icon}</span>'
+        else:
+            return f'<span font="{self.icon_size}">{self.unmuted_icon}</span>'
 
 
 class Volume(WidgetBox):
@@ -16,6 +66,8 @@ class Volume(WidgetBox):
         self.timer = kwargs.get("timer", 5)
         self.icon_size = kwargs.get("icon_size", 20)
         self.click_to_mute = kwargs.get("click_to_mute", False)
+        self.muted_icon = kwargs.get("muted_icon", "󰝟")
+        self.unmuted_icon = kwargs.get("unmuted_icon", "󰕾")
         self.sinks = []
         super().__init__(icon=self.icon, timer=self.timer, icon_size=self.icon_size)
 
@@ -136,6 +188,14 @@ class Volume(WidgetBox):
             slider.set_name(sink["id"])
             slider.connect("value-changed", self.on_slider_change)
             slider_box.append(slider)
+            mute_button = MuteButton(
+                icon_size=self.icon_size,
+                path=self.path,
+                id=sink["id"],
+                muted_icon=self.muted_icon,
+                unmuted_icon=self.unmuted_icon,
+            )
+            slider_box.append(mute_button)
             self.dropdown.add(slider_box)
         return True
 
@@ -178,6 +238,13 @@ class Volume(WidgetBox):
 
     def on_close(self, user_data):
         self.dropdown.clear()
+
+    def on_mute(self, user_data, mute_button_label):
+        # print(user_data, mute_button_label)
+        if mute_button_label.get_label() == "Mute":
+            mute_button_label.set_label("Muted")
+        elif mute_button_label.get_label() == "Muted":
+            mute_button_label.set_label("Mute")
 
     def update_sinks(self):
         GLib.timeout_add(1000, self.get_sinks)
