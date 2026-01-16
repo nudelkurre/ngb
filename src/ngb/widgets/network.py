@@ -43,6 +43,9 @@ class Network(WidgetBox):
         super().__init__(icon=self.icon, timer=self.timer, icon_size=self.icon_size)
 
     def run(self):
+        self.set_icon()
+        self.set_text()
+        self.update_label()
         self.dropdown.connect("closed", self.on_close)
 
     def set_text(self):

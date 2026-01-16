@@ -44,6 +44,7 @@ class WindowTitle(WidgetBox):
         self.text = "Test"
 
     def run(self):
+        self.update_label()
         self.dropdown.connect("closed", self.on_close)
         self.get_window_title()
         self.update_window_title()

@@ -2,6 +2,7 @@ from .bar import Bar
 from .config import Config
 from .dropdownwindow import DropDownWindow
 from .hyprlandipc import HyprlandIpc
+from .namedtuples import NamedTuples
 from .niriipc import NiriIPC
 from .swayipc import SwayIPC
 from .widgetbox import WidgetBox

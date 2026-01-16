@@ -16,6 +16,11 @@ class Headset(WidgetBox):
         self.icon_size = kwargs.get("icon_size", 20)
         super().__init__(icon=self.icon, icon_size=self.icon_size, timer=self.timer)
 
+    def run(self):
+        self.set_icon()
+        self.set_text()
+        self.update_label()
+
     def set_text(self):
         path = which("headsetcontrol")
         if path:
