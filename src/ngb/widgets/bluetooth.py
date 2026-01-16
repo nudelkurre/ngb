@@ -4,7 +4,9 @@ from pydbus import SystemBus
 
 import re
 
-from ngb.modules import WidgetBox
+from ngb.modules import NamedTuples, WidgetBox
+
+BluetoothDevice = NamedTuples.BluetoothDevice
 
 
 class Bluetooth(Gtk.Box):
@@ -31,11 +33,11 @@ class Bluetooth(Gtk.Box):
             for device in devices:
                 device = self.get_device_info(device)
                 device_info = self.parse_device_info(device)
-                if device_info["connected"]:
+                if device_info.connected:
                     self.append(
                         WidgetBox(
-                            icon=device_info.get("icon", "No"),
-                            text=f"{device_info.get('battery', "0")}%",
+                            icon=device_info.icon,
+                            text=f"{device_info.battery}%",
                             spacing=self.spacing,
                             icon_size=self.icon_size,
                         )
@@ -65,20 +67,14 @@ class Bluetooth(Gtk.Box):
         return proxy_data
 
     def parse_device_info(self, device):
-        adapter = device.Adapter if "Adapter" in dir(device) else ""
-        address = device.Address if "Address" in dir(device) else ""
-        battery = device.Percentage if "Percentage" in dir(device) else "0"
-        connected = device.Connected if "Connected" in dir(device) else False
-        icon = self.icons.get(device.Icon, "󰥈")
-        name = device.Name if "Name" in dir(device) else ""
-        return {
-            "adapter": adapter,
-            "address": address,
-            "battery": battery,
-            "connected": connected,
-            "icon": icon,
-            "name": name,
-        }
+        return BluetoothDevice(
+            adapter=device.Adapter if "Adapter" in dir(device) else "",
+            address=device.Address if "Address" in dir(device) else "",
+            battery=device.Percentage if "Percentage" in dir(device) else "0",
+            connected=device.Connected if "Connected" in dir(device) else False,
+            icon=self.icons.get(device.Icon, "󰥈"),
+            name=device.Name if "Name" in dir(device) else "",
+        )
 
     def update_list(self):
         GLib.timeout_add(self.timer * 1000, self.update_boxes)

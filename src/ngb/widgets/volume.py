@@ -1,12 +1,13 @@
 from gi.repository import Gtk
 from gi.repository import GLib
 from shutil import which
-from collections import namedtuple
 
 import subprocess
 import re
 
-from ngb.modules import WidgetBox
+from ngb.modules import NamedTuples, WidgetBox
+
+VolumeSink = NamedTuples.VolumeSink
 
 
 class MuteButton(Gtk.Button):
@@ -23,18 +24,13 @@ class MuteButton(Gtk.Button):
         self.connect("clicked", self.on_mute)
 
     def get_sink(self):
-        sink_tuple = namedtuple(
-            "Sink",
-            ["id", "name", "volume", "muted", "default"],
-            defaults=(0, "", 0.0, False, False),
-        )
         cmd = f"wpctl status"
         wpctl = subprocess.run(cmd.split(), capture_output=True, text=True).stdout
         muted = re.search(
             rf"(?P<id>{self.id})\.\s(?P<name>[\w\s]+)\[vol:\s(?P<volume>\d+\.\d+)\s?(?P<muted>MUTED)?\]",
             wpctl,
         )
-        sink = sink_tuple(
+        sink = VolumeSink(
             id=muted.group("id"),
             name=muted.group("name").lstrip().rstrip(),
             volume=float(muted.group("volume")),
@@ -72,6 +68,9 @@ class Volume(WidgetBox):
         super().__init__(icon=self.icon, timer=self.timer, icon_size=self.icon_size)
 
     def run(self):
+        self.set_icon()
+        self.set_text()
+        self.update_label()
         self.get_sinks()
 
         # Connect signals for dropdown

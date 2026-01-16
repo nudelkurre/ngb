@@ -3,7 +3,10 @@ import socket
 import re
 import os
 
+from .namedtuples import NamedTuples
 from .windowmanageripc import WindowManagerIPC
+
+Workspace = NamedTuples.Workspace
 
 
 class HyprlandIpc(WindowManagerIPC):
@@ -45,9 +48,6 @@ class HyprlandIpc(WindowManagerIPC):
         return parsed_ws
 
     def get_workspaces(self):
-        workspace = namedtuple(
-            "workspace", ["id", "name", "focused", "output", "urgent"]
-        )
         workspaces = self.send_to_socket("workspaces")
         active_workspace = self.send_to_socket("activeworkspace")
         active_id = self.parse_workspace(active_workspace)[0]["id"]
@@ -55,7 +55,7 @@ class HyprlandIpc(WindowManagerIPC):
         ws_list = list()
         for p in parsed_ws:
             ws_list.append(
-                workspace(
+                Workspace(
                     id=p["id"],
                     name=p["name"],
                     focused=p["id"] == active_id,

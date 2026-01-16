@@ -5,7 +5,10 @@ import os
 import struct
 import json
 
+from .namedtuples import NamedTuples
 from .windowmanageripc import WindowManagerIPC
+
+Workspace = NamedTuples.Workspace
 
 
 class SwayIPC(WindowManagerIPC):
@@ -43,14 +46,11 @@ class SwayIPC(WindowManagerIPC):
             usocket.close()
 
     def get_workspaces(self):
-        workspace = namedtuple(
-            "workspace", ["id", "name", "focused", "output", "urgent"]
-        )
         wss = self.send_to_socket("GET_WORKSPACES")
         ws_list = list()
         for p in wss:
             ws_list.append(
-                workspace(
+                Workspace(
                     id=p.get("num", 0),
                     name=p.get("name", "0"),
                     focused=p.get("focused", False),

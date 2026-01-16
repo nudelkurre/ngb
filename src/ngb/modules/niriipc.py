@@ -5,7 +5,10 @@ import os
 import json
 from operator import itemgetter
 
+from .namedtuples import NamedTuples
 from .windowmanageripc import WindowManagerIPC
+
+Workspace = NamedTuples.Workspace
 
 
 class NiriIPC(WindowManagerIPC):
@@ -74,9 +77,6 @@ class NiriIPC(WindowManagerIPC):
         return parsed_ws
 
     def get_workspaces(self):
-        workspace = namedtuple(
-            "workspace", ["id", "name", "focused", "output", "urgent"]
-        )
         workspaces = self.send_to_socket("Workspaces")
         if workspaces and "Ok" in workspaces:
             parsed_ws = self.parse_workspace(
@@ -85,7 +85,7 @@ class NiriIPC(WindowManagerIPC):
             ws_list = list()
             for p in parsed_ws:
                 ws_list.append(
-                    workspace(
+                    Workspace(
                         id=p.get("id", 0),
                         name=p.get("name", "0"),
                         focused=p.get("focused", False),

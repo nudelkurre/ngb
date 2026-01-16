@@ -8,7 +8,9 @@ import os
 from gi.repository import Gtk
 from gi.repository import GLib
 
-from ngb.modules import WidgetBox, DropDownWindow
+from ngb.modules import NamedTuples, WidgetBox, DropDownWindow
+
+WeatherData = NamedTuples.Weather
 
 
 class Weather_Base:
@@ -118,17 +120,31 @@ class SMHI(Weather_Base):
         self.url = f"https://opendata-download-metfcst.smhi.se/api/category/pmp3g/version/2/geotype/point/lon/{self.location['lon']}/lat/{self.location['lat']}/data.json"
 
     def parse_weather_data(self):
-        # data = self.weather_data["timeSeries"][0]["parameters"]
+        self.get_weather_data()
         data = self.weather_data.get("timeSeries", [{}])[0].get("parameters", {})
+        temperature = 0
+        temperature_unit = "C"
+        wind_speed = 0.0
+        weather_code = 1
+        icon = ""
 
         for d in data:
             if d["name"] == "t":
-                self.parsed_data["temperature"] = d["values"][0]
-                self.parsed_data["temperature_unit"] = d["unit"][0]
+                temperature = d["values"][0]
+                temperature_unit = d["unit"][0]
             elif d["name"] == "ws":
-                self.parsed_data["wind_speed"] = d["values"][0]
+                wind_speed = d["values"][0]
             elif d["name"] == "Wsymb2":
-                self.parsed_data["weather_code"] = d["values"][0]
+                weather_code = d["values"][0]
+                icon = self.icons.get(weather_code, 0)
+
+        return WeatherData(
+            temperature=temperature,
+            temperature_unit=temperature_unit,
+            windspeed=wind_speed,
+            weather_code=weather_code,
+            icon=icon,
+        )
 
 
 class YR(Weather_Base):
@@ -226,6 +242,7 @@ class YR(Weather_Base):
         self.url = f"https://api.met.no/weatherapi/locationforecast/2.0/compact?lat={self.location['lat']}&lon={self.location['lon']}"
 
     def parse_weather_data(self):
+        self.get_weather_data()
         data = self.weather_data.get("properties", {})
         weather = data.get("timeseries", [{}])[0].get("data", {})
         details = weather.get("instant", {}).get("details", {})
@@ -233,13 +250,28 @@ class YR(Weather_Base):
             weather.get("next_1_hours", {}).get("summary", {}).get("symbol_code", None)
         )
         units = data.get("meta", {}).get("units", None)
+
+        temperature = 0
+        temperature_unit = "C"
+        wind_speed = 0.0
+        weather_code = 1
+
         for d in details:
             if d == "air_temperature":
-                self.parsed_data["temperature"] = details[d]
-                self.parsed_data["temperature_unit"] = units[d][0].upper()
+                temperature = details[d]
+                temperature_unit = units[d][0].upper()
             elif d == "wind_speed":
-                self.parsed_data["wind_speed"] = details[d]
-        self.parsed_data["weather_code"] = self.weather_id[code]
+                wind_speed = details[d]
+        weather_code = self.weather_id[code]
+        icon = self.icons.get(weather_code, 1)
+
+        return WeatherData(
+            temperature=temperature,
+            temperature_unit=temperature_unit,
+            windspeed=wind_speed,
+            weather_code=weather_code,
+            icon=icon,
+        )
 
 
 class Weather(WidgetBox):
@@ -274,8 +306,8 @@ class Weather(WidgetBox):
 
     def run(self):
         self.weather.run()
+        self.set_text()
         self.populate_dropdown()
-        self.update_weather()
         self.update_timeout()
 
     def on_click(self, user_data):
@@ -304,38 +336,26 @@ class Weather(WidgetBox):
         ):
             self.text_label.set_label("No API set")
         else:
-            parsed_data = self.weather.parsed_data
-            if "temperature" in parsed_data:
-                temperature = f"{parsed_data.get('temperature', '0')} {parsed_data.get('temperature_unit', 'C')}"
-                self.text_label.set_label(temperature)
-                self.icon = self.weather.icons.get(
-                    parsed_data.get("weather_code", 1), ""
+            parsed_data = self.weather.parse_weather_data()
+            self.text_label.set_label(
+                f"{parsed_data.temperature} {parsed_data.temperature_unit}"
+            )
+            # self.icon = self.weather.icons.get(parsed_data.weather_code, 1)
+            self.icon = parsed_data.icon
+            self.set_icon()
+            self.temperature_label.set_label(f"Temperature {parsed_data.temperature}")
+            self.wind_speed_label.set_label(f"Wind speed {parsed_data.windspeed} m/s")
+            self.weather_description_label.set_label(
+                f"{self.weather.descriptions.get(parsed_data.weather_code, 1)}"
+            )
+            if self.show_big_icon:
+                self.weather_icon.set_markup(
+                    f'<span font="{self.big_icon_size}">{parsed_data.icon}</span>'
                 )
-                self.set_icon()
-                self.temperature_label.set_label(f"Temperature {temperature}")
-            if "wind_speed" in parsed_data:
-                self.wind_speed_label.set_label(
-                    f"Wind speed {parsed_data.get('wind_speed', "0")} m/s"
-                )
-            if "weather_code" in parsed_data:
-                self.weather_description_label.set_label(
-                    f"{self.weather.descriptions.get(parsed_data.get('weather_code', 1), "")}"
-                )
-                if self.show_big_icon:
-                    self.weather_icon.set_markup(
-                        f'<span font="{self.big_icon_size}">{self.weather.icons.get(parsed_data.get("weather_code", 1), "")}</span>'
-                    )
-        return True
-
-    def update_weather(self):
-        return_code = self.weather.get_weather_data()
-        if return_code == 200:
-            self.weather.parse_weather_data()
-            self.set_text()
             self.last_updated_label.set_markup(
                 f'<span font="{self.small_text}">Last updated: {datetime.now().strftime("%H:%M")}</span>'
             )
         return True
 
     def update_timeout(self):
-        GLib.timeout_add(self.timer * 1000, self.update_weather)
+        GLib.timeout_add(self.timer * 1000, self.set_text)
