@@ -95,7 +95,7 @@ homeConfigurations = {
 ```
 
 ## Configuration
-The configuration is a json formated file stored in $XDG_CONFIG_HOME/ngb/config.json if XDG_CONFIG_HOME is set, else it is stored in $HOME/.config/ngb/config.json
+The configuration is by default a json formated file stored in $XDG_CONFIG_HOME/ngb/config.json if XDG_CONFIG_HOME is set, else it is stored in $HOME/.config/ngb/config.json.
 
 If a configuration file is not found when ngb first run, it will create one in the right location specified above and looks like this:
 
@@ -147,6 +147,9 @@ If a configuration file is not found when ngb first run, it will create one in t
   "spacing": 5
   }
 ```
+
+It is possible to specify a different path with the "--config" flag. The specified file can be in json, toml or yaml format and is defined by either the file extension or can be specified with the "--type" flag (the flag takes precedence over file extension if both is found). This can also be used to create the default configuration file to create the file in any of the other formats than default json.
+
 ### bars
 Bars is a list of bars containing objects with settings for each bar.
 
@@ -226,6 +229,8 @@ wpctl is needed to be in $PATH to work.
 |configureation key|description|data type|default|
 |---|---|---|---|
 |click_to_mute|Swap left and middle click action, to make left click toggle mute|Boolean|False|
+|muted_icon|Set icon to show when a sink is muted|String|"󰝟"|
+|unmuted_icon|Set icon to show when a sink is unmuted|String|"󰕾"|
 
 ##### Weather
 Show current temperature of specified city. Left click will show a dropdown with city name, current temperature, current wind speed and current weather description.
@@ -237,6 +242,9 @@ OpenWeatherMap (for global) is planned for future.
 |api|Set which api to use|String|"YR"|
 |show_big_icon|Set to show larger weather icon in dropdown|Boolean|False|
 |big_icon_size|Set size of large weather icon|Integer|60|
+
+##### Window Title
+Show active windows title. Click will show a dropdown with all windows and click on a title in the dropdown to change focus to that window (only for Niri and SwayWM)
 
 ##### Workspace
 Show active workspaces and highlight the focused one. Can be set to show only a specific monitor or show all workspaces from all monitors.
