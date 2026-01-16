@@ -7,4 +7,5 @@ from .headset import Headset
 from .network import Network
 from .volume import Volume
 from .weather import Weather
+from .windowtitle import WindowTitle
 from .workspaces import Workspaces

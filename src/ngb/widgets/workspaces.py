@@ -6,7 +6,16 @@ import os
 from collections import namedtuple
 import socket
 
-from ngb.modules import HyprlandIpc, NiriIPC, SwayIPC, WidgetBox, WindowManagerIPC
+from ngb.modules import (
+    HyprlandIpc,
+    NamedTuples,
+    NiriIPC,
+    SwayIPC,
+    WidgetBox,
+    WindowManagerIPC,
+)
+
+Workspace = NamedTuples.Workspace
 
 
 class WorkspaceBox(WidgetBox):
@@ -29,6 +38,7 @@ class WorkspaceBox(WidgetBox):
         super().__init__(icon=self.show_name, text=self.name, icon_size=self.icon_size)
         self.hide_label()
         self.set_focused()
+        self.set_icon()
 
     def set_focused(self):
         if not self.focused:
@@ -85,17 +95,16 @@ class Workspaces(Gtk.Box):
         ws_list = []
         workspaces = self.wm.get_workspaces()
         for ws in workspaces:
-            ws_list.append(
-                {
-                    "id": ws.id,
-                    "name": ws.name,
-                    "focused": ws.focused,
-                    "output": ws.output,
-                    "urgent": ws.urgent,
-                }
+            workspace = Workspace(
+                id=ws.id,
+                name=ws.name,
+                focused=ws.focused,
+                output=ws.output,
+                urgent=ws.urgent,
             )
+            ws_list.append(workspace)
 
-        ws_list = sorted(ws_list, key=lambda d: int(d["id"]))
+        ws_list = sorted(ws_list, key=lambda d: int(d.id))
         self.workspaces = ws_list
 
     def update_boxes(self):
@@ -106,21 +115,21 @@ class Workspaces(Gtk.Box):
                 self.remove(self.get_first_accessible_child())
 
             for ws in self.workspaces:
-                if self.monitor == "all" or ws["output"] == self.monitor:
+                if self.monitor == "all" or ws.output == self.monitor:
                     if self.use_workspace_names:
-                        show_name = ws["name"]
+                        show_name = ws.name
                     else:
-                        if ws["name"] in self.ws_names:
-                            show_name = self.ws_names.get(ws.get("name", ""), {})
+                        if ws.name in self.ws_names:
+                            show_name = self.ws_names.get(ws.name, {})
                         else:
                             show_name = self.default_name
                     self.append(
                         WorkspaceBox(
-                            id=ws.get("id", 0),
-                            name=ws.get("name", ""),
+                            id=ws.id,
+                            name=ws.name,
                             show_name=show_name,
-                            focused=ws.get("focused", False),
-                            urgent=ws.get("urgent", False),
+                            focused=ws.focused,
+                            urgent=ws.urgent,
                             icon_size=self.icon_size,
                         )
                     )

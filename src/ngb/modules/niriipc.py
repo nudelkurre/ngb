@@ -5,7 +5,10 @@ import os
 import json
 from operator import itemgetter
 
+from .namedtuples import NamedTuples
 from .windowmanageripc import WindowManagerIPC
+
+Workspace = NamedTuples.Workspace
 
 
 class NiriIPC(WindowManagerIPC):
@@ -74,9 +77,6 @@ class NiriIPC(WindowManagerIPC):
         return parsed_ws
 
     def get_workspaces(self):
-        workspace = namedtuple(
-            "workspace", ["id", "name", "focused", "output", "urgent"]
-        )
         workspaces = self.send_to_socket("Workspaces")
         if workspaces and "Ok" in workspaces:
             parsed_ws = self.parse_workspace(
@@ -85,7 +85,7 @@ class NiriIPC(WindowManagerIPC):
             ws_list = list()
             for p in parsed_ws:
                 ws_list.append(
-                    workspace(
+                    Workspace(
                         id=p.get("id", 0),
                         name=p.get("name", "0"),
                         focused=p.get("focused", False),
@@ -103,11 +103,26 @@ class NiriIPC(WindowManagerIPC):
             for out in parsed_outputs:
                 self.active_workspaces[out] = []
 
+    def get_windows(self):
+        windows = self.send_to_socket("Windows")
+        windows_list = []
+        if windows and "Ok" in windows:
+            parsed_windows = windows.get("Ok", {}).get("Windows", [])
+            for w in parsed_windows:
+                window_dict = {}
+                window_dict["id"] = w.get("id")
+                window_dict["title"] = w.get("title", "")
+                window_dict["focused"] = w.get("is_focused", False)
+                windows_list.append(window_dict)
+        return windows_list
+
     def translate_cmd(self, cmd):
         cmd_list = cmd.split()
         new_cmd = ""
         if cmd_list[0] == "workspace":
             new_cmd = self.goto_workspace(cmd_list[1])
+        elif cmd_list[0] == "window":
+            new_cmd = {"Action": {"FocusWindow": {"id": int(cmd_list[1])}}}
         else:
             new_cmd = cmd
         cmd_json = json.dumps(new_cmd).encode("utf-8")
@@ -139,5 +154,5 @@ class NiriIPC(WindowManagerIPC):
         else:
             return {"Action": {"FocusWorkspace": {"reference": {"Name": workspace}}}}
 
-    def command(self, cmd):
-        self.send_to_socket(cmd)
+    def focus_window(self, id):
+        self.command(f"window {id}")

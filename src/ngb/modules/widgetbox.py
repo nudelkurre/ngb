@@ -59,14 +59,9 @@ class WidgetBox(Gtk.Button):
         self.right_click_controller.connect("begin", self.on_right_click)
         self.box.add_controller(self.right_click_controller)
 
-        # Append and set icon and text to widget
+        # Append icon and text to widget
         self.box.append(self.icon_label)
         self.box.append(self.text_label)
-        self.set_icon()
-        self.set_text()
-
-        # Start timer to update the label
-        self.update_label()
 
     def run(self):
         pass

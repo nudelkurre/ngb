@@ -11,6 +11,19 @@ class WindowManagerIPC:
     def get_workspaces(self):
         return []
 
+    def get_windows(self):
+        return []
+
+    def get_focused_window(self):
+        windows = self.get_windows()
+        for window in windows:
+            if window.get("focused"):
+                return window.get("title")
+        return ""
+
+    def focus_window(self, id):
+        pass
+
     def translate_cmd(self, cmd):
         return ""
 

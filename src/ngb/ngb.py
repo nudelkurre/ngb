@@ -27,6 +27,7 @@ from ngb.widgets import (
     Network,
     Volume,
     Weather,
+    WindowTitle,
     Workspaces,
 )
 from ngb.modules import Bar, Config
@@ -109,6 +110,7 @@ class MainWindow(Gtk.Application):
             "network": Network,
             "volume": Volume,
             "weather": Weather,
+            "windowtitle": WindowTitle,
             "workspace": Workspaces,
         }
 
@@ -123,7 +125,7 @@ class MainWindow(Gtk.Application):
                 new_module.run()
 
         for widget in bar_config["widgets"]["center"]:
-            config = widget["config"]
+            config = widget.get("config", {})
             if "icon_size" not in config and "icon_size" in self.config.data:
                 config["icon_size"] = self.config.data.get("icon_size", 20)
             module = widget.get("module", [])
@@ -133,7 +135,7 @@ class MainWindow(Gtk.Application):
                 new_module.run()
 
         for widget in bar_config["widgets"]["right"]:
-            config = widget["config"]
+            config = widget.get("config", {})
             if "icon_size" not in config and "icon_size" in self.config.data:
                 config["icon_size"] = self.config.data.get("icon_size", 20)
             module = widget.get("module", [])
@@ -189,9 +191,9 @@ class MainWindow(Gtk.Application):
             print(f"Version: {__about__.__version__}")
         else:
             if "config" in options:
-                self.config_file_path = options["config"]
+                self.config_file_path = options.get("config")
             if "type" in options:
-                self.config_file_type = options["type"]
+                self.config_file_type = options.get("type")
             self.activate()
         return True
 
