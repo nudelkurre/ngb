@@ -41,7 +41,7 @@ class WindowTitle(WidgetBox):
     def __init__(self, **kwargs):
         super().__init__(icon="", spacing=1)
         self.timer = kwargs.get("timer", 0.1)
-        self.hide_no_focus = kwargs.get("hide_no_focus", True)
+        self.hide_no_focus = kwargs.get("hide_no_focus", False)
         self.text = "Test"
 
     def run(self):
