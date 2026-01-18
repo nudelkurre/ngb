@@ -41,6 +41,7 @@ class WindowTitle(WidgetBox):
     def __init__(self, **kwargs):
         super().__init__(icon="", spacing=1)
         self.timer = kwargs.get("timer", 0.1)
+        self.hide_no_focus = kwargs.get("hide_no_focus", False)
         self.text = "Test"
 
     def run(self):
@@ -63,7 +64,13 @@ class WindowTitle(WidgetBox):
     def get_window_title(self):
         window = self.wm.get_focused_window()
         if window == "":
-            window = "No window in focus"
+            if self.hide_no_focus:
+                self.set_visible(False)
+            else:
+                window = "No window in focus"
+        else:
+            if not self.get_visible():
+                self.set_visible(True)
         self.text = window
         return True
 

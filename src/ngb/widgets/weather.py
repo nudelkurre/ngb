@@ -306,6 +306,7 @@ class Weather(WidgetBox):
 
     def run(self):
         self.weather.run()
+        super().run()
         self.set_text()
         self.populate_dropdown()
         self.update_timeout()
