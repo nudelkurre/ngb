@@ -34,14 +34,14 @@ class Bluetooth(Gtk.Box):
                 device = self.get_device_info(device)
                 device_info = self.parse_device_info(device)
                 if device_info.connected:
-                    self.append(
-                        WidgetBox(
-                            icon=device_info.icon,
-                            text=f"{device_info.battery}%",
-                            spacing=self.spacing,
-                            icon_size=self.icon_size,
-                        )
+                    bluetooth_box = WidgetBox(
+                        icon=device_info.icon,
+                        text=f"{device_info.battery}%",
+                        spacing=self.spacing,
+                        icon_size=self.icon_size,
                     )
+                    bluetooth_box.run()
+                    self.append(bluetooth_box)
 
         return True
 

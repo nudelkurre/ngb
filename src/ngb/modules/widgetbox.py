@@ -64,7 +64,9 @@ class WidgetBox(Gtk.Button):
         self.box.append(self.text_label)
 
     def run(self):
-        pass
+        self.set_icon()
+        self.set_text()
+        self.update_label()
 
     def on_scroll(self, controller, x, y):
         pass
