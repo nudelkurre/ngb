@@ -18,9 +18,7 @@ class Disk(WidgetBox):
         super().__init__(timer=self.timer, icon=self.icon, icon_size=self.icon_size)
 
     def run(self):
-        self.set_icon()
-        self.set_text()
-        self.update_label()
+        super().run()
         self.populate_dropdown()
 
     def set_text(self):

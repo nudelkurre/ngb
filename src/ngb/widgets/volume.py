@@ -68,9 +68,7 @@ class Volume(WidgetBox):
         super().__init__(icon=self.icon, timer=self.timer, icon_size=self.icon_size)
 
     def run(self):
-        self.set_icon()
-        self.set_text()
-        self.update_label()
+        super().run()
         self.get_sinks()
 
         # Connect signals for dropdown

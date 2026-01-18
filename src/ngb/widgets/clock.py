@@ -30,9 +30,7 @@ class Clock(WidgetBox):
         )
 
     def run(self):
-        self.set_icon()
-        self.set_text()
-        self.update_label()
+        super().run()
         self.populate_dropdown()
 
         # Create a revealer for smoother transition when hover over
