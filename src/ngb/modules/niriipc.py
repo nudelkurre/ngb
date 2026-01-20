@@ -123,6 +123,8 @@ class NiriIPC(WindowManagerIPC):
             new_cmd = self.goto_workspace(cmd_list[1])
         elif cmd_list[0] == "window":
             new_cmd = {"Action": {"FocusWindow": {"id": int(cmd_list[1])}}}
+        elif cmd_list[0] == "close":
+            new_cmd = {"Action": {"CloseWindow": {"id": int(cmd_list[1])}}}
         else:
             new_cmd = cmd
         cmd_json = json.dumps(new_cmd).encode("utf-8")

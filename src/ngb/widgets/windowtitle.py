@@ -22,6 +22,15 @@ class WindowButton(Gtk.Box):
         self.window_button.connect("clicked", self.focus_window)
         self.append(self.window_button)
 
+        self.close_button = Gtk.Button(label="X")
+        self.close_button.connect("clicked", self.close_window)
+        self.append(self.close_button)
+
+    def close_window(self, user_data):
+        self.wm.send_to_socket(f"close {self.window_id}")
+        self.dropdown.remove(self)
+        self.dropdown.popdown()
+
     def focus_window(self, user_data):
         self.wm.focus_window(self.window_id)
         self.dropdown.popdown()
