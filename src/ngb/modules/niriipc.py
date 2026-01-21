@@ -156,5 +156,8 @@ class NiriIPC(WindowManagerIPC):
         else:
             return {"Action": {"FocusWorkspace": {"reference": {"Name": workspace}}}}
 
+    def close_window(self, id):
+        self.command(f"close {id}")
+
     def focus_window(self, id):
         self.command(f"window {id}")
