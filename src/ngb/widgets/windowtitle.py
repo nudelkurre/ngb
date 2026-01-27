@@ -42,6 +42,7 @@ class WindowTitle(WidgetBox):
         super().__init__(icon="", spacing=1)
         self.timer = kwargs.get("timer", 0.1)
         self.hide_no_focus = kwargs.get("hide_no_focus", False)
+        self.title_max_length = kwargs.get("title_max_lenght", 200)
         self.text = "Test"
 
     def run(self):
@@ -71,7 +72,7 @@ class WindowTitle(WidgetBox):
         else:
             if not self.get_visible():
                 self.set_visible(True)
-        self.text = window
+        self.text = window[: self.title_max_length]
         return True
 
     def on_click(self, user_data):
