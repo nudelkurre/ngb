@@ -8,6 +8,8 @@ class NamedTuples:
         defaults=(0, "", False, "", False),
     )
 
+    Window = namedtuple("Window", ["id", "title", "focused"], defaults=(0, "", False))
+
     BluetoothDevice = namedtuple(
         "BluetoothDevice",
         ["adapter", "address", "battery", "connected", "icon", "name"],

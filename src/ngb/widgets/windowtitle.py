@@ -15,8 +15,8 @@ class WindowButton(Gtk.Box):
         self.window = kwargs.get("window", {})
         self.wm = kwargs.get("wm")
         self.dropdown = kwargs.get("dropdown")
-        self.window_title = self.window.get("title", "")
-        self.window_id = self.window.get("id")
+        self.window_title = kwargs.get("title", "")
+        self.window_id = kwargs.get("id")
         self.window_button = Gtk.Button(label=self.window_title)
         self.window_button.add_css_class("widget-button")
         self.window_button.connect("clicked", self.focus_window)
@@ -42,7 +42,7 @@ class WindowTitle(WidgetBox):
         super().__init__(icon="", spacing=1)
         self.timer = kwargs.get("timer", 0.1)
         self.hide_no_focus = kwargs.get("hide_no_focus", False)
-        self.title_max_length = kwargs.get("title_max_lenght", 200)
+        self.title_max_length = kwargs.get("title_max_length", 200)
         self.text = "Test"
 
     def run(self):
@@ -55,7 +55,12 @@ class WindowTitle(WidgetBox):
         window_list = self.get_windows()
         for window in window_list:
             self.dropdown.add(
-                WindowButton(window=window, wm=self.wm, dropdown=self.dropdown)
+                WindowButton(
+                    title=window.title[: self.title_max_length],
+                    id=window.id,
+                    wm=self.wm,
+                    dropdown=self.dropdown,
+                )
             )
 
     def get_windows(self):

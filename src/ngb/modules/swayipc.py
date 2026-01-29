@@ -9,6 +9,7 @@ from .namedtuples import NamedTuples
 from .windowmanageripc import WindowManagerIPC
 
 Workspace = NamedTuples.Workspace
+Window = NamedTuples.Window
 
 
 class SwayIPC(WindowManagerIPC):
@@ -72,11 +73,14 @@ class SwayIPC(WindowManagerIPC):
             window_nodes += on.get("nodes", [])
         window_list = []
         for wn in window_nodes:
-            wn_dict = {}
-            wn_dict["id"] = wn.get("id", 0)
-            wn_dict["title"] = wn.get("name", "")
-            wn_dict["focused"] = wn.get("focused", False)
-            window_list.append(wn_dict)
+            # wn_dict = {}
+            # wn_dict["id"] = wn.get("id", 0)
+            # wn_dict["title"] = wn.get("name", "")
+            # wn_dict["focused"] = wn.get("focused", False)
+            # window_list.append(wn_dict)
+            window_list.append(
+                Window(id=wn.get("id"), title=wn.get("name"), focused=wn.get("focused"))
+            )
         return window_list
 
     def focus_window(self, id):
