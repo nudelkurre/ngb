@@ -17,8 +17,8 @@ class WindowManagerIPC:
     def get_focused_window(self):
         windows = self.get_windows()
         for window in windows:
-            if window.get("focused"):
-                return window.get("title")
+            if window.focused:
+                return window.title
         return ""
 
     def focus_window(self, id):

@@ -9,6 +9,7 @@ from .namedtuples import NamedTuples
 from .windowmanageripc import WindowManagerIPC
 
 Workspace = NamedTuples.Workspace
+Window = NamedTuples.Window
 
 
 class NiriIPC(WindowManagerIPC):
@@ -109,11 +110,13 @@ class NiriIPC(WindowManagerIPC):
         if windows and "Ok" in windows:
             parsed_windows = windows.get("Ok", {}).get("Windows", [])
             for w in parsed_windows:
-                window_dict = {}
-                window_dict["id"] = w.get("id")
-                window_dict["title"] = w.get("title", "")
-                window_dict["focused"] = w.get("is_focused", False)
-                windows_list.append(window_dict)
+                windows_list.append(
+                    Window(
+                        id=w.get("id"),
+                        title=w.get("title"),
+                        focused=w.get("is_focused"),
+                    )
+                )
         return windows_list
 
     def translate_cmd(self, cmd):

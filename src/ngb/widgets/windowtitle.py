@@ -15,6 +15,7 @@ class WindowButton(Gtk.Box):
         self.window = kwargs.get("window", {})
         self.wm = kwargs.get("wm")
         self.dropdown = kwargs.get("dropdown")
+        self.hide_on_close = kwargs.get("hide_on_close")
         self.window_title = self.window.get("title", "")
         self.window_id = self.window.get("id")
         self.window_button = Gtk.Button(label=self.window_title)
@@ -42,6 +43,8 @@ class WindowTitle(WidgetBox):
         super().__init__(icon="", spacing=1)
         self.timer = kwargs.get("timer", 0.1)
         self.hide_no_focus = kwargs.get("hide_no_focus", False)
+        self.hide_on_close = kwargs.get("hide_on_close", True)
+        self.title_max_length = kwargs.get("title_max_length", 200)
         self.text = "Test"
 
     def run(self):
@@ -54,7 +57,13 @@ class WindowTitle(WidgetBox):
         window_list = self.get_windows()
         for window in window_list:
             self.dropdown.add(
-                WindowButton(window=window, wm=self.wm, dropdown=self.dropdown)
+                WindowButton(
+                    title=self.cut_title_lenght(window.title),
+                    id=window.id,
+                    wm=self.wm,
+                    dropdown=self.dropdown,
+                    hide_on_close=self.hide_on_close,
+                )
             )
 
     def get_windows(self):
@@ -71,8 +80,17 @@ class WindowTitle(WidgetBox):
         else:
             if not self.get_visible():
                 self.set_visible(True)
-        self.text = window
+        self.text = self.cut_title_lenght(window)
         return True
+
+    def cut_title_lenght(self, title):
+        old_title = title.split(" ")
+        new_title = title[: self.title_max_length].split(" ")
+        new_title_last_index = len(new_title) - 1
+        if old_title[new_title_last_index] == new_title[new_title_last_index]:
+            return " ".join(new_title)
+        else:
+            return " ".join(new_title[:-1])
 
     def on_click(self, user_data):
         if not isinstance(self.wm, HyprlandIpc):

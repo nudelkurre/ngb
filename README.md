@@ -245,6 +245,11 @@ OpenWeatherMap (for global) is planned for future.
 
 ##### Window Title
 Show active windows title. Click will show a dropdown with all windows and click on a title in the dropdown to change focus to that window (only for Niri and SwayWM)
+|configureation key|description|data type|default|
+|---|---|---|---|
+|hide_no_focus|Set to hide the widget if no window is focused|Boolean|False|
+|hide_on_close|Set to close the dropdown after closing a window|Boolean|True|
+|title_max_length|Set to limit the max amount of character a window title can show|Integer|200|
 
 ##### Workspace
 Show active workspaces and highlight the focused one. Can be set to show only a specific monitor or show all workspaces from all monitors.
