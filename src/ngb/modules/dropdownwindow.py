@@ -3,7 +3,6 @@ from gi.repository import GLib
 from gi.repository import Gdk
 from gi.repository import Gio
 
-
 class DropDownWindow(Gtk.Popover):
     def __init__(self, **kwargs):
         super().__init__()
@@ -18,10 +17,6 @@ class DropDownWindow(Gtk.Popover):
 
     def add(self, widget):
         self.box.append(widget)
-        return True
-
-    def remove(self, widget):
-        self.box.remove(widget)
         return True
 
     def clear(self):
