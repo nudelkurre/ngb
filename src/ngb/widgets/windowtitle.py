@@ -67,7 +67,8 @@ class WindowTitle(WidgetBox):
         for window in window_list:
             self.dropdown.add(
                 WindowButton(
-                    window=window,
+                    title=self.cut_title_lenght(window.title),
+                    id=window.id,
                     wm=self.wm,
                     dropdown=self.dropdown,
                     hide_on_close=self.hide_on_close,
@@ -88,8 +89,17 @@ class WindowTitle(WidgetBox):
         else:
             if not self.get_visible():
                 self.set_visible(True)
-        self.text = window
+        self.text = self.cut_title_lenght(window)
         return True
+
+    def cut_title_lenght(self, title):
+        old_title = title.split(" ")
+        new_title = title[: self.title_max_length].split(" ")
+        new_title_last_index = len(new_title) - 1
+        if old_title[new_title_last_index] == new_title[new_title_last_index]:
+            return " ".join(new_title)
+        else:
+            return " ".join(new_title[:-1])
 
     def on_click(self, user_data):
         if not isinstance(self.wm, HyprlandIpc):
