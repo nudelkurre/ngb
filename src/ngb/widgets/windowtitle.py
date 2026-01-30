@@ -12,12 +12,11 @@ from ngb.modules import HyprlandIpc, NiriIPC, SwayIPC, WidgetBox, WindowManagerI
 class WindowButton(Gtk.Box):
     def __init__(self, **kwargs):
         super().__init__()
-        self.window = kwargs.get("window", {})
         self.wm = kwargs.get("wm")
         self.dropdown = kwargs.get("dropdown")
         self.hide_on_close = kwargs.get("hide_on_close")
-        self.window_title = self.window.get("title", "")
-        self.window_id = self.window.get("id")
+        self.window_title = kwargs.get("title", "")
+        self.window_id = kwargs.get("id")
         self.window_button = Gtk.Button(label=self.window_title)
         self.window_button.add_css_class("widget-button")
         self.window_button.connect("clicked", self.focus_window)
@@ -67,7 +66,8 @@ class WindowTitle(WidgetBox):
         for window in window_list:
             self.dropdown.add(
                 WindowButton(
-                    window=window,
+                    title=window["title"],
+                    id=window["id"],
                     wm=self.wm,
                     dropdown=self.dropdown,
                     hide_on_close=self.hide_on_close,
