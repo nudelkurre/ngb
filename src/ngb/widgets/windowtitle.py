@@ -16,8 +16,8 @@ class WindowButton(Gtk.Box):
         self.wm = kwargs.get("wm")
         self.dropdown = kwargs.get("dropdown")
         self.hide_on_close = kwargs.get("hide_on_close")
-        self.window_title = self.window.get("title", "")
-        self.window_id = self.window.get("id")
+        self.window_title = kwargs.get("title", "")
+        self.window_id = kwargs.get("id")
         self.window_button = Gtk.Button(label=self.window_title)
         self.window_button.add_css_class("widget-button")
         self.window_button.connect("clicked", self.focus_window)
@@ -54,6 +54,7 @@ class WindowTitle(WidgetBox):
         self.timer = kwargs.get("timer", 0.1)
         self.hide_no_focus = kwargs.get("hide_no_focus", False)
         self.hide_on_close = kwargs.get("hide_on_close", True)
+        self.title_max_length = kwargs.get("title_max_length", 200)
         self.text = "Test"
 
     def run(self):
