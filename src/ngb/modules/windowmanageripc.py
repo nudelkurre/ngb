@@ -21,9 +21,6 @@ class WindowManagerIPC:
                 return window.title
         return ""
 
-    def close_window(self, id):
-        pass
-
     def focus_window(self, id):
         pass
 

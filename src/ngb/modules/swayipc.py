@@ -83,11 +83,8 @@ class SwayIPC(WindowManagerIPC):
             )
         return window_list
 
-    def close_window(self, id):
-        self.command(f"[con_id={id}] kill")
-
     def focus_window(self, id):
-        self.command(f"[con_id={id}] focus")
+        self.send_to_socket(f"[con_id={id}] focus")
 
     def translate_cmd(self, cmd):
         match cmd:

@@ -16,22 +16,12 @@ class WindowButton(Gtk.Box):
         self.wm = kwargs.get("wm")
         self.dropdown = kwargs.get("dropdown")
         self.hide_on_close = kwargs.get("hide_on_close")
-        self.window_title = kwargs.get("title", "")
-        self.window_id = kwargs.get("id")
+        self.window_title = self.window.get("title", "")
+        self.window_id = self.window.get("id")
         self.window_button = Gtk.Button(label=self.window_title)
         self.window_button.add_css_class("widget-button")
         self.window_button.connect("clicked", self.focus_window)
         self.append(self.window_button)
-
-        self.close_button = Gtk.Button(label="X")
-        self.close_button.connect("clicked", self.close_window)
-        self.append(self.close_button)
-
-    def close_window(self, user_data):
-        self.wm.close_window(self.window_id)
-        self.dropdown.remove(self)
-        if self.hide_on_close:
-            self.dropdown.popdown()
 
     def focus_window(self, user_data):
         self.wm.focus_window(self.window_id)
