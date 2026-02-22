@@ -19,17 +19,40 @@ class NiriIPC(WindowManagerIPC):
 
     def __init__(self):
         self.sock_req = f"{os.environ.get('NIRI_SOCKET')}"
+        self.usocket = None
+        self.connect()
+
+    def connect(self):
+        self.usocket = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+        try:
+            self.usocket.connect(self.sock_req)
+        except ConnectionRefusedError:
+            print("Connection to the UNIX socket refused.")
+        except socket.error as e:
+            print(f"Error open socket: {e}")
+
+    def disconnect(self):
+        self.usocket.close()
+
+    def is_connected(self):
+        if self.usocket is None:
+            print("No socket created")
+            return False
+        try:
+            self.usocket.sendall(b"")
+            return True
+        except socket.error:
+            print("Niri IPC socket not connected")
+            return False
 
     def send_to_socket(self, cmd):
-        usocket = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-        try:
-            usocket.connect(self.sock_req)
+        if self.is_connected():
             try:
-                usocket.sendall(self.translate_cmd(cmd))
-                usocket.sendall("\n".encode("utf-8"))
+                self.usocket.sendall(self.translate_cmd(cmd))
+                self.usocket.sendall("\n".encode("utf-8"))
                 response = ""
                 while True:
-                    part = usocket.recv(1024)
+                    part = self.usocket.recv(1024)
                     response += part.decode("utf-8")
                     if len(part) < 1024:
                         break
@@ -40,12 +63,6 @@ class NiriIPC(WindowManagerIPC):
                 print("Error: Socket timed out")
             except Exception as e:
                 print(f"Error: {e}")
-        except ConnectionRefusedError:
-            print("Connection to the UNIX socket refused.")
-        except socket.error as e:
-            print(f"Error open socket: {e}")
-        finally:
-            usocket.close()
 
     def parse_workspace(self, ws):
         parsed_ws = list()

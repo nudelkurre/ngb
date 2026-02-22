@@ -2,6 +2,15 @@ class WindowManagerIPC:
     def __init__(self):
         pass
 
+    def connect(self):
+        pass
+
+    def disconnect(self):
+        pass
+
+    def is_connected(self):
+        return False
+
     def send_to_socket(self, cmd):
         pass
 
