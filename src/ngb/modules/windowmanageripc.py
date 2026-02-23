@@ -1,15 +1,32 @@
+import socket
+
+
 class WindowManagerIPC:
     def __init__(self):
-        pass
+        self.usocket = None
 
     def connect(self):
-        pass
+        self.usocket = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+        try:
+            self.usocket.connect(self.sock_req)
+        except ConnectionRefusedError:
+            print("Connection to the UNIX socket refused.")
+        except socket.error as e:
+            print(f"Error open socket: {e}")
 
     def disconnect(self):
-        pass
+        self.usocket.close()
 
     def is_connected(self):
-        return False
+        if self.usocket is None:
+            print("No socket created")
+            return False
+        try:
+            self.usocket.sendall(b"")
+            return True
+        except socket.error:
+            print("IPC socket not connected")
+            return False
 
     def send_to_socket(self, cmd):
         pass
