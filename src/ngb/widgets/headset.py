@@ -22,21 +22,28 @@ class Headset(WidgetBox):
     def set_text(self):
         path = which("headsetcontrol")
         if path:
-            info = json.loads(
-                subprocess.run(
-                    "headsetcontrol -o JSON".split(), capture_output=True, text=True
-                ).stdout
-            )
-            device_battery = []
-            for d in info.get("devices", []):
-                battery_level = d.get("battery", {}).get("level", 0)
-                if battery_level > 0:
-                    device_battery.append(f"{battery_level}%")
-            if len(device_battery) > 0:
-                self.set_visible(True)
-            else:
-                self.set_visible(False)
-            self.text_label.set_text(" ".join(device_battery))
+            try:
+                info = json.loads(
+                    subprocess.run(
+                        "headsetcontrol -o JSON".split(),
+                        capture_output=True,
+                        text=True,
+                        timeout=3,
+                    ).stdout
+                )
+                device_battery = []
+                for d in info.get("devices", []):
+                    battery_level = d.get("battery", {}).get("level", 0)
+                    if battery_level > 0:
+                        device_battery.append(f"{battery_level}%")
+                if len(device_battery) > 0:
+                    self.set_visible(True)
+                else:
+                    self.set_visible(False)
+                self.text_label.set_text(" ".join(device_battery))
+            except subprocess.TimeoutExpired as e:
+                print(e)
+                self.text_label.set_text("Headsetcontrol timedout")
         else:
             self.text_label.set_text("headsetcontrol not installed")
         return True
