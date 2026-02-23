@@ -7,7 +7,6 @@ from collections import namedtuple
 import socket
 
 from ngb.modules import (
-    HyprlandIpc,
     NamedTuples,
     NiriIPC,
     SwayIPC,
@@ -21,8 +20,6 @@ Workspace = NamedTuples.Workspace
 class WorkspaceBox(WidgetBox):
     if os.environ["XDG_CURRENT_DESKTOP"] == "sway":
         wm = SwayIPC()
-    elif os.environ["XDG_CURRENT_DESKTOP"] == "Hyprland":
-        wm = HyprlandIpc()
     elif os.environ["XDG_CURRENT_DESKTOP"] == "niri":
         wm = NiriIPC()
     # If using a non-supported window manager and show empty space instead of giving error
@@ -63,8 +60,6 @@ class Workspaces(Gtk.Box):
     old_workspaces = []
     if os.environ["XDG_CURRENT_DESKTOP"] == "sway":
         wm = SwayIPC()
-    elif os.environ["XDG_CURRENT_DESKTOP"] == "Hyprland":
-        wm = HyprlandIpc()
     elif os.environ["XDG_CURRENT_DESKTOP"] == "niri":
         wm = NiriIPC()
     # If using a non-supported window manager and show empty space instead of giving error
