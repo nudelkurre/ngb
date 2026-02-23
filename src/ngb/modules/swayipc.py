@@ -15,36 +15,29 @@ Window = NamedTuples.Window
 class SwayIPC(WindowManagerIPC):
 
     def __init__(self):
+        super().__init__()
         self.sock_req = f"{os.environ.get('SWAYSOCK')}"
 
     def send_to_socket(self, cmd):
-        usocket = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
         try:
-            usocket.connect(self.sock_req)
-            try:
-                usocket.sendall(self.translate_cmd(cmd))
-                usocket.sendall("\n".encode("utf-8"))
-                response = bytes()
-                while True:
-                    part = usocket.recv(1024)
-                    response += part
-                    if len(part) < 1024:
-                        break
-                response = response[14:].decode("utf-8")
-                match = re.search(r"^[\[\{][\W\w]*[\]\}]$", response).group(0)
-                if match:
-                    parsed_response = json.loads(match)
-                else:
-                    parsed_response = []
-                return parsed_response
-            except socket.error as e:
-                print(e)
-        except ConnectionRefusedError:
-            print("Connection to the UNIX socket refused.")
+            self.connect()
+            self.usocket.sendall(self.translate_cmd(cmd))
+            response = bytes()
+            while True:
+                part = self.usocket.recv(1024)
+                response += part
+                if len(part) < 1024:
+                    break
+            response = response[14:].decode("utf-8")
+            match = re.search(r"^[\[\{][\W\w]*[\]\}]$", response).group(0)
+            if match:
+                parsed_response = json.loads(match)
+            else:
+                parsed_response = []
+            self.disconnect()
+            return parsed_response
         except socket.error as e:
-            print(f"Error open socket: {e}")
-        finally:
-            usocket.close()
+            print(e)
 
     def get_workspaces(self):
         wss = self.send_to_socket("GET_WORKSPACES")
@@ -121,5 +114,7 @@ class SwayIPC(WindowManagerIPC):
         cmd_len = struct.pack("@i", len(cmd))
         cmd_type = struct.pack("@i", cmd_id)
 
-        cmd_str = magic_string + cmd_len + cmd_type + cmd.encode("utf8")
+        cmd_str = (
+            magic_string + cmd_len + cmd_type + cmd.encode("utf8") + "\n".encode("utf8")
+        )
         return cmd_str

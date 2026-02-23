@@ -6,7 +6,7 @@ import os
 from collections import namedtuple
 import socket
 
-from ngb.modules import HyprlandIpc, NiriIPC, SwayIPC, WidgetBox, WindowManagerIPC
+from ngb.modules import NiriIPC, SwayIPC, WidgetBox, WindowManagerIPC
 
 
 class WindowButton(Gtk.Box):
@@ -41,8 +41,6 @@ class WindowButton(Gtk.Box):
 class WindowTitle(WidgetBox):
     if os.environ["XDG_CURRENT_DESKTOP"] == "sway":
         wm = SwayIPC()
-    elif os.environ["XDG_CURRENT_DESKTOP"] == "Hyprland":
-        wm = HyprlandIpc()
     elif os.environ["XDG_CURRENT_DESKTOP"] == "niri":
         wm = NiriIPC()
     # If using a non-supported window manager and show empty space instead of giving error
@@ -103,7 +101,7 @@ class WindowTitle(WidgetBox):
             return " ".join(new_title[:-1])
 
     def on_click(self, user_data):
-        if not isinstance(self.wm, HyprlandIpc):
+        if isinstance(self.wm, NiriIPC) or isinstance(self.wm, SwayIPC):
             self.populate_dropdown()
             self.dropdown.popup()
         return True

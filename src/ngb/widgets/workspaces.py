@@ -7,7 +7,6 @@ from collections import namedtuple
 import socket
 
 from ngb.modules import (
-    HyprlandIpc,
     NamedTuples,
     NiriIPC,
     SwayIPC,
@@ -19,15 +18,6 @@ Workspace = NamedTuples.Workspace
 
 
 class WorkspaceBox(WidgetBox):
-    if os.environ["XDG_CURRENT_DESKTOP"] == "sway":
-        wm = SwayIPC()
-    elif os.environ["XDG_CURRENT_DESKTOP"] == "Hyprland":
-        wm = HyprlandIpc()
-    elif os.environ["XDG_CURRENT_DESKTOP"] == "niri":
-        wm = NiriIPC()
-    # If using a non-supported window manager and show empty space instead of giving error
-    else:
-        wm = WindowManagerIPC()
 
     def __init__(self, **kwargs):
         self.name = kwargs.get("name", "")
@@ -35,6 +25,7 @@ class WorkspaceBox(WidgetBox):
         self.focused = kwargs.get("focused", False)
         self.urgent = kwargs.get("urgent", False)
         self.icon_size = kwargs.get("icon_size", 20)
+        self.wm = kwargs.get("wm", WindowManagerIPC())
         super().__init__(icon=self.show_name, text=self.name, icon_size=self.icon_size)
         self.hide_label()
         self.set_focused()
@@ -63,8 +54,6 @@ class Workspaces(Gtk.Box):
     old_workspaces = []
     if os.environ["XDG_CURRENT_DESKTOP"] == "sway":
         wm = SwayIPC()
-    elif os.environ["XDG_CURRENT_DESKTOP"] == "Hyprland":
-        wm = HyprlandIpc()
     elif os.environ["XDG_CURRENT_DESKTOP"] == "niri":
         wm = NiriIPC()
     # If using a non-supported window manager and show empty space instead of giving error
@@ -131,6 +120,7 @@ class Workspaces(Gtk.Box):
                             focused=ws.focused,
                             urgent=ws.urgent,
                             icon_size=self.icon_size,
+                            wm=self.wm,
                         )
                     )
 
