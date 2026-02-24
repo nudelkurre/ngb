@@ -103,6 +103,7 @@ class MainWindow(Gtk.Application):
             local_bar_config["layer"] = self.config.data.get("layer", "bottom")
         window = Bar(app=self, **local_bar_config)
         window.show()
+        self.bars.append(window)
 
         valid_widgets = {
             "battery": Battery,
