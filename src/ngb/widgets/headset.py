@@ -44,6 +44,7 @@ class Headset(WidgetBox):
             except subprocess.TimeoutExpired as e:
                 print(e)
                 self.text_label.set_text("Headsetcontrol timedout")
+                self.stop()
         else:
             self.text_label.set_text("headsetcontrol not installed")
         return True
