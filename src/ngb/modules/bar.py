@@ -91,3 +91,39 @@ class Bar(Gtk.ApplicationWindow):
     def right(self, widget):
         self.rightbox.append(widget)
         return True
+
+    def left_insert(self, widget, sibling):
+        self.leftbox.insert_child_after(widget, sibling)
+        return True
+
+    def center_insert(self, widget, sibling):
+        self.centerbox.insert_child_after(widget, sibling)
+        return True
+
+    def right_insert(self, widget, sibling):
+        self.rightbox.insert_child_after(widget, sibling)
+        return True
+
+    def get_left_child(self):
+        left_childs = []
+        child = self.leftbox.get_first_child()
+        while child:
+            left_childs.append(child)
+            child = child.get_next_sibling()
+        return left_childs
+
+    def get_center_child(self):
+        center_childs = []
+        child = self.centerbox.get_first_child()
+        while child:
+            center_childs.append(child)
+            child = child.get_next_sibling()
+        return center_childs
+
+    def get_right_child(self):
+        right_childs = []
+        child = self.rightbox.get_first_child()
+        while child:
+            right_childs.append(child)
+            child = child.get_next_sibling()
+        return right_childs

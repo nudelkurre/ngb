@@ -63,10 +63,27 @@ class WidgetBox(Gtk.Button):
         self.box.append(self.icon_label)
         self.box.append(self.text_label)
 
+        # Store the running timer to be able to stop it
+        self.timeout = None
+
+        # Check if widget is stopped
+        self.is_stopped = False
+
     def run(self):
         self.set_icon()
         self.set_text()
         self.update_label()
+
+    def stop(self):
+        self.is_stopped = True
+        if self.timeout:
+            GLib.source_remove(self.timeout)
+            self.timeout = None
+
+    def remove_widget(self):
+        parent = self.get_parent()
+        if parent:
+            parent.remove(self)
 
     def on_scroll(self, controller, x, y):
         pass
@@ -99,5 +116,5 @@ class WidgetBox(Gtk.Button):
         return True
 
     def update_label(self):
-        GLib.timeout_add(self.timer * 1000, self.set_text)
+        self.timeout = GLib.timeout_add(self.timer * 1000, self.set_text)
         return True

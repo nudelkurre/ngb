@@ -69,6 +69,8 @@ class Workspaces(Gtk.Box):
         self.use_workspace_names = kwargs.get("use_workspace_names", False)
         self.ws_names = kwargs.get("names", {})
         self.default_name = kwargs.get("default_name", "*")
+        self.is_stopped = False
+        self.timeout = None
         self.update_boxes()
         self.update_list()
         self.scroll_controller = Gtk.EventControllerScroll.new(
@@ -79,6 +81,17 @@ class Workspaces(Gtk.Box):
 
     def run(self):
         pass
+
+    def stop(self):
+        self.is_stopped = True
+        if self.timeout:
+            GLib.source_remove(self.timeout)
+            self.timeout = None
+
+    def remove_widget(self):
+        parent = self.get_parent()
+        if parent:
+            parent.remove(self)
 
     def get_ws(self):
         ws_list = []
@@ -127,7 +140,7 @@ class Workspaces(Gtk.Box):
         return True
 
     def update_list(self):
-        GLib.timeout_add(self.timer * 1000, self.update_boxes)
+        self.timeout = GLib.timeout_add(self.timer * 1000, self.update_boxes)
 
     def on_scroll(self, controller, x, y):
         if y < 0:
