@@ -45,6 +45,7 @@ class Headset(WidgetBox):
                 print(e)
                 self.text_label.set_text("Headsetcontrol timedout")
                 self.stop()
+                return False
         else:
             self.text_label.set_text("headsetcontrol not installed")
         return True
