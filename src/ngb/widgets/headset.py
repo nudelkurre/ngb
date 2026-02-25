@@ -48,8 +48,6 @@ class Headset(WidgetBox):
                     self.text_label.set_text("Headsetcontrol timedout")
                     self.stop()
                     return False
-            else:
-                self.text_label.set_text("Widget stopped")
         else:
             self.text_label.set_text("headsetcontrol not installed")
         return True
