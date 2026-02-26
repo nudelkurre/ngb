@@ -16,6 +16,7 @@ from gi.repository import GLib
 
 import sys
 import uuid
+import time
 
 from ngb.widgets import (
     Battery,
@@ -69,7 +70,10 @@ class MainWindow(Gtk.Application):
             None,
         )
 
+        self.bars = []
+
     def do_activate(self):
+        self.start_recreate_timer()
         if self.config_file_path:
             self.config = Config(
                 file_path=self.config_file_path, file_type=self.config_file_type
@@ -99,6 +103,7 @@ class MainWindow(Gtk.Application):
             local_bar_config["layer"] = self.config.data.get("layer", "bottom")
         window = Bar(app=self, **local_bar_config)
         window.show()
+        self.bars.append(window)
 
         valid_widgets = {
             "battery": Battery,
@@ -196,6 +201,55 @@ class MainWindow(Gtk.Application):
                 self.config_file_type = options.get("type")
             self.activate()
         return True
+
+    def recreate_stopped_widgets(self):
+        for bar in self.bars:
+            left = bar.get_left_child()
+            center = bar.get_center_child()
+            right = bar.get_right_child()
+
+            for widget in left:
+                if widget.is_stopped:
+                    widget_type = type(widget)
+                    widget_config = widget.__dict__
+                    sibling = widget.get_prev_sibling()
+                    widget.remove_widget()
+                    new_module = (widget_type)(**widget_config)
+                    if sibling:
+                        bar.left_insert(new_module, sibling)
+                    else:
+                        bar.leftbox.prepend((widget_type)(**config))
+                    new_module.run()
+
+            for widget in center:
+                if widget.is_stopped:
+                    widget_type = type(widget)
+                    widget_config = widget.__dict__
+                    sibling = widget.get_prev_sibling()
+                    widget.remove_widget()
+                    new_module = (widget_type)(**widget_config)
+                    if sibling:
+                        bar.center_insert(new_module, sibling)
+                    else:
+                        bar.centerbox.prepend((widget_type)(**config))
+                    new_module.run()
+
+            for widget in right:
+                if widget.is_stopped:
+                    widget_type = type(widget)
+                    widget_config = widget.__dict__
+                    sibling = widget.get_prev_sibling()
+                    widget.remove_widget()
+                    new_module = (widget_type)(**widget_config)
+                    if sibling:
+                        bar.right_insert(new_module, sibling)
+                    else:
+                        bar.rightbox.prepend((widget_type)(**config))
+                    new_module.run()
+        return True
+
+    def start_recreate_timer(self):
+        GLib.timeout_add(5 * 1000, self.recreate_stopped_widgets)
 
 
 def main():

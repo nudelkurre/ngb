@@ -7,7 +7,6 @@ from collections import namedtuple
 import socket
 
 from ngb.modules import (
-    HyprlandIpc,
     NamedTuples,
     NiriIPC,
     SwayIPC,
@@ -19,15 +18,6 @@ Workspace = NamedTuples.Workspace
 
 
 class WorkspaceBox(WidgetBox):
-    if os.environ["XDG_CURRENT_DESKTOP"] == "sway":
-        wm = SwayIPC()
-    elif os.environ["XDG_CURRENT_DESKTOP"] == "Hyprland":
-        wm = HyprlandIpc()
-    elif os.environ["XDG_CURRENT_DESKTOP"] == "niri":
-        wm = NiriIPC()
-    # If using a non-supported window manager and show empty space instead of giving error
-    else:
-        wm = WindowManagerIPC()
 
     def __init__(self, **kwargs):
         self.name = kwargs.get("name", "")
@@ -35,6 +25,7 @@ class WorkspaceBox(WidgetBox):
         self.focused = kwargs.get("focused", False)
         self.urgent = kwargs.get("urgent", False)
         self.icon_size = kwargs.get("icon_size", 20)
+        self.wm = kwargs.get("wm", WindowManagerIPC())
         super().__init__(icon=self.show_name, text=self.name, icon_size=self.icon_size)
         self.hide_label()
         self.set_focused()
@@ -63,8 +54,6 @@ class Workspaces(Gtk.Box):
     old_workspaces = []
     if os.environ["XDG_CURRENT_DESKTOP"] == "sway":
         wm = SwayIPC()
-    elif os.environ["XDG_CURRENT_DESKTOP"] == "Hyprland":
-        wm = HyprlandIpc()
     elif os.environ["XDG_CURRENT_DESKTOP"] == "niri":
         wm = NiriIPC()
     # If using a non-supported window manager and show empty space instead of giving error
@@ -80,6 +69,8 @@ class Workspaces(Gtk.Box):
         self.use_workspace_names = kwargs.get("use_workspace_names", False)
         self.ws_names = kwargs.get("names", {})
         self.default_name = kwargs.get("default_name", "*")
+        self.is_stopped = False
+        self.timeout = None
         self.update_boxes()
         self.update_list()
         self.scroll_controller = Gtk.EventControllerScroll.new(
@@ -90,6 +81,17 @@ class Workspaces(Gtk.Box):
 
     def run(self):
         pass
+
+    def stop(self):
+        self.is_stopped = True
+        if self.timeout:
+            GLib.source_remove(self.timeout)
+            self.timeout = None
+
+    def remove_widget(self):
+        parent = self.get_parent()
+        if parent:
+            parent.remove(self)
 
     def get_ws(self):
         ws_list = []
@@ -131,13 +133,14 @@ class Workspaces(Gtk.Box):
                             focused=ws.focused,
                             urgent=ws.urgent,
                             icon_size=self.icon_size,
+                            wm=self.wm,
                         )
                     )
 
         return True
 
     def update_list(self):
-        GLib.timeout_add(self.timer * 1000, self.update_boxes)
+        self.timeout = GLib.timeout_add(self.timer * 1000, self.update_boxes)
 
     def on_scroll(self, controller, x, y):
         if y < 0:

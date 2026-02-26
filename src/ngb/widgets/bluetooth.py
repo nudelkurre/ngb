@@ -19,10 +19,23 @@ class Bluetooth(Gtk.Box):
         self.spacing = kwargs.get("spacing", 10)
         self.icon_size = kwargs.get("icon_size", 20)
         super().__init__(spacing=self.spacing)
+        self.is_stopped = False
+        self.timeout = None
 
     def run(self):
         self.update_boxes()
         self.update_list()
+
+    def stop(self):
+        self.is_stopped = True
+        if self.timeout:
+            GLib.source_remove(self.timeout)
+            self.timeout = None
+
+    def remove_widget(self):
+        parent = self.get_parent()
+        if parent:
+            parent.remove(self)
 
     def update_boxes(self):
         while self.get_first_accessible_child() is not None:
@@ -77,5 +90,5 @@ class Bluetooth(Gtk.Box):
         )
 
     def update_list(self):
-        GLib.timeout_add(self.timer * 1000, self.update_boxes)
+        self.timeout = GLib.timeout_add(self.timer * 1000, self.update_boxes)
         return True
