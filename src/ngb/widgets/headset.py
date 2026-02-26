@@ -42,7 +42,6 @@ class Headset(WidgetBox):
                     else:
                         self.set_visible(False)
                     self.text_label.set_text(" ".join(device_battery))
-                    print(device_battery)
                 except subprocess.TimeoutExpired as e:
                     print(e)
                     self.text_label.set_text("Headsetcontrol timedout")
