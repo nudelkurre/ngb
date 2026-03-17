@@ -4,6 +4,7 @@ import re
 import os
 import json
 from operator import itemgetter
+import traceback
 
 from .namedtuples import NamedTuples
 from .windowmanageripc import WindowManagerIPC
@@ -23,23 +24,28 @@ class NiriIPC(WindowManagerIPC):
         self.connect()
 
     def send_to_socket(self, cmd):
+        socket_data = {}
         if self.is_connected():
             try:
                 self.usocket.sendall(self.translate_cmd(cmd))
                 self.usocket.sendall("\n".encode("utf-8"))
-                response = ""
+                response = bytearray()
                 while True:
                     part = self.usocket.recv(1024)
-                    response += part.decode("utf-8")
+                    response.extend(part)
                     if len(part) < 1024:
                         break
-                return json.loads(response)
+                response = response.decode("utf-8")
+                socket_data = json.loads(response)
             except socket.error as e:
                 print(e)
             except socket.timeout:
                 print("Error: Socket timed out")
-            except Exception as e:
-                print(f"Error: {e}")
+            except Exception:
+                traceback.print_exc()
+                print("-" * 15)
+            finally:
+                return socket_data
 
     def parse_workspace(self, ws):
         parsed_ws = list()

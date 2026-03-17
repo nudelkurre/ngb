@@ -29,7 +29,7 @@ class WindowManagerIPC:
             return False
 
     def send_to_socket(self, cmd):
-        pass
+        return {}
 
     def parse_workspace(self, ws):
         return []
@@ -57,4 +57,4 @@ class WindowManagerIPC:
         return ""
 
     def command(self, cmd):
-        self.send_to_socket(cmd)
+        return self.send_to_socket(cmd)
