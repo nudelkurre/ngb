@@ -4,6 +4,7 @@ import re
 import os
 import struct
 import json
+import traceback
 
 from .namedtuples import NamedTuples
 from .windowmanageripc import WindowManagerIPC
@@ -19,6 +20,7 @@ class SwayIPC(WindowManagerIPC):
         self.sock_req = f"{os.environ.get('SWAYSOCK')}"
 
     def send_to_socket(self, cmd):
+        socket_data = []
         try:
             self.connect()
             self.usocket.sendall(self.translate_cmd(cmd))
@@ -35,9 +37,13 @@ class SwayIPC(WindowManagerIPC):
             else:
                 parsed_response = []
             self.disconnect()
-            return parsed_response
+            socket_data = parsed_response
         except socket.error as e:
             print(e)
+        except Exception:
+            traceback.print_exc()
+        finally:
+            return socket_data
 
     def get_workspaces(self):
         wss = self.send_to_socket("GET_WORKSPACES")
