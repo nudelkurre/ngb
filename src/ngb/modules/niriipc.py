@@ -5,6 +5,7 @@ import os
 import json
 from operator import itemgetter
 import traceback
+import random
 
 from .namedtuples import NamedTuples
 from .windowmanageripc import WindowManagerIPC
@@ -57,6 +58,7 @@ class NiriIPC(WindowManagerIPC):
             if (
                 wss != {}
                 and wss["active_window_id"] != None
+                and self.active_workspaces.get(wss.get("output", "")) != None
                 or (wss["is_active"] and wss["active_window_id"] == None)
             ):
                 ws_dict["id"] = wss.get("idx", 0)
