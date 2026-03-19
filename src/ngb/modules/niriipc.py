@@ -24,7 +24,7 @@ class NiriIPC(WindowManagerIPC):
         self.connect()
 
     def send_to_socket(self, cmd):
-        socket_data = {}
+        socket_data = []
         if self.is_connected():
             try:
                 self.usocket.sendall(self.translate_cmd(cmd))
@@ -36,7 +36,9 @@ class NiriIPC(WindowManagerIPC):
                     if len(part) < 1024:
                         break
                 response = response.decode("utf-8")
-                socket_data = json.loads(response)
+                response = json.loads(response)
+                response = response.get("Ok", {}).get(cmd, [])
+                socket_data = response
             except socket.error as e:
                 print(e)
             except socket.timeout:
@@ -79,10 +81,8 @@ class NiriIPC(WindowManagerIPC):
 
     def get_workspaces(self):
         workspaces = self.send_to_socket("Workspaces")
-        if workspaces and "Ok" in workspaces:
-            parsed_ws = self.parse_workspace(
-                workspaces.get("Ok", {}).get("Workspaces", [])
-            )
+        if workspaces:
+            parsed_ws = self.parse_workspace(workspaces)
             ws_list = list()
             for p in parsed_ws:
                 ws_list.append(
@@ -99,17 +99,16 @@ class NiriIPC(WindowManagerIPC):
 
     def get_outputs(self):
         outputs = self.send_to_socket("Outputs")
-        if outputs and "Ok" in outputs:
-            parsed_outputs = list(outputs.get("Ok", {}).get("Outputs", {}).keys())
+        if outputs:
+            parsed_outputs = list(outputs.keys())
             for out in parsed_outputs:
                 self.active_workspaces[out] = []
 
     def get_windows(self):
         windows = self.send_to_socket("Windows")
         windows_list = []
-        if windows and "Ok" in windows:
-            parsed_windows = windows.get("Ok", {}).get("Windows", [])
-            for w in parsed_windows:
+        if windows:
+            for w in windows:
                 windows_list.append(
                     Window(
                         id=w.get("id"),
