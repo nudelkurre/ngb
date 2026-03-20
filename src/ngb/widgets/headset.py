@@ -10,9 +10,13 @@ from ngb.modules import WidgetBox
 
 
 class Headset(WidgetBox):
+    min_timer = 5
+
     def __init__(self, **kwargs):
         self.icon = kwargs.get("icon", "󰋎")
-        self.timer = kwargs.get("timer", 1)
+        self.timer = kwargs.get("timer", self.min_timer)
+        if self.timer < self.min_timer:
+            self.timer = self.min_timer
         self.icon_size = kwargs.get("icon_size", 20)
         super().__init__(icon=self.icon, icon_size=self.icon_size, timer=self.timer)
 

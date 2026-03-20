@@ -4,6 +4,8 @@ import re
 import os
 import json
 from operator import itemgetter
+import traceback
+import random
 
 from .namedtuples import NamedTuples
 from .windowmanageripc import WindowManagerIPC
@@ -23,23 +25,30 @@ class NiriIPC(WindowManagerIPC):
         self.connect()
 
     def send_to_socket(self, cmd):
+        socket_data = []
         if self.is_connected():
             try:
                 self.usocket.sendall(self.translate_cmd(cmd))
                 self.usocket.sendall("\n".encode("utf-8"))
-                response = ""
+                response = bytearray()
                 while True:
                     part = self.usocket.recv(1024)
-                    response += part.decode("utf-8")
+                    response.extend(part)
                     if len(part) < 1024:
                         break
-                return json.loads(response)
+                response = response.decode("utf-8")
+                response = json.loads(response)
+                response = response.get("Ok", {}).get(cmd, [])
+                socket_data = response
             except socket.error as e:
                 print(e)
             except socket.timeout:
                 print("Error: Socket timed out")
-            except Exception as e:
-                print(f"Error: {e}")
+            except Exception:
+                traceback.print_exc()
+                print("-" * 15)
+            finally:
+                return socket_data
 
     def parse_workspace(self, ws):
         parsed_ws = list()
@@ -49,6 +58,7 @@ class NiriIPC(WindowManagerIPC):
             if (
                 wss != {}
                 and wss["active_window_id"] != None
+                and self.active_workspaces.get(wss.get("output", "")) != None
                 or (wss["is_active"] and wss["active_window_id"] == None)
             ):
                 ws_dict["id"] = wss.get("idx", 0)
@@ -73,10 +83,8 @@ class NiriIPC(WindowManagerIPC):
 
     def get_workspaces(self):
         workspaces = self.send_to_socket("Workspaces")
-        if workspaces and "Ok" in workspaces:
-            parsed_ws = self.parse_workspace(
-                workspaces.get("Ok", {}).get("Workspaces", [])
-            )
+        if workspaces:
+            parsed_ws = self.parse_workspace(workspaces)
             ws_list = list()
             for p in parsed_ws:
                 ws_list.append(
@@ -93,17 +101,16 @@ class NiriIPC(WindowManagerIPC):
 
     def get_outputs(self):
         outputs = self.send_to_socket("Outputs")
-        if outputs and "Ok" in outputs:
-            parsed_outputs = list(outputs.get("Ok", {}).get("Outputs", {}).keys())
+        if outputs:
+            parsed_outputs = list(outputs.keys())
             for out in parsed_outputs:
                 self.active_workspaces[out] = []
 
     def get_windows(self):
         windows = self.send_to_socket("Windows")
         windows_list = []
-        if windows and "Ok" in windows:
-            parsed_windows = windows.get("Ok", {}).get("Windows", [])
-            for w in parsed_windows:
+        if windows:
+            for w in windows:
                 windows_list.append(
                     Window(
                         id=w.get("id"),

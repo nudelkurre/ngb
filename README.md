@@ -213,6 +213,8 @@ Show the percentage used of the chosen mountpoint, and if clicked on will show a
 ##### Headset
 Use the command headsetcontrol to show current battery level of compatible headset.
 headsetcontrol is needed to be in $PATH to work.
+Have a minimum timer set at 5 seconds
+(May remove this in the future since it is unstable and can crash the headset controller if to many requests is sent to the headset at a low interval)
 
 ##### Network
 Show ipv4 address of chosen interface. When clicked on show a dropdown with interface name, mac address, ipv4 address and ipv6 addresses of interface.
