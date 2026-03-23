@@ -19,7 +19,8 @@ class MuteButton(Gtk.Button):
         self.muted_icon = kwargs.get("muted_icon", "󰝟")
         self.unmuted_icon = kwargs.get("unmuted_icon", "󰕾")
         self.mute_label = Gtk.Label()
-        self.mute_label.set_markup(self.get_muted())
+        self.mute_label.add_css_class("icon")
+        self.mute_label.set_label(self.get_muted())
         self.set_child(self.mute_label)
         self.connect("clicked", self.on_mute)
 
@@ -49,9 +50,9 @@ class MuteButton(Gtk.Button):
     def get_muted(self):
         sink = self.get_sink()
         if sink.muted:
-            return f'<span font="{self.icon_size}">{self.muted_icon}</span>'
+            return self.muted_icon
         else:
-            return f'<span font="{self.icon_size}">{self.unmuted_icon}</span>'
+            return self.unmuted_icon
 
 
 class Volume(WidgetBox):

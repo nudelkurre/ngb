@@ -22,6 +22,7 @@ class WidgetBox(Gtk.Button):
 
         # Create labels for icon and text for button
         self.icon_label = Gtk.Label()
+        self.icon_label.add_css_class("icon")
         self.text_label = Gtk.Label()
 
         # Create a box to add multiple items to button
@@ -108,7 +109,7 @@ class WidgetBox(Gtk.Button):
         return True
 
     def set_icon(self):
-        self.icon_label.set_markup(f'<span font="{self.icon_size}">{self.icon}</span>')
+        self.icon_label.set_label(self.icon)
         return True
 
     def set_text(self):
