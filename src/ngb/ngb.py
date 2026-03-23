@@ -197,6 +197,7 @@ class MainWindow(Gtk.Application):
 
         window {{
             border-radius: {self.config.data.get("corner_radius", 0)}px;
+            margin: {self.config.data.get("gaps", 0)}px;
         }}
         """
         css_provider.load_from_data(css.encode("utf-8"))
