@@ -165,7 +165,7 @@ class MainWindow(Gtk.Application):
         {font_css}
 
         label.icon {{
-            font-size: {self.config.data.get("icon_size", 20)*2}pt;
+            font-size: {self.config.data.get("icon_size", 20)}pt;
         }}
 
         .widget-button {{
