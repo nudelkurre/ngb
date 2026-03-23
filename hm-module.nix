@@ -135,6 +135,11 @@ with lib;
                     default = null;
                     description = "Set the height to use for the bar (minimum height, if font size is to big bar will get bigger)";
                 };
+                font_size = mkOption {
+                    type = types.nullOr types.int;
+                    default = null;
+                    description = "Set font size if use different than set by gtk4 setting";
+                };
                 icon_size = mkOption {
                     type = types.int;
                     default = 20;
