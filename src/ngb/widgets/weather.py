@@ -87,25 +87,35 @@ class Weather_Base:
     def get_location(self):
         if self.city == "":
             self.city = self.get_city()
+            if self.city is None:
+                return False
         loc = Nominatim(user_agent=self.user_agent)
         g = loc.geocode(self.city)
         self.location["lat"] = float(str(g.latitude)[0:7])
         self.location["lon"] = float(str(g.longitude)[0:7])
+        return True
 
     def get_city(self):
-        info = requests.get("https://ipconfig.io/json").json()
-        city = info["city"]
-        return city
+        try:
+            info = requests.get("https://ipconfig.io/json").json()
+            city = info["city"]
+            return city
+        except requests.exceptions.ConnectionError:
+            print("No location set because of connection error")
+            return None
 
     def get_weather_data(self):
         if self.location.get("lat", 0) != 0 and self.location.get("lon", 0) != 0:
             headers = {"User-Agent": self.user_agent}
-            req = requests.get(self.url, headers=headers)
-            if req.status_code == 200:
-                self.weather_data = req.json()
-                return req.status_code
+            if self.url:
+                req = requests.get(self.url, headers=headers)
+                if req.status_code == 200:
+                    self.weather_data = req.json()
+                    return req.status_code
+                else:
+                    return req.status_code
             else:
-                return req.status_code
+                return 404
 
     def parse_weather_data(self):
         pass
@@ -116,35 +126,39 @@ class SMHI(Weather_Base):
         super().__init__(**kwargs)
 
     def run(self):
-        self.get_location()
-        self.url = f"https://opendata-download-metfcst.smhi.se/api/category/pmp3g/version/2/geotype/point/lon/{self.location['lon']}/lat/{self.location['lat']}/data.json"
+        if self.get_location():
+            self.url = f"https://opendata-download-metfcst.smhi.se/api/category/pmp3g/version/2/geotype/point/lon/{self.location['lon']}/lat/{self.location['lat']}/data.json"
+        else:
+            self.url = None
 
     def parse_weather_data(self):
-        self.get_weather_data()
-        data = self.weather_data.get("timeSeries", [{}])[0].get("parameters", {})
-        temperature = 0
-        temperature_unit = "C"
-        wind_speed = 0.0
-        weather_code = 1
-        icon = ""
+        if self.get_weather_data() == 200:
+            data = self.weather_data.get("timeSeries", [{}])[0].get("parameters", {})
+            temperature = 0
+            temperature_unit = "C"
+            wind_speed = 0.0
+            weather_code = 1
+            icon = ""
 
-        for d in data:
-            if d["name"] == "t":
-                temperature = d["values"][0]
-                temperature_unit = d["unit"][0]
-            elif d["name"] == "ws":
-                wind_speed = d["values"][0]
-            elif d["name"] == "Wsymb2":
-                weather_code = d["values"][0]
-                icon = self.icons.get(weather_code, 0)
+            for d in data:
+                if d["name"] == "t":
+                    temperature = d["values"][0]
+                    temperature_unit = d["unit"][0]
+                elif d["name"] == "ws":
+                    wind_speed = d["values"][0]
+                elif d["name"] == "Wsymb2":
+                    weather_code = d["values"][0]
+                    icon = self.icons.get(weather_code, 0)
 
-        return WeatherData(
-            temperature=temperature,
-            temperature_unit=temperature_unit,
-            windspeed=wind_speed,
-            weather_code=weather_code,
-            icon=icon,
-        )
+            return WeatherData(
+                temperature=temperature,
+                temperature_unit=temperature_unit,
+                windspeed=wind_speed,
+                weather_code=weather_code,
+                icon=icon,
+            )
+        else:
+            return WeatherData(error="Connection error")
 
 
 class YR(Weather_Base):
@@ -238,40 +252,46 @@ class YR(Weather_Base):
         super().__init__(**kwargs)
 
     def run(self):
-        self.get_location()
-        self.url = f"https://api.met.no/weatherapi/locationforecast/2.0/compact?lat={self.location['lat']}&lon={self.location['lon']}"
+        if self.get_location():
+            self.url = f"https://api.met.no/weatherapi/locationforecast/2.0/compact?lat={self.location['lat']}&lon={self.location['lon']}"
+        else:
+            self.url = None
 
     def parse_weather_data(self):
-        self.get_weather_data()
-        data = self.weather_data.get("properties", {})
-        weather = data.get("timeseries", [{}])[0].get("data", {})
-        details = weather.get("instant", {}).get("details", {})
-        code = (
-            weather.get("next_1_hours", {}).get("summary", {}).get("symbol_code", None)
-        )
-        units = data.get("meta", {}).get("units", None)
+        if self.get_weather_data() == 200:
+            data = self.weather_data.get("properties", {})
+            weather = data.get("timeseries", [{}])[0].get("data", {})
+            details = weather.get("instant", {}).get("details", {})
+            code = (
+                weather.get("next_1_hours", {})
+                .get("summary", {})
+                .get("symbol_code", None)
+            )
+            units = data.get("meta", {}).get("units", None)
 
-        temperature = 0
-        temperature_unit = "C"
-        wind_speed = 0.0
-        weather_code = 1
+            temperature = 0
+            temperature_unit = "C"
+            wind_speed = 0.0
+            weather_code = 1
 
-        for d in details:
-            if d == "air_temperature":
-                temperature = details[d]
-                temperature_unit = units[d][0].upper()
-            elif d == "wind_speed":
-                wind_speed = details[d]
-        weather_code = self.weather_id[code]
-        icon = self.icons.get(weather_code, 1)
+            for d in details:
+                if d == "air_temperature":
+                    temperature = details[d]
+                    temperature_unit = units[d][0].upper()
+                elif d == "wind_speed":
+                    wind_speed = details[d]
+            weather_code = self.weather_id[code]
+            icon = self.icons.get(weather_code, 1)
 
-        return WeatherData(
-            temperature=temperature,
-            temperature_unit=temperature_unit,
-            windspeed=wind_speed,
-            weather_code=weather_code,
-            icon=icon,
-        )
+            return WeatherData(
+                temperature=temperature,
+                temperature_unit=temperature_unit,
+                windspeed=wind_speed,
+                weather_code=weather_code,
+                icon=icon,
+            )
+        else:
+            return WeatherData(error="Connection error")
 
 
 class Weather(WidgetBox):
@@ -293,7 +313,6 @@ class Weather(WidgetBox):
             self.weather = Weather_Base()
         super().__init__(timer=self.timer, icon_size=self.icon_size)
         self.city_label = Gtk.Label()
-        self.city_label.set_label(self.weather.city)
         self.weather_icon = Gtk.Label()
         self.temperature_label = Gtk.Label()
         self.wind_speed_label = Gtk.Label()
@@ -302,7 +321,7 @@ class Weather(WidgetBox):
         self.api_label.set_markup(
             f"<span font='{self.small_text}'>API in use: {self.api}</span>"
         )
-        self.last_updated_label = Gtk.Label(label="test")
+        self.last_updated_label = Gtk.Label()
 
     def run(self):
         self.weather.run()
@@ -338,24 +357,31 @@ class Weather(WidgetBox):
             self.text_label.set_label("No API set")
         else:
             parsed_data = self.weather.parse_weather_data()
-            self.text_label.set_label(
-                f"{parsed_data.temperature} {parsed_data.temperature_unit}"
-            )
-            # self.icon = self.weather.icons.get(parsed_data.weather_code, 1)
-            self.icon = parsed_data.icon
-            self.set_icon()
-            self.temperature_label.set_label(f"Temperature {parsed_data.temperature}")
-            self.wind_speed_label.set_label(f"Wind speed {parsed_data.windspeed} m/s")
-            self.weather_description_label.set_label(
-                f"{self.weather.descriptions.get(parsed_data.weather_code, 1)}"
-            )
-            if self.show_big_icon:
-                self.weather_icon.set_markup(
-                    f'<span font="{self.big_icon_size}">{parsed_data.icon}</span>'
+            if parsed_data.error is not None:
+                self.text_label.set_label(parsed_data.error)
+            else:
+                self.city_label.set_label(self.weather.city)
+                self.text_label.set_label(
+                    f"{parsed_data.temperature} {parsed_data.temperature_unit}"
                 )
-            self.last_updated_label.set_markup(
-                f'<span font="{self.small_text}">Last updated: {datetime.now().strftime("%H:%M")}</span>'
-            )
+                self.icon = parsed_data.icon
+                self.set_icon()
+                self.temperature_label.set_label(
+                    f"Temperature {parsed_data.temperature}"
+                )
+                self.wind_speed_label.set_label(
+                    f"Wind speed {parsed_data.windspeed} m/s"
+                )
+                self.weather_description_label.set_label(
+                    f"{self.weather.descriptions.get(parsed_data.weather_code, 1)}"
+                )
+                if self.show_big_icon:
+                    self.weather_icon.set_markup(
+                        f'<span font="{self.big_icon_size}">{parsed_data.icon}</span>'
+                    )
+                self.last_updated_label.set_markup(
+                    f'<span font="{self.small_text}">Last updated: {datetime.now().strftime("%H:%M")}</span>'
+                )
         return True
 
     def update_timeout(self):
