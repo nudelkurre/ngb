@@ -24,6 +24,13 @@ class NamedTuples:
 
     Weather = namedtuple(
         "Weather",
-        ["temperature", "temperature_unit", "windspeed", "weather_code", "icon"],
-        defaults=(0, "C", 0.0, 1, ""),
+        [
+            "temperature",
+            "temperature_unit",
+            "windspeed",
+            "weather_code",
+            "icon",
+            "error",
+        ],
+        defaults=(0, "C", 0.0, 1, "", None),
     )

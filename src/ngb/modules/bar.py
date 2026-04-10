@@ -24,7 +24,7 @@ class Bar(Gtk.ApplicationWindow):
         window_width = self.monitors.get(self.active_monitor, {}).get("width", 1920)
         window_height = self.monitors.get(self.active_monitor, {}).get("height", 1080)
         window_monitor = self.monitors.get(self.active_monitor, {}).get("monitor")
-        self.set_default_size(window_width - (self.gaps * 2), self.height)
+        self.set_default_size(window_width, self.height)
 
         LayerShell.init_for_window(self)
         if self.layer == "top":
@@ -39,12 +39,8 @@ class Bar(Gtk.ApplicationWindow):
             LayerShell.set_anchor(self, LayerShell.Edge.BOTTOM, True)
         else:
             LayerShell.set_anchor(self, LayerShell.Edge.TOP, True)
-        LayerShell.set_exclusive_zone(self, self.height + (self.gaps * 2))
+        LayerShell.auto_exclusive_zone_enable(self)
         LayerShell.set_monitor(self, window_monitor)
-        LayerShell.set_margin(self, LayerShell.Edge.TOP, self.gaps)
-        LayerShell.set_margin(self, LayerShell.Edge.BOTTOM, self.gaps)
-        LayerShell.set_margin(self, LayerShell.Edge.LEFT, self.gaps)
-        LayerShell.set_margin(self, LayerShell.Edge.RIGHT, self.gaps)
         LayerShell.set_namespace(self, "ngb")
 
         bar = Gtk.CenterBox()

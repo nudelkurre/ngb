@@ -151,7 +151,23 @@ class MainWindow(Gtk.Application):
 
     def load_css(self):
         css_provider = Gtk.CssProvider()
+        font_size = self.config.data.get("font_size")
+        font_css = (
+            f"""
+        label {{
+            font-size: {font_size}px;
+        }}
+        """
+            if font_size != None
+            else ""
+        )
         css = f"""
+        {font_css}
+
+        label.icon {{
+            font-size: {self.config.data.get("icon_size", 20)}pt;
+        }}
+
         .widget-button {{
             background-color: transparent;
             border: none;
@@ -181,6 +197,7 @@ class MainWindow(Gtk.Application):
 
         window {{
             border-radius: {self.config.data.get("corner_radius", 0)}px;
+            margin: {self.config.data.get("gaps", 0)}px;
         }}
         """
         css_provider.load_from_data(css.encode("utf-8"))

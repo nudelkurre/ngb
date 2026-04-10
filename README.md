@@ -269,6 +269,9 @@ Set spacing to use around the bar. Set per bar and can be different for each bar
 ### height
 Set the height to use for the bar. If font size is to big, the bar will get bigger to fit the text. Can be overridden by setting it on a bar.
 
+### font_size
+Set a font size to use. If not set the font size set by gtk4 is used.
+
 ### Icon_size
 Set icon size for every widget in all bars.
 

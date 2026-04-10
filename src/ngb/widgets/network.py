@@ -3,6 +3,7 @@ from gi.repository import GLib
 import psutil
 import socket
 import requests
+from datetime import datetime
 
 from ngb.modules import WidgetBox
 
@@ -40,6 +41,8 @@ class Network(WidgetBox):
         self.ipv6_label.set_justify(Gtk.Justification.CENTER)
         self.ipv6_label.add_css_class("multi-line")
         self.mac_address_label = Gtk.Label()
+        self.first_update = True
+        self.last_update = int(datetime.now().timestamp())
         super().__init__(icon=self.icon, timer=self.timer, icon_size=self.icon_size)
 
     def run(self):
@@ -101,8 +104,23 @@ class Network(WidgetBox):
         return True
 
     def get_public_ip(self):
-        req = requests.get("https://ipinfo.io").json()
-        self.public_ip_label.set_label(req.get("ip"))
+        try:
+            if (
+                int(datetime.now().timestamp()) - self.last_update > 300
+                or self.first_update
+            ):
+                req = requests.get("https://ipinfo.io")
+                req = req.json()
+                self.public_ip_header_label.set_visible(True)
+                self.public_ip_label.set_visible(True)
+                self.public_ip_label.set_label(req.get("ip"))
+                self.first_update = False
+        except requests.exceptions.ConnectionError:
+            self.public_ip_header_label.set_visible(False)
+            self.public_ip_label.set_visible(False)
+        except requests.exceptions.JSONDecodeError:
+            self.public_ip_header_label.set_visible(False)
+            self.public_ip_label.set_visible(False)
         return True
 
     def get_mac_address(self):
