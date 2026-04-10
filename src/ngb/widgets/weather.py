@@ -86,6 +86,7 @@ class Weather_Base:
         self.location = {"lat": 0, "lon": 0}
         self.user_agent = "Weather widget"
         self.url = ""
+        self.error = True
         self.weather_data = dict()
         self.parsed_data = dict()
 
@@ -167,6 +168,8 @@ class SMHI(Weather_Base):
                     weather_code = d["values"][0]
                     icon = self.icons.get(weather_code, 0)
 
+            self.error = False
+
             return WeatherData(
                 temperature=temperature,
                 temperature_unit=temperature_unit,
@@ -175,6 +178,7 @@ class SMHI(Weather_Base):
                 icon=icon,
             )
         else:
+            self.error = True
             return WeatherData(
                 error=f"{return_code}: {self.connection_errors.get(return_code, "Error")}"
             )
@@ -303,6 +307,8 @@ class YR(Weather_Base):
             weather_code = self.weather_id[code]
             icon = self.icons.get(weather_code, 1)
 
+            self.error = False
+
             return WeatherData(
                 temperature=temperature,
                 temperature_unit=temperature_unit,
@@ -311,6 +317,7 @@ class YR(Weather_Base):
                 icon=icon,
             )
         else:
+            self.error = True
             return WeatherData(
                 error=f"{return_code}: {self.connection_errors.get(return_code, "Error")}"
             )
@@ -353,9 +360,13 @@ class Weather(WidgetBox):
         self.update_timeout()
 
     def on_click(self, user_data):
-        if not (
-            isinstance(self.weather, Weather_Base)
-            and type(self.weather) is Weather_Base
+        print(self.weather.error)
+        if (
+            not (
+                isinstance(self.weather, Weather_Base)
+                and type(self.weather) is Weather_Base
+            )
+            and not self.weather.error
         ):
             self.dropdown.popup()
         return True
