@@ -3,6 +3,7 @@ import json
 import time
 from datetime import datetime
 from tzlocal import get_localzone
+import geopy
 from geopy.geocoders import Nominatim
 import os
 from gi.repository import Gtk
@@ -73,6 +74,13 @@ class Weather_Base:
         27: "Heavy snowfall",
     }
 
+    connection_errors = {
+        -1: "No connection",
+        -2: "No url set",
+        -3: "Location is not set",
+        404: "URL not found",
+    }
+
     def __init__(self, **kwargs):
         self.city = kwargs.get("city", "")
         self.location = {"lat": 0, "lon": 0}
@@ -89,11 +97,15 @@ class Weather_Base:
             self.city = self.get_city()
             if self.city is None:
                 return False
-        loc = Nominatim(user_agent=self.user_agent)
-        g = loc.geocode(self.city)
-        self.location["lat"] = float(str(g.latitude)[0:7])
-        self.location["lon"] = float(str(g.longitude)[0:7])
-        return True
+        try:
+            loc = Nominatim(user_agent=self.user_agent)
+            g = loc.geocode(self.city)
+            self.location["lat"] = float(str(g.latitude)[0:7])
+            self.location["lon"] = float(str(g.longitude)[0:7])
+            return True
+        except geopy.exc.GeocoderUnavailable:
+            print("Can not connect to Nominatim")
+            return False
 
     def get_city(self):
         try:
@@ -108,14 +120,18 @@ class Weather_Base:
         if self.location.get("lat", 0) != 0 and self.location.get("lon", 0) != 0:
             headers = {"User-Agent": self.user_agent}
             if self.url:
-                req = requests.get(self.url, headers=headers)
-                if req.status_code == 200:
-                    self.weather_data = req.json()
-                    return req.status_code
-                else:
-                    return req.status_code
+                try:
+                    req = requests.get(self.url, headers=headers)
+                    if req.status_code == 200:
+                        self.weather_data = req.json()
+                        return req.status_code
+                    else:
+                        return req.status_code
+                except requests.exceptions.ConnectionError:
+                    return -1
             else:
-                return 404
+                return -2
+        return -3
 
     def parse_weather_data(self):
         pass
@@ -159,7 +175,9 @@ class SMHI(Weather_Base):
                 icon=icon,
             )
         else:
-            return WeatherData(error=f"{return_code}: Connection error")
+            return WeatherData(
+                error=f"{return_code}: {self.connection_errors.get(return_code, "Error")}"
+            )
 
 
 class YR(Weather_Base):
@@ -293,7 +311,9 @@ class YR(Weather_Base):
                 icon=icon,
             )
         else:
-            return WeatherData(error=f"{return_code}: Connection error")
+            return WeatherData(
+                error=f"{return_code}: {self.connection_errors.get(return_code, "Error")}"
+            )
 
 
 class Weather(WidgetBox):
