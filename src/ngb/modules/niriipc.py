@@ -38,8 +38,9 @@ class NiriIPC(WindowManagerIPC):
                         break
                 response = response.decode("utf-8")
                 response = json.loads(response)
-                response = response.get("Ok", {}).get(cmd, [])
-                socket_data = response
+                if isinstance(response, dict):
+                    response = response.get("Ok", {}).get(cmd, [])
+                    socket_data = response
             except socket.error as e:
                 print(e)
             except socket.timeout:
