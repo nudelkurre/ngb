@@ -132,7 +132,8 @@ class SMHI(Weather_Base):
             self.url = None
 
     def parse_weather_data(self):
-        if self.get_weather_data() == 200:
+        return_code = self.get_weather_data()
+        if return_code == 200:
             data = self.weather_data.get("timeSeries", [{}])[0].get("parameters", {})
             temperature = 0
             temperature_unit = "C"
@@ -158,7 +159,7 @@ class SMHI(Weather_Base):
                 icon=icon,
             )
         else:
-            return WeatherData(error="Connection error")
+            return WeatherData(error=f"{return_code}: Connection error")
 
 
 class YR(Weather_Base):
@@ -258,7 +259,8 @@ class YR(Weather_Base):
             self.url = None
 
     def parse_weather_data(self):
-        if self.get_weather_data() == 200:
+        return_code = self.get_weather_data()
+        if return_code == 200:
             data = self.weather_data.get("properties", {})
             weather = data.get("timeseries", [{}])[0].get("data", {})
             details = weather.get("instant", {}).get("details", {})
@@ -291,7 +293,7 @@ class YR(Weather_Base):
                 icon=icon,
             )
         else:
-            return WeatherData(error="Connection error")
+            return WeatherData(error=f"{return_code}: Connection error")
 
 
 class Weather(WidgetBox):
