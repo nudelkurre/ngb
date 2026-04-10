@@ -360,7 +360,6 @@ class Weather(WidgetBox):
         self.update_timeout()
 
     def on_click(self, user_data):
-        print(self.weather.error)
         if (
             not (
                 isinstance(self.weather, Weather_Base)
