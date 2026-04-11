@@ -287,7 +287,20 @@ class YR(Weather_Base):
         return_code = self.get_weather_data()
         if return_code == 200:
             data = self.weather_data.get("properties", {})
-            weather = data.get("timeseries", [{}])[0].get("data", {})
+            res = data.get("timeseries", [{}])
+            timeslot = 0
+            for t in range(len(res)):
+                res_time = datetime.fromisoformat(
+                    res[t].get("time", "1970-01-01T00:00:00Z")
+                )
+                current_time = datetime.now()
+                if (
+                    res_time.day == current_time.day
+                    and res_time.hour == current_time.hour
+                ):
+                    timeslot = t
+                    break
+            weather = res[timeslot].get("data", {})
             details = weather.get("instant", {}).get("details", {})
             code = (
                 weather.get("next_1_hours", {})
