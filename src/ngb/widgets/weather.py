@@ -144,7 +144,7 @@ class SMHI(Weather_Base):
 
     def run(self):
         if self.get_location():
-            self.url = f"https://opendata-download-metfcst.smhi.se/api/category/snow1g/version/1/geotype/point/lon/{self.location['lon']}/lat/{self.location['lat']}/data.json"
+            self.url = f"https://opendata-download-metfcst.smhi.se/api/category/snow1g/version/1/geotype/point/lon/{self.location['lon']}/lat/{self.location['lat']}/data.json?timeseries=5&parameters=air_temperature,wind_speed,symbol_code"
         else:
             self.url = None
 
