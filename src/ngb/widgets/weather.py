@@ -144,7 +144,7 @@ class SMHI(Weather_Base):
 
     def run(self):
         if self.get_location():
-            self.url = f"https://opendata-download-metfcst.smhi.se/api/category/snow1g/version/1/geotype/point/lon/{self.location['lon']}/lat/{self.location['lat']}/data.json"
+            self.url = f"https://opendata-download-metfcst.smhi.se/api/category/snow1g/version/1/geotype/point/lon/{self.location['lon']}/lat/{self.location['lat']}/data.json?timeseries=5&parameters=air_temperature,wind_speed,symbol_code"
         else:
             self.url = None
 
@@ -309,18 +309,10 @@ class YR(Weather_Base):
             )
             units = data.get("meta", {}).get("units", None)
 
-            temperature = 0
+            temperature = details.get("air_temperature", 0)
             temperature_unit = "C"
-            wind_speed = 0.0
-            weather_code = 1
-
-            for d in details:
-                if d == "air_temperature":
-                    temperature = details[d]
-                    temperature_unit = units[d][0].upper()
-                elif d == "wind_speed":
-                    wind_speed = details[d]
-            weather_code = self.weather_id[code]
+            wind_speed = details.get("wind_speed", 0.0)
+            weather_code = self.weather_id.get(code, 1)
             icon = self.icons.get(weather_code, 1)
 
             self.error = False
