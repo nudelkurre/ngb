@@ -40,6 +40,30 @@ class MuteButton(Gtk.Button):
             return self.unmuted_icon
 
 
+class SetDefaultButton(Gtk.CheckButton):
+    def __init__(self, **kwargs):
+        super().__init__()
+        self.sink = kwargs.get("sink")
+        self.path = kwargs.get("path")
+        self.radio_group = kwargs.get("default_radio_group")
+        self.icon_size = kwargs.get("icon_size", 20)
+        self.set_group(self.radio_group)
+        if self.sink.default:
+            self.set_active(True)
+        self.connect("toggled", self.on_toggle)
+
+    def on_toggle(self, widget):
+        if self.get_active():
+            subprocess.run(f"wpctl set-default {self.sink.id}".split())
+            self.sink = self.sink._replace(default=True)
+        else:
+            self.sink = self.sink._replace(default=False)
+
+    def set_default(self, user_data):
+        if self.path:
+            subprocess.run(f"wpctl set-default {self.sink.id}".split())
+
+
 class Volume(WidgetBox):
     path = which("wpctl")
 
@@ -51,6 +75,7 @@ class Volume(WidgetBox):
         self.muted_icon = kwargs.get("muted_icon", "󰝟")
         self.unmuted_icon = kwargs.get("unmuted_icon", "󰕾")
         self.sinks = []
+        self.default_radio_group = Gtk.CheckButton()
         super().__init__(icon=self.icon, timer=self.timer, icon_size=self.icon_size)
 
     def run(self):
@@ -179,6 +204,12 @@ class Volume(WidgetBox):
                 unmuted_icon=self.unmuted_icon,
             )
             slider_box.append(mute_button)
+            set_default_button = SetDefaultButton(
+                path=self.path,
+                sink=sink,
+                default_radio_group=self.default_radio_group,
+            )
+            slider_box.append(set_default_button)
             self.dropdown.add(slider_box)
         return True
 
