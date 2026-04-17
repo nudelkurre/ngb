@@ -144,29 +144,32 @@ class SMHI(Weather_Base):
 
     def run(self):
         if self.get_location():
-            self.url = f"https://opendata-download-metfcst.smhi.se/api/category/pmp3g/version/2/geotype/point/lon/{self.location['lon']}/lat/{self.location['lat']}/data.json"
+            self.url = f"https://opendata-download-metfcst.smhi.se/api/category/snow1g/version/1/geotype/point/lon/{self.location['lon']}/lat/{self.location['lat']}/data.json?timeseries=5&parameters=air_temperature,wind_speed,symbol_code"
         else:
             self.url = None
 
     def parse_weather_data(self):
         return_code = self.get_weather_data()
         if return_code == 200:
-            data = self.weather_data.get("timeSeries", [{}])[0].get("parameters", {})
-            temperature = 0
+            res = self.weather_data.get("timeSeries", [{}])
+            timeslot = 0
+            for i in range(len(res)):
+                res_time = datetime.fromisoformat(
+                    res[i].get("intervalParametersStartTime", "1970-01-01T00:00:00Z")
+                )
+                current_time = datetime.now()
+                if (
+                    res_time.day == current_time.day
+                    and res_time.hour == current_time.hour
+                ):
+                    timeslot = i
+                    break
+            data = res[timeslot].get("data", {})
+            temperature = data.get("air_temperature", 0)
             temperature_unit = "C"
-            wind_speed = 0.0
-            weather_code = 1
-            icon = ""
-
-            for d in data:
-                if d["name"] == "t":
-                    temperature = d["values"][0]
-                    temperature_unit = d["unit"][0]
-                elif d["name"] == "ws":
-                    wind_speed = d["values"][0]
-                elif d["name"] == "Wsymb2":
-                    weather_code = d["values"][0]
-                    icon = self.icons.get(weather_code, 0)
+            wind_speed = data.get("wind_speed", 0.0)
+            weather_code = data.get("symbol_code", 1)
+            icon = self.icons.get(weather_code, "")
 
             self.error = False
 
@@ -284,7 +287,20 @@ class YR(Weather_Base):
         return_code = self.get_weather_data()
         if return_code == 200:
             data = self.weather_data.get("properties", {})
-            weather = data.get("timeseries", [{}])[0].get("data", {})
+            res = data.get("timeseries", [{}])
+            timeslot = 0
+            for t in range(len(res)):
+                res_time = datetime.fromisoformat(
+                    res[t].get("time", "1970-01-01T00:00:00Z")
+                )
+                current_time = datetime.now()
+                if (
+                    res_time.day == current_time.day
+                    and res_time.hour == current_time.hour
+                ):
+                    timeslot = t
+                    break
+            weather = res[timeslot].get("data", {})
             details = weather.get("instant", {}).get("details", {})
             code = (
                 weather.get("next_1_hours", {})
@@ -293,18 +309,10 @@ class YR(Weather_Base):
             )
             units = data.get("meta", {}).get("units", None)
 
-            temperature = 0
+            temperature = details.get("air_temperature", 0)
             temperature_unit = "C"
-            wind_speed = 0.0
-            weather_code = 1
-
-            for d in details:
-                if d == "air_temperature":
-                    temperature = details[d]
-                    temperature_unit = units[d][0].upper()
-                elif d == "wind_speed":
-                    wind_speed = details[d]
-            weather_code = self.weather_id[code]
+            wind_speed = details.get("wind_speed", 0.0)
+            weather_code = self.weather_id.get(code, 1)
             icon = self.icons.get(weather_code, 1)
 
             self.error = False
