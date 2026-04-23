@@ -1,6 +1,7 @@
 from .bar import Bar
 from .battery import BatteryModule
 from .config import Config
+from .disk import DiskModule
 from .dropdownwindow import DropDownWindow
 from .namedtuples import NamedTuples
 from .niriipc import NiriIPC
