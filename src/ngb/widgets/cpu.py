@@ -17,13 +17,6 @@ class Cpu(WidgetBox):
         super().run()
 
     def set_text(self):
-        self.get_cpu_usage()
-        return True
-
-    def get_cpu_usage(self):
         usage = psutil.cpu_percent()
         self.text_label.set_label(f"{usage}%")
         return True
-
-    def update_disk_usage(self):
-        GLib.timeout_add(self.timer, self.get_cpu_usage)
