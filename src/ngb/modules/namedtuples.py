@@ -34,3 +34,7 @@ class NamedTuples:
         ],
         defaults=(0, "C", 0.0, 1, "", None),
     )
+
+    DiskInfo = namedtuple(
+        "DiskInfo", ["percentage", "used", "total"], defaults=("0%", "0iB", "0iB")
+    )
