@@ -1,4 +1,5 @@
 from .bar import Bar
+from .battery import BatteryModule
 from .config import Config
 from .dropdownwindow import DropDownWindow
 from .namedtuples import NamedTuples
