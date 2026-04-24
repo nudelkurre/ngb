@@ -3,6 +3,7 @@ from .battery import BatteryModule
 from .config import Config
 from .disk import DiskModule
 from .dropdownwindow import DropDownWindow
+from .headset import HeadsetModule
 from .namedtuples import NamedTuples
 from .niriipc import NiriIPC
 from .swayipc import SwayIPC
