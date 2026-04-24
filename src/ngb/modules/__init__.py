@@ -1,5 +1,6 @@
 from .bar import Bar
 from .battery import BatteryModule
+from .bluetooth import BluetoothModule
 from .config import Config
 from .disk import DiskModule
 from .dropdownwindow import DropDownWindow
