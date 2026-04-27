@@ -1,23 +1,18 @@
 from gi.repository import Gtk
 from gi.repository import GLib
-from shutil import which
-
-import subprocess
 import re
 
-from ngb.modules import NamedTuples, WidgetBox
-
-VolumeSink = NamedTuples.VolumeSink
+from ngb.modules import VolumeModule, WidgetBox
 
 
 class MuteButton(Gtk.Button):
     def __init__(self, **kwargs):
         super().__init__()
         self.sink = kwargs.get("sink")
-        self.path = kwargs.get("path")
         self.icon_size = kwargs.get("icon_size", 20)
         self.muted_icon = kwargs.get("muted_icon", "󰝟")
         self.unmuted_icon = kwargs.get("unmuted_icon", "󰕾")
+        self.volume = kwargs.get("volume_module")
         self.mute_label = Gtk.Label()
         self.mute_label.add_css_class("icon")
         self.mute_label.set_label(self.get_muted())
@@ -25,13 +20,9 @@ class MuteButton(Gtk.Button):
         self.connect("clicked", self.on_mute)
 
     def on_mute(self, user_data):
-        self.toggle_mute()
+        self.volume.toggle_mute(self.sink.id)
+        self.sink = self.sink._replace(muted=not self.sink.muted)
         self.mute_label.set_markup(self.get_muted())
-
-    def toggle_mute(self):
-        if self.path:
-            subprocess.run(f"wpctl set-mute {self.sink.id} toggle".split())
-            self.sink = self.sink._replace(muted=not self.sink.muted)
 
     def get_muted(self):
         if self.sink.muted:
@@ -40,32 +31,7 @@ class MuteButton(Gtk.Button):
             return self.unmuted_icon
 
 
-class SetDefaultButton(Gtk.CheckButton):
-    def __init__(self, **kwargs):
-        super().__init__()
-        self.sink = kwargs.get("sink")
-        self.path = kwargs.get("path")
-        self.radio_group = kwargs.get("default_radio_group")
-        self.icon_size = kwargs.get("icon_size", 20)
-        self.set_group(self.radio_group)
-        if self.sink.default:
-            self.set_active(True)
-        self.connect("toggled", self.on_toggle)
-
-    def on_toggle(self, widget):
-        if self.get_active():
-            subprocess.run(f"wpctl set-default {self.sink.id}".split())
-            self.sink = self.sink._replace(default=True)
-        else:
-            self.sink = self.sink._replace(default=False)
-
-    def set_default(self, user_data):
-        if self.path:
-            subprocess.run(f"wpctl set-default {self.sink.id}".split())
-
-
 class Volume(WidgetBox):
-    path = which("wpctl")
 
     def __init__(self, **kwargs):
         self.icon = kwargs.get("icon", "")
@@ -74,110 +40,20 @@ class Volume(WidgetBox):
         self.click_to_mute = kwargs.get("click_to_mute", False)
         self.muted_icon = kwargs.get("muted_icon", "󰝟")
         self.unmuted_icon = kwargs.get("unmuted_icon", "󰕾")
-        self.sinks = []
-        self.default_radio_group = Gtk.CheckButton()
+        self.volume = VolumeModule()
+        self.default_button_dict = {}
         super().__init__(icon=self.icon, timer=self.timer, icon_size=self.icon_size)
 
     def run(self):
         super().run()
-        self.get_sinks()
 
         # Connect signals for dropdown
         self.dropdown.connect("show", self.on_show)
         self.dropdown.connect("closed", self.on_close)
 
-    def get_volume(self, sink):
-        if self.path:
-            volume = subprocess.run(
-                f"wpctl get-volume {sink}".split(), capture_output=True, text=True
-            ).stdout
-            volume = volume.split(" ")
-            if len(volume) == 2:
-                volume = float(volume[1].lstrip().rstrip()) * 100
-                volume = f"{int(volume)}%"
-                self.text_label.set_label(volume)
-            elif len(volume) == 3 and "MUTED" in volume[2]:
-                self.text_label.set_label("Muted")
-        else:
-            self.text_label.set_label("wpctl is not installed")
-            self.icon_label.set_visible(False)
-        return True
-
-    def get_sinks(self):
-        new_sinks = []
-        new_sink_names = []
-        old_sink_names = []
-        new_default = 0
-        old_default = 0
-        if self.path:
-            for i in self.sinks:
-                old_sink_names.append(i.name)
-                if i.default:
-                    old_default = i.id
-            # Get output from wpctl
-            wpctl = subprocess.run(
-                "wpctl status".split(), capture_output=True, text=True
-            ).stdout
-
-            # Get only parts that are in the Audio section of wpctl output
-            sinks = re.search(r"Audio\n([\W\w]*)Video", wpctl).group(1)
-            # Get only audio sinks
-            sinks = (
-                re.search(r"Sinks:\n([\W\w]*)Sources", sinks).group(1).split("\n")[:-2]
-            )
-
-            for i in sinks:
-                # Search each sink for id, name, volume, if muted and if default
-                match = re.search(
-                    r"\s*(?P<default>\*?)\s*(?P<id>\d+)\.\s*(?P<name>[\w\s\d\[\]\(\)-\/]+)\s*\[vol:\s*(?P<volume>\d+\.\d+)\s?(?P<muted>MUTED)*\]",
-                    i,
-                )
-                if match:
-                    sink = VolumeSink(
-                        id=match.group("id"),
-                        name=match.group("name").lstrip().rstrip(),
-                        volume=int(float(match.group("volume")) * 100),
-                        muted=True if match.group("muted") == "MUTED" else False,
-                        default=True if match.group("default") == "*" else False,
-                    )
-                    new_sinks.append(sink)
-                    new_sink_names.append(sink.name)
-                    if sink.default:
-                        new_default = sink.id
-            self.sinks = new_sinks
-        return True
-
-    def set_volume(self, sink, volume):
-        if self.path:
-            volume_cmd = f"wpctl set-volume {sink} {volume}".split()
-            subprocess.run(volume_cmd)
-
-    def toggle_mute(self, sink):
-        if self.path:
-            subprocess.run(f"wpctl set-mute {sink} toggle".split())
-
-    def change_default_sink(self):
-        default = self.get_default_sink()
-        # Set the new default sink by move to next id in sink list
-        # or to first if current is last
-        self.set_default_sink(self.sinks[(default + 1) % len(self.sinks)].id)
-
-    def get_default_sink(self):
-        self.get_sinks()
-        if len(self.sinks) > 0:
-            default = 0
-            # Iterate the sink list and if sink is default get index of deafult sink
-            for index, sink in enumerate(self.sinks):
-                if sink.default:
-                    default = index
-        return default
-
-    def set_default_sink(self, sink):
-        subprocess.run(f"wpctl set-default {sink}".split())
-
     def populate_dropdown(self):
-        self.get_sinks()
-        for sink in self.sinks:
+        sinks = self.volume.get_sinks()
+        for sink in sinks:
             sink_label = Gtk.Label()
             # Split string to insert new line at every 25 character
             # to line wrap long sink names
@@ -193,45 +69,56 @@ class Volume(WidgetBox):
             slider.set_draw_value(True)
             slider.set_value_pos(Gtk.PositionType.RIGHT)
             slider.set_value(sink.volume)
-            slider.set_name(sink.id)
+            slider.set_name(f"{sink.id}")
             slider.connect("value-changed", self.on_slider_change)
             slider_box.append(slider)
             mute_button = MuteButton(
                 icon_size=self.icon_size,
-                path=self.path,
                 sink=sink,
                 muted_icon=self.muted_icon,
                 unmuted_icon=self.unmuted_icon,
+                volume_module=self.volume,
             )
             slider_box.append(mute_button)
-            set_default_button = SetDefaultButton(
-                path=self.path,
-                sink=sink,
-                default_radio_group=self.default_radio_group,
+            set_default_button = Gtk.Button(label="Set as default")
+            self.default_button_dict[sink.id] = set_default_button
+            set_default_button.connect(
+                "clicked",
+                lambda btn, sink_id=sink.id: self.on_default_click(btn, sink_id),
             )
+            if sink.default:
+                set_default_button.set_sensitive(False)
             slider_box.append(set_default_button)
             self.dropdown.add(slider_box)
         return True
 
     def set_text(self):
-        self.get_volume("@DEFAULT_AUDIO_SINK@")
+        self.text_label.set_label(f"{self.volume.get_volume("@DEFAULT_AUDIO_SINK@")}%")
         return True
 
     def on_slider_change(self, scale):
-        scale_id = scale.get_name()
-        sink = list(filter(lambda s: s.id == scale_id, self.sinks))[0]
+        scale_id = int(scale.get_name())
+        sink = list(filter(lambda s: s.id == scale_id, self.volume.get_sinks()))[0]
         volume = scale.get_value() / 100
-        self.set_volume(scale_id, volume)
+        self.volume.set_volume(scale_id, volume)
         if scale_id == sink.id:
             self.set_text()
 
     def on_scroll(self, controller, x, y):
         if y < 0:
-            self.set_volume("@DEFAULT_AUDIO_SINK@", "5%+")
+            self.volume.set_volume("@DEFAULT_AUDIO_SINK@", "5%+")
             self.set_text()
         elif y > 0:
-            self.set_volume("@DEFAULT_AUDIO_SINK@", "5%-")
+            self.volume.set_volume("@DEFAULT_AUDIO_SINK@", "5%-")
             self.set_text()
+
+    def on_default_click(self, user_data, sink_id):
+        current_default = self.volume.get_default_sink().id
+        current_default_button = self.default_button_dict.get(current_default)
+        if current_default_button:
+            self.volume.set_default_sink(sink_id)
+            current_default_button.set_sensitive(True)
+            user_data.set_sensitive(False)
 
     def on_click(self, user_data):
         if self.click_to_mute:
@@ -241,25 +128,16 @@ class Volume(WidgetBox):
 
     def on_middle_click(self, sequence, user_data):
         if not self.click_to_mute:
-            self.toggle_mute("@DEFAULT_AUDIO_SINK@")
+            self.volume.toggle_mute("@DEFAULT_AUDIO_SINK@")
         else:
             self.dropdown.popup()
 
     def on_right_click(self, sequence, user_data):
-        self.change_default_sink()
+        self.volume.change_default_sink()
 
     def on_show(self, user_data):
         self.populate_dropdown()
 
     def on_close(self, user_data):
         self.dropdown.clear()
-
-    def on_mute(self, user_data, mute_button_label):
-        # print(user_data, mute_button_label)
-        if mute_button_label.get_label() == "Mute":
-            mute_button_label.set_label("Muted")
-        elif mute_button_label.get_label() == "Muted":
-            mute_button_label.set_label("Mute")
-
-    def update_sinks(self):
-        GLib.timeout_add(1000, self.get_sinks)
+        self.default_button_dict.clear()
