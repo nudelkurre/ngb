@@ -6,6 +6,7 @@ from .disk import DiskModule
 from .dropdownwindow import DropDownWindow
 from .headset import HeadsetModule
 from .namedtuples import NamedTuples
+from .network import NetworkModule
 from .niriipc import NiriIPC
 from .swayipc import SwayIPC
 from .widgetbox import WidgetBox
