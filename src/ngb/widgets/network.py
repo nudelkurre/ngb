@@ -24,6 +24,10 @@ class Network(WidgetBox):
         self.dropdown.connect("closed", self.on_close)
 
     def set_text(self):
+        if self.interface.is_up():
+            self.set_visible(True)
+        else:
+            self.set_visible(self.show_disconnected)
         self.text_label.set_label(self.interface.get_ipv4_addr())
         return True
 

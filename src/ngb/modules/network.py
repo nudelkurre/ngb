@@ -21,7 +21,7 @@ class NetworkModule:
             for address in interface_data:
                 if address.family == socket.AddressFamily.AF_INET:
                     return address.address
-        return ""
+        return "Not connected"
 
     def get_ipv6_addrs(self):
         addresses = []
