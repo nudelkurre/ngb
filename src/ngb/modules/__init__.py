@@ -10,5 +10,6 @@ from .network import NetworkModule
 from .niriipc import NiriIPC
 from .swayipc import SwayIPC
 from .volume import VolumeModule
+from .weather import WeatherModule
 from .widgetbox import WidgetBox
 from .windowmanageripc import WindowManagerIPC
