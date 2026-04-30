@@ -40,6 +40,22 @@ class IPCModule:
             return ""
         return self.cut_title_lenght(window)
 
+    def get_workspaces(self):
+        ws_list = []
+        workspaces = self.wm.get_workspaces()
+        ws_list = sorted(workspaces, key=lambda d: int(d.id))
+        return ws_list
+
+    def goto_workspace(self, name):
+        if name and name != "":
+            self.wm.command(f"workspace {name}")
+
+    def next_workspace(self):
+        self.wm.command("workspace next_on_output")
+
+    def previous_workspace(self):
+        self.wm.command("workspace prev_on_output")
+
     def cut_title_lenght(self, title):
         old_title = title.split(" ")
         new_title = title[: self.title_max_length].split(" ")
