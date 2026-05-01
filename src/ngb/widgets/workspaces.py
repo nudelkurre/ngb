@@ -1,20 +1,7 @@
 from gi.repository import Gtk
 from gi.repository import GLib
 
-import re
-import os
-from collections import namedtuple
-import socket
-
-from ngb.modules import (
-    NamedTuples,
-    NiriIPC,
-    SwayIPC,
-    WidgetBox,
-    WindowManagerIPC,
-)
-
-Workspace = NamedTuples.Workspace
+from ngb.modules import IPCModule, WidgetBox
 
 
 class WorkspaceBox(WidgetBox):
@@ -25,7 +12,7 @@ class WorkspaceBox(WidgetBox):
         self.focused = kwargs.get("focused", False)
         self.urgent = kwargs.get("urgent", False)
         self.icon_size = kwargs.get("icon_size", 20)
-        self.wm = kwargs.get("wm", WindowManagerIPC())
+        self.wm = kwargs.get("wm")
         super().__init__(icon=self.show_name, text=self.name, icon_size=self.icon_size)
         self.hide_label()
         self.set_focused()
@@ -45,25 +32,19 @@ class WorkspaceBox(WidgetBox):
             self.text_label.set_visible(True)
 
     def on_click(self, user_data):
-        if self.name:
-            self.wm.command(f"workspace {self.name}")
+        self.wm.goto_workspace(self.name)
 
 
 class Workspaces(Gtk.Box):
     workspaces = []
     old_workspaces = []
-    if os.environ["XDG_CURRENT_DESKTOP"] == "sway":
-        wm = SwayIPC()
-    elif os.environ["XDG_CURRENT_DESKTOP"] == "niri":
-        wm = NiriIPC()
-    # If using a non-supported window manager and show empty space instead of giving error
-    else:
-        wm = WindowManagerIPC()
 
     def __init__(self, **kwargs):
+        pass
         self.spacing = kwargs.get("spacing", 5)
         self.icon_size = kwargs.get("icon_size", 20)
         super().__init__(spacing=self.spacing)
+        self.wm_api = IPCModule(**kwargs)
         self.timer = kwargs.get("timer", 0.1)
         self.monitor = kwargs.get("monitor", "all")
         self.use_workspace_names = kwargs.get("use_workspace_names", False)
@@ -93,24 +74,8 @@ class Workspaces(Gtk.Box):
         if parent:
             parent.remove(self)
 
-    def get_ws(self):
-        ws_list = []
-        workspaces = self.wm.get_workspaces()
-        for ws in workspaces:
-            workspace = Workspace(
-                id=ws.id,
-                name=ws.name,
-                focused=ws.focused,
-                output=ws.output,
-                urgent=ws.urgent,
-            )
-            ws_list.append(workspace)
-
-        ws_list = sorted(ws_list, key=lambda d: int(d.id))
-        self.workspaces = ws_list
-
     def update_boxes(self):
-        self.get_ws()
+        self.workspaces = self.wm_api.get_workspaces()
         if self.workspaces != self.old_workspaces:
             self.old_workspaces = self.workspaces
             while self.get_first_accessible_child() is not None:
@@ -133,10 +98,9 @@ class Workspaces(Gtk.Box):
                             focused=ws.focused,
                             urgent=ws.urgent,
                             icon_size=self.icon_size,
-                            wm=self.wm,
+                            wm=self.wm_api,
                         )
                     )
-
         return True
 
     def update_list(self):
@@ -144,6 +108,6 @@ class Workspaces(Gtk.Box):
 
     def on_scroll(self, controller, x, y):
         if y < 0:
-            self.wm.command("workspace next_on_output")
+            self.wm_api.next_workspace()
         elif y > 0:
-            self.wm.command("workspace prev_on_output")
+            self.wm_api.previous_workspace()

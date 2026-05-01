@@ -5,11 +5,9 @@ from .config import Config
 from .disk import DiskModule
 from .dropdownwindow import DropDownWindow
 from .headset import HeadsetModule
+from .ipc import IPCModule
 from .namedtuples import NamedTuples
 from .network import NetworkModule
-from .niriipc import NiriIPC
-from .swayipc import SwayIPC
 from .volume import VolumeModule
 from .weather import WeatherModule
 from .widgetbox import WidgetBox
-from .windowmanageripc import WindowManagerIPC
