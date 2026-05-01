@@ -1,341 +1,10 @@
-import requests
-import json
-import time
-from datetime import datetime
-from tzlocal import get_localzone
-import geopy
-from geopy.geocoders import Nominatim
-import os
 from gi.repository import Gtk
 from gi.repository import GLib
 
-from ngb.modules import NamedTuples, WidgetBox, DropDownWindow
-
-WeatherData = NamedTuples.Weather
-
-
-class Weather_Base:
-    icons = {
-        1: "☀️",
-        2: "🌤️",
-        3: "⛅",
-        4: "⛅",
-        5: "☁️",
-        6: "☁️",
-        7: "🌫️",
-        8: "🌧️",
-        9: "🌧️",
-        10: "🌧️",
-        11: "⛈️",
-        12: "🌨️",
-        13: "🌨️🌧️",
-        14: "🌨️🌧️",
-        15: "🌨️",
-        16: "🌨️",
-        17: "❄️",
-        18: "🌧️",
-        19: "🌧️",
-        20: "🌧️",
-        21: "⚡",
-        22: "🌨️🌧️",
-        23: "🌨️🌧️",
-        24: "🌨️🌧️",
-        25: "🌨️",
-        26: "🌨️",
-        27: "🌨️",
-    }
-    descriptions = {
-        1: "Clear sky",
-        2: "Nearly clear sky",
-        3: "Variable cloudiness",
-        4: "Halfclear sky",
-        5: "Cloudy sky",
-        6: "Overcast",
-        7: "Fog",
-        8: "Light rain showers",
-        9: "Moderate rain showers",
-        10: "Heavy rain showers",
-        11: "Thunderstorm",
-        12: "Light sleet showers",
-        13: "Moderate sleet showers",
-        14: "Heavy sleet showers",
-        15: "Light snow showers",
-        16: "Moderate snow showers",
-        17: "Heavy snow showers",
-        18: "Light rain",
-        19: "Moderate rain",
-        20: "Heavy rain",
-        21: "Thunder",
-        22: "Light sleet",
-        23: "Moderate sleet",
-        24: "Heavy sleet",
-        25: "Light snowfall",
-        26: "Moderate snowfall",
-        27: "Heavy snowfall",
-    }
-
-    connection_errors = {
-        -1: "No connection",
-        -2: "No url set",
-        -3: "Location is not set",
-        404: "URL not found",
-    }
-
-    def __init__(self, **kwargs):
-        self.city = kwargs.get("city", "")
-        self.location = {"lat": 0, "lon": 0}
-        self.user_agent = "Weather widget"
-        self.url = ""
-        self.error = True
-        self.weather_data = dict()
-        self.parsed_data = dict()
-
-    def run(self):
-        pass
-
-    def get_location(self):
-        if self.city == "":
-            self.city = self.get_city()
-            if self.city is None:
-                return False
-        try:
-            loc = Nominatim(user_agent=self.user_agent)
-            g = loc.geocode(self.city)
-            self.location["lat"] = float(str(g.latitude)[0:7])
-            self.location["lon"] = float(str(g.longitude)[0:7])
-            return True
-        except geopy.exc.GeocoderUnavailable:
-            print("Can not connect to Nominatim")
-            return False
-
-    def get_city(self):
-        try:
-            info = requests.get("https://ipconfig.io/json").json()
-            city = info["city"]
-            return city
-        except requests.exceptions.ConnectionError:
-            print("No location set because of connection error")
-            return None
-
-    def get_weather_data(self):
-        if self.location.get("lat", 0) != 0 and self.location.get("lon", 0) != 0:
-            headers = {"User-Agent": self.user_agent}
-            if self.url:
-                try:
-                    req = requests.get(self.url, headers=headers)
-                    if req.status_code == 200:
-                        self.weather_data = req.json()
-                        return req.status_code
-                    else:
-                        return req.status_code
-                except requests.exceptions.ConnectionError:
-                    return -1
-            else:
-                return -2
-        return -3
-
-    def parse_weather_data(self):
-        pass
-
-
-class SMHI(Weather_Base):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-
-    def run(self):
-        if self.get_location():
-            self.url = f"https://opendata-download-metfcst.smhi.se/api/category/snow1g/version/1/geotype/point/lon/{self.location['lon']}/lat/{self.location['lat']}/data.json?timeseries=5&parameters=air_temperature,wind_speed,symbol_code"
-        else:
-            self.url = None
-
-    def parse_weather_data(self):
-        return_code = self.get_weather_data()
-        if return_code == 200:
-            res = self.weather_data.get("timeSeries", [{}])
-            timeslot = 0
-            for i in range(len(res)):
-                res_time = datetime.fromisoformat(
-                    res[i].get("intervalParametersStartTime", "1970-01-01T00:00:00Z")
-                )
-                current_time = datetime.now()
-                if (
-                    res_time.day == current_time.day
-                    and res_time.hour == current_time.hour
-                ):
-                    timeslot = i
-                    break
-            data = res[timeslot].get("data", {})
-            temperature = data.get("air_temperature", 0)
-            temperature_unit = "C"
-            wind_speed = data.get("wind_speed", 0.0)
-            weather_code = data.get("symbol_code", 1)
-            icon = self.icons.get(weather_code, "")
-
-            self.error = False
-
-            return WeatherData(
-                temperature=temperature,
-                temperature_unit=temperature_unit,
-                windspeed=wind_speed,
-                weather_code=weather_code,
-                icon=icon,
-            )
-        else:
-            self.error = True
-            return WeatherData(
-                error=f"{return_code}: {self.connection_errors.get(return_code, "Error")}"
-            )
-
-
-class YR(Weather_Base):
-    weather_id = {
-        "clearsky_day": 1,
-        "clearsky_night": 1,
-        "clearsky_polartwilight": 1,
-        "fair_day": 2,
-        "fair_night": 2,
-        "fair_polartwilight": 2,
-        "partlycloudy_day": 3,
-        "partlycloudy_night": 3,
-        "partlycloudy_polartwilight": 3,
-        "cloudy": 5,
-        "rainshowers_day": 9,
-        "rainshowers_night": 9,
-        "rainshowers_polartwilight": 9,
-        "rainshowersandthunder_day": 11,
-        "rainshowersandthunder_night": 11,
-        "rainshowersandthunder_polartwilight": 11,
-        "sleetshowers_day": 13,
-        "sleetshowers_night": 13,
-        "sleetshowers_polartwilight": 13,
-        "snowshowers_day": 16,
-        "snowshowers_night": 16,
-        "snowshowers_polartwilight": 16,
-        "rain": 19,
-        "heavyrain": 20,
-        "heavyrainandthunder": 11,
-        "sleet": 23,
-        "snow": 26,
-        "snowandthunder": 11,
-        "fog": 7,
-        "sleetshowersandthunder_day": 11,
-        "sleetshowersandthunder_night": 11,
-        "sleetshowersandthunder_polartwilight": 11,
-        "snowshowersandthunder_day": 11,
-        "snowshowersandthunder_night": 11,
-        "snowshowersandthunder_polartwilight": 11,
-        "rainandthunder": 11,
-        "sleetandthunder": 11,
-        "lightrainshowersandthunder_day": 11,
-        "lightrainshowersandthunder_night": 11,
-        "lightrainshowersandthunder_polartwilight": 11,
-        "heavyrainshowersandthunder_day": 11,
-        "heavyrainshowersandthunder_night": 11,
-        "heavyrainshowersandthunder_polartwilight": 11,
-        "lightssleetshowersandthunder_day": 11,
-        "lightssleetshowersandthunder_night": 11,
-        "lightssleetshowersandthunder_polartwilight": 11,
-        "heavysleetshowersandthunder_day": 11,
-        "heavysleetshowersandthunder_night": 11,
-        "heavysleetshowersandthunder_polartwilight": 11,
-        "lightssnowshowersandthunder_day": 11,
-        "lightssnowshowersandthunder_night": 11,
-        "lightssnowshowersandthunder_polartwilight": 11,
-        "heavysnowshowersandthunder_day": 11,
-        "heavysnowshowersandthunder_night": 11,
-        "heavysnowshowersandthunder_polartwilight": 11,
-        "lightrainandthunder": 11,
-        "lightsleetandthunder": 11,
-        "heavysleetandthunder": 11,
-        "lightsnowandthunder": 11,
-        "heavysnowandthunder": 11,
-        "lightrainshowers_day": 8,
-        "lightrainshowers_night": 8,
-        "lightrainshowers_polartwilight": 8,
-        "heavyrainshowers_day": 10,
-        "heavyrainshowers_night": 10,
-        "heavyrainshowers_polartwilight": 10,
-        "lightsleetshowers_day": 12,
-        "lightsleetshowers_night": 12,
-        "lightsleetshowers_polartwilight": 12,
-        "heavysleetshowers_day": 14,
-        "heavysleetshowers_night": 14,
-        "heavysleetshowers_polartwilight": 14,
-        "lightsnowshowers_day": 15,
-        "lightsnowshowers_night": 15,
-        "lightsnowshowers_polartwilight": 15,
-        "heavysnowshowers_day": 17,
-        "heavysnowshowers_night": 17,
-        "heavysnowshowers_polartwilight": 17,
-        "lightrain": 18,
-        "lightsleet": 22,
-        "heavysleet": 24,
-        "lightsnow": 25,
-        "heavysnow": 27,
-    }
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-
-    def run(self):
-        if self.get_location():
-            self.url = f"https://api.met.no/weatherapi/locationforecast/2.0/compact?lat={self.location['lat']}&lon={self.location['lon']}"
-        else:
-            self.url = None
-
-    def parse_weather_data(self):
-        return_code = self.get_weather_data()
-        if return_code == 200:
-            data = self.weather_data.get("properties", {})
-            res = data.get("timeseries", [{}])
-            timeslot = 0
-            for t in range(len(res)):
-                res_time = datetime.fromisoformat(
-                    res[t].get("time", "1970-01-01T00:00:00Z")
-                )
-                current_time = datetime.now()
-                if (
-                    res_time.day == current_time.day
-                    and res_time.hour == current_time.hour
-                ):
-                    timeslot = t
-                    break
-            weather = res[timeslot].get("data", {})
-            details = weather.get("instant", {}).get("details", {})
-            code = (
-                weather.get("next_1_hours", {})
-                .get("summary", {})
-                .get("symbol_code", None)
-            )
-            units = data.get("meta", {}).get("units", None)
-
-            temperature = details.get("air_temperature", 0)
-            temperature_unit = "C"
-            wind_speed = details.get("wind_speed", 0.0)
-            weather_code = self.weather_id.get(code, 1)
-            icon = self.icons.get(weather_code, 1)
-
-            self.error = False
-
-            return WeatherData(
-                temperature=temperature,
-                temperature_unit=temperature_unit,
-                windspeed=wind_speed,
-                weather_code=weather_code,
-                icon=icon,
-            )
-        else:
-            self.error = True
-            return WeatherData(
-                error=f"{return_code}: {self.connection_errors.get(return_code, "Error")}"
-            )
+from ngb.modules import WeatherModule, WidgetBox, DropDownWindow
 
 
 class Weather(WidgetBox):
-    apis = {
-        "smhi": SMHI,
-        "yr": YR,
-    }
 
     def __init__(self, **kwargs):
         self.api = kwargs.get("api", "YR")
@@ -344,16 +13,15 @@ class Weather(WidgetBox):
         self.small_text = kwargs.get("small_text_size", 7)
         self.show_big_icon = kwargs.get("show_big_icon", False)
         self.big_icon_size = kwargs.get("big_icon_size", 60)
-        if self.api.lower() in self.apis:
-            self.weather = self.apis.get(self.api.lower())(**kwargs)
-        else:
-            self.weather = Weather_Base()
+        self.big_icon = Gtk.Label()
+        self.weather_data = None
+        self.weather_api = WeatherModule(self.api, kwargs.get("city"))
         super().__init__(timer=self.timer, icon_size=self.icon_size)
-        self.city_label = Gtk.Label()
-        self.weather_icon = Gtk.Label()
-        self.temperature_label = Gtk.Label()
-        self.wind_speed_label = Gtk.Label()
-        self.weather_description_label = Gtk.Label()
+
+        # Connect signals for dropdown
+        self.dropdown.connect("show", self.on_show)
+        self.dropdown.connect("closed", self.on_close)
+
         self.api_label = Gtk.Label()
         self.api_label.set_markup(
             f"<span font='{self.small_text}'>API in use: {self.api}</span>"
@@ -361,68 +29,64 @@ class Weather(WidgetBox):
         self.last_updated_label = Gtk.Label()
 
     def run(self):
-        self.weather.run()
         super().run()
-        self.set_text()
-        self.populate_dropdown()
-        self.update_timeout()
 
     def on_click(self, user_data):
-        if (
-            not (
-                isinstance(self.weather, Weather_Base)
-                and type(self.weather) is Weather_Base
-            )
-            and not self.weather.error
-        ):
+        if self.weather_data and self.weather_data.error is None:
             self.dropdown.popup()
         return True
 
     def populate_dropdown(self):
-        self.dropdown.add(self.city_label)
+        self.dropdown.add(Gtk.Label(label=self.weather_api.city))
         if self.show_big_icon:
-            self.dropdown.add(self.weather_icon)
-        self.dropdown.add(self.temperature_label)
-        self.dropdown.add(self.wind_speed_label)
-        self.dropdown.add(self.weather_description_label)
+            self.dropdown.add(self.big_icon)
+            self.set_big_icon()
+        self.dropdown.add(
+            Gtk.Label(label=f"Temperature {self.weather_data.temperature}")
+        )
+        self.dropdown.add(
+            Gtk.Label(label=f"Wind speed {self.weather_data.windspeed} m/s")
+        )
+        self.dropdown.add(
+            Gtk.Label(
+                label=self.weather_api.get_description(self.weather_data.weather_code)
+            )
+        )
         self.dropdown.add(self.api_label)
+        self.set_last_update_label()
         self.dropdown.add(self.last_updated_label)
         return True
 
-    def set_text(self):
-        if (
-            isinstance(self.weather, Weather_Base)
-            and type(self.weather) is Weather_Base
-        ):
-            self.text_label.set_label("No API set")
-        else:
-            parsed_data = self.weather.parse_weather_data()
-            if parsed_data.error is not None:
-                self.text_label.set_label(parsed_data.error)
-            else:
-                self.city_label.set_label(self.weather.city)
-                self.text_label.set_label(
-                    f"{parsed_data.temperature} {parsed_data.temperature_unit}"
-                )
-                self.icon = parsed_data.icon
-                self.set_icon()
-                self.temperature_label.set_label(
-                    f"Temperature {parsed_data.temperature}"
-                )
-                self.wind_speed_label.set_label(
-                    f"Wind speed {parsed_data.windspeed} m/s"
-                )
-                self.weather_description_label.set_label(
-                    f"{self.weather.descriptions.get(parsed_data.weather_code, 1)}"
-                )
-                if self.show_big_icon:
-                    self.weather_icon.set_markup(
-                        f'<span font="{self.big_icon_size}">{parsed_data.icon}</span>'
-                    )
-                self.last_updated_label.set_markup(
-                    f'<span font="{self.small_text}">Last updated: {datetime.now().strftime("%H:%M")}</span>'
-                )
-        return True
+    def on_show(self, user_data):
+        self.populate_dropdown()
 
-    def update_timeout(self):
-        GLib.timeout_add(self.timer * 1000, self.set_text)
+    def on_close(self, user_data):
+        self.dropdown.clear()
+
+    def set_big_icon(self):
+        self.big_icon.set_markup(
+            f"<span font='{self.big_icon_size}'>{self.weather_data.icon}</span>"
+        )
+
+    def set_last_update_label(self):
+        self.last_updated_label.set_markup(
+            f"<span font='{self.small_text}'>Last updated: {self.weather_api.last_updated}</span>"
+        )
+
+    def set_text(self):
+        self.weather_data = self.weather_api.get_weather()
+        if self.weather_data:
+            if self.weather_data.error is None:
+                if self.text_label.get_visible() == False:
+                    self.text_label.set_visible(True)
+                self.text_label.set_label(
+                    f"{self.weather_data.temperature} {self.weather_data.temperature_unit}"
+                )
+                self.icon = self.weather_data.icon
+                self.set_icon()
+            else:
+                self.text_label.set_visible(False)
+                self.icon = ""
+                self.set_icon()
+                self.set_tooltip_text(self.weather_data.error)
+        return True

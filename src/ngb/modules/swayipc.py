@@ -1,4 +1,3 @@
-from collections import namedtuple
 import socket
 import re
 import os
