@@ -1,7 +1,7 @@
 import psutil
 from psutil._common import bytes2human
 
-from .namedtuples import NamedTuples
+from ngb.types import NamedTuples
 
 DiskInfo = NamedTuples.DiskInfo
 

@@ -18,10 +18,6 @@ class Weather(WidgetBox):
         self.weather_api = WeatherModule(self.api, kwargs.get("city"))
         super().__init__(timer=self.timer, icon_size=self.icon_size)
 
-        # Connect signals for dropdown
-        self.dropdown.connect("show", self.on_show)
-        self.dropdown.connect("closed", self.on_close)
-
         self.api_label = Gtk.Label()
         self.api_label.set_markup(
             f"<span font='{self.small_text}'>API in use: {self.api}</span>"
@@ -56,12 +52,6 @@ class Weather(WidgetBox):
         self.set_last_update_label()
         self.dropdown.add(self.last_updated_label)
         return True
-
-    def on_show(self, user_data):
-        self.populate_dropdown()
-
-    def on_close(self, user_data):
-        self.dropdown.clear()
 
     def set_big_icon(self):
         self.big_icon.set_markup(

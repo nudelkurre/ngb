@@ -6,7 +6,6 @@ from .disk import DiskModule
 from .dropdownwindow import DropDownWindow
 from .headset import HeadsetModule
 from .ipc import IPCModule
-from .namedtuples import NamedTuples
 from .network import NetworkModule
 from .volume import VolumeModule
 from .weather import WeatherModule

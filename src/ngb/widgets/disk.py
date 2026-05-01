@@ -18,7 +18,6 @@ class Disk(WidgetBox):
 
     def run(self):
         super().run()
-        self.populate_dropdown()
 
     def set_text(self):
         disk_usage = self.disk_info.get_disk_usage()

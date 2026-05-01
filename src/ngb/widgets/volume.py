@@ -1,8 +1,8 @@
 from gi.repository import Gtk
 from gi.repository import GLib
-import re
 
 from ngb.modules import VolumeModule, WidgetBox
+from ngb.utils import wrap_string_at
 
 
 class MuteButton(Gtk.Button):
@@ -48,16 +48,14 @@ class Volume(WidgetBox):
         super().run()
 
         # Connect signals for dropdown
-        self.dropdown.connect("show", self.on_show)
-        self.dropdown.connect("closed", self.on_close)
+        # self.dropdown.connect("show", self.on_show)
+        # self.dropdown.connect("closed", self.on_close)
 
     def populate_dropdown(self):
         sinks = self.volume.get_sinks()
         for sink in sinks:
             sink_label = Gtk.Label()
-            # Split string to insert new line at every 25 character
-            # to line wrap long sink names
-            sink_text = "\n".join(re.findall(".{1,25}", sink.name))
+            sink_text = wrap_string_at(sink.name, 25)
             sink_label.set_label(sink_text)
             self.dropdown.add(sink_label)
             slider_box = Gtk.Box(
@@ -135,9 +133,9 @@ class Volume(WidgetBox):
     def on_right_click(self, sequence, user_data):
         self.volume.change_default_sink()
 
-    def on_show(self, user_data):
-        self.populate_dropdown()
+    # def on_show(self, user_data):
+    #     self.populate_dropdown()
 
     def on_close(self, user_data):
-        self.dropdown.clear()
+        super().on_close(user_data)
         self.default_button_dict.clear()

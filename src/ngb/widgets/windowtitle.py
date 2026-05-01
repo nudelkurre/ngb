@@ -2,6 +2,7 @@ from gi.repository import Gtk
 from gi.repository import GLib
 
 from ngb.modules import IPCModule, WidgetBox
+from ngb.utils import cut_string_length
 
 
 class WindowButton(Gtk.Box):
@@ -13,6 +14,7 @@ class WindowButton(Gtk.Box):
         self.hide_on_close = kwargs.get("hide_on_close")
         self.window_title = kwargs.get("title", "")
         self.window_id = kwargs.get("id")
+        self.title_max_length = kwargs.get("title_max_length", 200)
         self.window_button = Gtk.Button(label=self.window_title)
         self.window_button.add_css_class("widget-button")
         self.window_button.connect("clicked", self.focus_window)
@@ -41,9 +43,6 @@ class WindowTitle(WidgetBox):
         self.hide_no_focus = kwargs.get("hide_no_focus", False)
         self.hide_on_close = kwargs.get("hide_on_close", True)
         self.title_max_length = kwargs.get("title_max_length", 200)
-        self.text = "Test"
-        self.dropdown.connect("show", self.on_show)
-        self.dropdown.connect("closed", self.on_close)
         self.wm_api = IPCModule(**kwargs)
 
     def run(self):
@@ -54,7 +53,7 @@ class WindowTitle(WidgetBox):
         for window in window_list:
             self.dropdown.add(
                 WindowButton(
-                    title=self.wm_api.cut_title_lenght(window.title),
+                    title=cut_string_length(window.title, self.title_max_length),
                     id=window.id,
                     wm=self.wm_api,
                     dropdown=self.dropdown,
@@ -66,12 +65,6 @@ class WindowTitle(WidgetBox):
         if self.wm_api.is_valid_wm():
             self.dropdown.popup()
         return True
-
-    def on_close(self, user_data):
-        self.dropdown.clear()
-
-    def on_show(self, user_data):
-        self.populate_dropdown()
 
     def set_text(self):
         self.text_label.set_label(self.wm_api.get_window_title())

@@ -31,7 +31,6 @@ class Clock(WidgetBox):
 
     def run(self):
         super().run()
-        self.populate_dropdown()
 
         # Create a revealer for smoother transition when hover over
         self.revealer = Gtk.Revealer()

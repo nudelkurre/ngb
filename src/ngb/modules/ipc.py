@@ -1,8 +1,7 @@
 import os
 
-from .niriipc import NiriIPC
-from .swayipc import SwayIPC
-from .windowmanageripc import WindowManagerIPC
+from .ipc_modules import NiriIPC, SwayIPC, WindowManagerIPC
+from ngb.utils import cut_string_length
 
 
 class IPCModule:
@@ -38,7 +37,7 @@ class IPCModule:
             if not self.hide_no_focus:
                 return "Empty"
             return ""
-        return self.cut_title_lenght(window)
+        return cut_string_length(window, self.title_max_length)
 
     def get_workspaces(self):
         ws_list = []
@@ -55,12 +54,3 @@ class IPCModule:
 
     def previous_workspace(self):
         self.wm.command("workspace prev_on_output")
-
-    def cut_title_lenght(self, title):
-        old_title = title.split(" ")
-        new_title = title[: self.title_max_length].split(" ")
-        new_title_last_index = len(new_title) - 1
-        if old_title[new_title_last_index] == new_title[new_title_last_index]:
-            return " ".join(new_title)
-        else:
-            return " ".join(new_title[:-1])

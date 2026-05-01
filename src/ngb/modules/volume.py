@@ -3,7 +3,7 @@ from shutil import which
 import subprocess
 import re
 
-from .namedtuples import NamedTuples
+from ngb.types import NamedTuples
 
 VolumeSink = NamedTuples.VolumeSink
 
