@@ -2,7 +2,7 @@ from pydbus import SystemBus
 
 import re
 
-from .namedtuples import NamedTuples
+from ngb.types import NamedTuples
 
 BluetoothDevice = NamedTuples.BluetoothDevice
 

@@ -1,8 +1,6 @@
 import os
 
-from .niriipc import NiriIPC
-from .swayipc import SwayIPC
-from .windowmanageripc import WindowManagerIPC
+from .ipc_modules import NiriIPC, SwayIPC, WindowManagerIPC
 
 
 class IPCModule:

@@ -3,7 +3,7 @@ import geopy
 from geopy.geocoders import Nominatim
 import requests
 
-from .namedtuples import NamedTuples
+from ngb.types import NamedTuples
 from .weather_modules import SMHI, Weather_Base, YR
 
 WeatherData = NamedTuples.Weather

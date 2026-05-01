@@ -1,0 +1,40 @@
+from collections import namedtuple
+
+
+class NamedTuples:
+    Workspace = namedtuple(
+        "Workspace",
+        ["id", "name", "focused", "output", "urgent"],
+        defaults=(0, "", False, "", False),
+    )
+
+    Window = namedtuple("Window", ["id", "title", "focused"], defaults=(0, "", False))
+
+    BluetoothDevice = namedtuple(
+        "BluetoothDevice",
+        ["adapter", "address", "battery", "connected", "icon", "name"],
+        defaults=("", "", "", False, "󰥈", ""),
+    )
+
+    VolumeSink = namedtuple(
+        "VolumeSink",
+        ["id", "name", "volume", "muted", "default"],
+        defaults=(0, "", 0.0, False, False),
+    )
+
+    Weather = namedtuple(
+        "Weather",
+        [
+            "temperature",
+            "temperature_unit",
+            "windspeed",
+            "weather_code",
+            "icon",
+            "error",
+        ],
+        defaults=(0, "C", 0.0, 1, "", None),
+    )
+
+    DiskInfo = namedtuple(
+        "DiskInfo", ["percentage", "used", "total"], defaults=("0%", "0iB", "0iB")
+    )

@@ -1,5 +1,5 @@
 from datetime import datetime
-from ngb.modules import NamedTuples
+from ngb.types import NamedTuples
 from .weatherbase import Weather_Base
 
 WeatherData = NamedTuples.Weather
