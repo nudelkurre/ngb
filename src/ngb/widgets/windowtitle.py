@@ -43,9 +43,6 @@ class WindowTitle(WidgetBox):
         self.hide_no_focus = kwargs.get("hide_no_focus", False)
         self.hide_on_close = kwargs.get("hide_on_close", True)
         self.title_max_length = kwargs.get("title_max_length", 200)
-        self.text = "Test"
-        self.dropdown.connect("show", self.on_show)
-        self.dropdown.connect("closed", self.on_close)
         self.wm_api = IPCModule(**kwargs)
 
     def run(self):
@@ -68,12 +65,6 @@ class WindowTitle(WidgetBox):
         if self.wm_api.is_valid_wm():
             self.dropdown.popup()
         return True
-
-    def on_close(self, user_data):
-        self.dropdown.clear()
-
-    def on_show(self, user_data):
-        self.populate_dropdown()
 
     def set_text(self):
         self.text_label.set_label(self.wm_api.get_window_title())

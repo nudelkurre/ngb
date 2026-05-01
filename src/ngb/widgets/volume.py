@@ -48,8 +48,8 @@ class Volume(WidgetBox):
         super().run()
 
         # Connect signals for dropdown
-        self.dropdown.connect("show", self.on_show)
-        self.dropdown.connect("closed", self.on_close)
+        # self.dropdown.connect("show", self.on_show)
+        # self.dropdown.connect("closed", self.on_close)
 
     def populate_dropdown(self):
         sinks = self.volume.get_sinks()
@@ -133,9 +133,9 @@ class Volume(WidgetBox):
     def on_right_click(self, sequence, user_data):
         self.volume.change_default_sink()
 
-    def on_show(self, user_data):
-        self.populate_dropdown()
+    # def on_show(self, user_data):
+    #     self.populate_dropdown()
 
     def on_close(self, user_data):
-        self.dropdown.clear()
+        super().on_close(user_data)
         self.default_button_dict.clear()

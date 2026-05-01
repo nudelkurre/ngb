@@ -60,6 +60,10 @@ class WidgetBox(Gtk.Button):
         self.right_click_controller.connect("begin", self.on_right_click)
         self.box.add_controller(self.right_click_controller)
 
+        # Connect signals for dropdown
+        self.dropdown.connect("show", self.on_show)
+        self.dropdown.connect("closed", self.on_close)
+
         # Append icon and text to widget
         self.box.append(self.icon_label)
         self.box.append(self.text_label)
@@ -86,6 +90,9 @@ class WidgetBox(Gtk.Button):
         if parent:
             parent.remove(self)
 
+    def populate_dropdown(self):
+        pass
+
     def on_scroll(self, controller, x, y):
         pass
 
@@ -103,6 +110,12 @@ class WidgetBox(Gtk.Button):
 
     def on_right_click(self, sequence, user_data):
         pass
+
+    def on_show(self, user_data):
+        self.populate_dropdown()
+
+    def on_close(self, user_data):
+        self.dropdown.clear()
 
     def append(self, widget):
         self.box.append(widget)

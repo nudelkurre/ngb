@@ -21,7 +21,6 @@ class Network(WidgetBox):
 
     def run(self):
         super().run()
-        self.dropdown.connect("closed", self.on_close)
 
     def set_text(self):
         if self.interface.is_up():
@@ -48,10 +47,5 @@ class Network(WidgetBox):
 
     def on_click(self, user_data):
         if self.interface.is_up():
-            self.populate_dropdown()
             self.dropdown.popup()
-        return True
-
-    def on_close(self, user_data):
-        self.dropdown.clear()
         return True
