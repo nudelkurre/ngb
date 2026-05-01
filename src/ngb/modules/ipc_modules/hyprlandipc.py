@@ -3,7 +3,7 @@ import socket
 import re
 import os
 
-from .namedtuples import NamedTuples
+from ngb.types import NamedTuples
 from .windowmanageripc import WindowManagerIPC
 
 Workspace = NamedTuples.Workspace

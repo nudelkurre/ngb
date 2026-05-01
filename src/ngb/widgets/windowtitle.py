@@ -1,12 +1,8 @@
 from gi.repository import Gtk
 from gi.repository import GLib
 
-import re
-import os
-from collections import namedtuple
-import socket
-
-from ngb.modules import NiriIPC, SwayIPC, WidgetBox, WindowManagerIPC
+from ngb.modules import IPCModule, WidgetBox
+from ngb.utils import cut_string_length
 
 
 class WindowButton(Gtk.Box):
@@ -18,6 +14,7 @@ class WindowButton(Gtk.Box):
         self.hide_on_close = kwargs.get("hide_on_close")
         self.window_title = kwargs.get("title", "")
         self.window_id = kwargs.get("id")
+        self.title_max_length = kwargs.get("title_max_length", 200)
         self.window_button = Gtk.Button(label=self.window_title)
         self.window_button.add_css_class("widget-button")
         self.window_button.connect("clicked", self.focus_window)
@@ -39,13 +36,6 @@ class WindowButton(Gtk.Box):
 
 
 class WindowTitle(WidgetBox):
-    if os.environ["XDG_CURRENT_DESKTOP"] == "sway":
-        wm = SwayIPC()
-    elif os.environ["XDG_CURRENT_DESKTOP"] == "niri":
-        wm = NiriIPC()
-    # If using a non-supported window manager and show empty space instead of giving error
-    else:
-        wm = WindowManagerIPC()
 
     def __init__(self, **kwargs):
         super().__init__(icon="", spacing=1)
@@ -53,62 +43,29 @@ class WindowTitle(WidgetBox):
         self.hide_no_focus = kwargs.get("hide_no_focus", False)
         self.hide_on_close = kwargs.get("hide_on_close", True)
         self.title_max_length = kwargs.get("title_max_length", 200)
-        self.text = "Test"
+        self.wm_api = IPCModule(**kwargs)
 
     def run(self):
-        self.update_label()
-        self.dropdown.connect("closed", self.on_close)
-        self.get_window_title()
-        self.update_window_title()
+        super().run()
 
     def populate_dropdown(self):
-        window_list = self.get_windows()
+        window_list = self.wm_api.get_windows()
         for window in window_list:
             self.dropdown.add(
                 WindowButton(
-                    title=self.cut_title_lenght(window.title),
+                    title=cut_string_length(window.title, self.title_max_length),
                     id=window.id,
-                    wm=self.wm,
+                    wm=self.wm_api,
                     dropdown=self.dropdown,
                     hide_on_close=self.hide_on_close,
                 )
             )
 
-    def get_windows(self):
-        windows = self.wm.get_windows()
-        return windows
-
-    def get_window_title(self):
-        window = self.wm.get_focused_window()
-        if window == "":
-            if self.hide_no_focus:
-                self.set_visible(False)
-            else:
-                window = "No window in focus"
-        else:
-            if not self.get_visible():
-                self.set_visible(True)
-        self.text = self.cut_title_lenght(window)
-        return True
-
-    def cut_title_lenght(self, title):
-        old_title = title.split(" ")
-        new_title = title[: self.title_max_length].split(" ")
-        new_title_last_index = len(new_title) - 1
-        if old_title[new_title_last_index] == new_title[new_title_last_index]:
-            return " ".join(new_title)
-        else:
-            return " ".join(new_title[:-1])
-
     def on_click(self, user_data):
-        if isinstance(self.wm, NiriIPC) or isinstance(self.wm, SwayIPC):
-            self.populate_dropdown()
+        if self.wm_api.is_valid_wm():
             self.dropdown.popup()
         return True
 
-    def on_close(self, user_data):
-        self.dropdown.clear()
+    def set_text(self):
+        self.text_label.set_label(self.wm_api.get_window_title())
         return True
-
-    def update_window_title(self):
-        GLib.timeout_add(self.timer * 1000, self.get_window_title)

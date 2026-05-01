@@ -1,13 +1,13 @@
-from collections import namedtuple
 import socket
 import re
 import os
 import json
+
 from operator import itemgetter
 import traceback
 import random
 
-from .namedtuples import NamedTuples
+from ngb.types import NamedTuples
 from .windowmanageripc import WindowManagerIPC
 
 Workspace = NamedTuples.Workspace
@@ -38,7 +38,9 @@ class NiriIPC(WindowManagerIPC):
                         break
                 response = response.decode("utf-8")
                 response = json.loads(response)
-                response = response.get("Ok", {}).get(cmd, [])
+                response = response.get("Ok", {})
+                if isinstance(response, dict):
+                    response = response.get(cmd, [])
                 socket_data = response
             except socket.error as e:
                 print(e)
