@@ -5,7 +5,7 @@ import struct
 import json
 import traceback
 
-from .namedtuples import NamedTuples
+from ngb.types import NamedTuples
 from .windowmanageripc import WindowManagerIPC
 
 Workspace = NamedTuples.Workspace
