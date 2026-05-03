@@ -36,6 +36,7 @@ dependencies = [
   "requests",
   "screeninfo",
   "shutilwhich",
+  "systemd-python",
   "tomli",
   "tomli_w",
   "tzlocal",

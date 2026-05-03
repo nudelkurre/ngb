@@ -6,6 +6,7 @@ import json
 import traceback
 
 from ngb.types import NamedTuples
+from ngb.utils import log_error, log_warning
 from .windowmanageripc import WindowManagerIPC
 
 Workspace = NamedTuples.Workspace
@@ -38,8 +39,10 @@ class SwayIPC(WindowManagerIPC):
             self.disconnect()
             socket_data = parsed_response
         except socket.error as e:
+            log_error(e)
             print(e)
-        except Exception:
+        except Exception as e:
+            log_error(e)
             traceback.print_exc()
         finally:
             return socket_data

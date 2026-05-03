@@ -35,6 +35,7 @@ buildPythonApplication {
         requests
         screeninfo
         shutilwhich
+        systemd-python
         tomli
         tomli-w
         tzlocal
