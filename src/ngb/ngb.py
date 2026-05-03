@@ -14,6 +14,8 @@ from gi.repository import Gdk
 from gi.repository import Gio
 from gi.repository import GLib
 
+from ngb.utils import log_error
+
 import sys
 import uuid
 import time
@@ -275,6 +277,9 @@ def main():
         app.run(sys.argv)
     except KeyboardInterrupt:
         pass
+    except Exception as e:
+        print(e)
+        log_error(e)
 
 
 if __name__ == "__main__":

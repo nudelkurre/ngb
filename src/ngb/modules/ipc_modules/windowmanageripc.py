@@ -1,5 +1,7 @@
 import socket
 
+from ngb.utils import log_error, log_warning
+
 
 class WindowManagerIPC:
     def __init__(self):
@@ -10,8 +12,10 @@ class WindowManagerIPC:
         try:
             self.usocket.connect(self.sock_req)
         except ConnectionRefusedError:
+            log_error("Connection to the UNIX socket refused.")
             print("Connection to the UNIX socket refused.")
         except socket.error as e:
+            log_error(f"Error open socket: {e}")
             print(f"Error open socket: {e}")
 
     def disconnect(self):
@@ -19,12 +23,14 @@ class WindowManagerIPC:
 
     def is_connected(self):
         if self.usocket is None:
+            log_warning("No socket created")
             print("No socket created")
             return False
         try:
             self.usocket.sendall(b"")
             return True
         except socket.error:
+            log_error("IPC socket not connected")
             print("IPC socket not connected")
             return False
 
