@@ -1,4 +1,5 @@
 from pydbus import SystemBus
+from gi.repository import GLib
 
 import re
 
@@ -16,10 +17,16 @@ class BluetoothModule:
         pass
 
     def get_controllers(self):
-        proxy = self.system_bus.get(self.dbus_interface)
-        proxy_data = proxy.Introspect()
-        controllers = re.findall(r"<node name=\"([\w]+)\"/>", proxy_data)
-        return controllers
+        try:
+            proxy = self.system_bus.get(self.dbus_interface)
+            proxy_data = proxy.Introspect()
+            controllers = re.findall(r"<node name=\"([\w]+)\"/>", proxy_data)
+            if controllers:
+                return controllers
+            else:
+                return []
+        except GLib.GError as e:
+            return []
 
     def get_devices(self, controller):
         proxy = self.system_bus.get(self.dbus_interface, controller)
