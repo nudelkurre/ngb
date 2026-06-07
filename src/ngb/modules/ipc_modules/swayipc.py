@@ -31,9 +31,9 @@ class SwayIPC(WindowManagerIPC):
                 if len(part) < 1024:
                     break
             response = response[14:].decode("utf-8")
-            match = re.search(r"^[\[\{][\W\w]*[\]\}]$", response).group(0)
+            match = re.search(r"^[\[\{][\W\w]*[\]\}]$", response)
             if match:
-                parsed_response = json.loads(match)
+                parsed_response = json.loads(match.group(0))
             else:
                 parsed_response = []
             self.disconnect()
@@ -50,34 +50,40 @@ class SwayIPC(WindowManagerIPC):
     def get_workspaces(self):
         wss = self.send_to_socket("GET_WORKSPACES")
         ws_list = list()
-        for p in wss:
-            ws_list.append(
-                Workspace(
-                    id=p.get("num", 0),
-                    name=p.get("name", "0"),
-                    focused=p.get("focused", False),
-                    output=p.get("output", ""),
-                    urgent=p.get("urgent", False),
+        if isinstance(wss, list):
+            for p in wss:
+                ws_list.append(
+                    Workspace(
+                        id=p.get("num", 0),
+                        name=p.get("name", "0"),
+                        focused=p.get("focused", False),
+                        output=p.get("output", ""),
+                        urgent=p.get("urgent", False),
+                    )
                 )
-            )
         return ws_list
 
     def get_windows(self):
         windows = self.send_to_socket("GET_TREE")
-        root_nodes = windows.get("nodes", [])
-        output_nodes = []
-        for rn in root_nodes:
-            if rn.get("name") != "__i3":
-                output_nodes += rn.get("nodes", [])
-        window_nodes = []
-        for on in output_nodes:
-            window_nodes += on.get("nodes", [])
-        window_list = []
-        for wn in window_nodes:
-            window_list.append(
-                Window(id=wn.get("id"), title=wn.get("name"), focused=wn.get("focused"))
-            )
-        return window_list
+        if isinstance(windows, dict):
+            root_nodes = windows.get("nodes", [])
+            output_nodes = []
+            for rn in root_nodes:
+                if rn.get("name") != "__i3":
+                    output_nodes += rn.get("nodes", [])
+            window_nodes = []
+            for on in output_nodes:
+                window_nodes += on.get("nodes", [])
+            window_list = []
+            for wn in window_nodes:
+                window_list.append(
+                    Window(
+                        id=wn.get("id"), title=wn.get("name"), focused=wn.get("focused")
+                    )
+                )
+            return window_list
+        else:
+            return []
 
     def close_window(self, id):
         self.command(f"[con_id={id}] kill")
@@ -122,7 +128,5 @@ class SwayIPC(WindowManagerIPC):
         cmd_len = struct.pack("@i", len(cmd))
         cmd_type = struct.pack("@i", cmd_id)
 
-        cmd_str = (
-            magic_string + cmd_len + cmd_type + cmd.encode("utf8") + "\n".encode("utf8")
-        )
+        cmd_str = magic_string + cmd_len + cmd_type + cmd.encode("utf8")
         return cmd_str
