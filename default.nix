@@ -3,7 +3,7 @@ with pkgs.python3Packages;
 
 buildPythonApplication {
     pname = "ngb";
-    version = "0.8.0";
+    version = "0.8.1";
     pyproject = true;
     src = ./.;
 
@@ -35,6 +35,7 @@ buildPythonApplication {
         requests
         screeninfo
         shutilwhich
+        systemd-python
         tomli
         tomli-w
         tzlocal

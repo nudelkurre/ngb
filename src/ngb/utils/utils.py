@@ -1,3 +1,7 @@
+import logging
+from systemd.journal import JournalHandler
+
+
 def cut_string_length(text, length):
     old_text = text.split(" ")
     new_text = text[:length].split(" ")
@@ -26,3 +30,24 @@ def wrap_string_at(text, length):
         else:
             line = tmp_line
     return "\n".join(lines)
+
+
+def log_error(message):
+    log = logging.getLogger(__name__)
+    log.addHandler(JournalHandler())
+    log.setLevel(logging.ERROR)
+    log.error(message)
+
+
+def log_warning(message):
+    log = logging.getLogger(__name__)
+    log.addHandler(JournalHandler())
+    log.setLevel(logging.WARNING)
+    log.warn(message)
+
+
+def log_info(message):
+    log = logging.getLogger(__name__)
+    log.addHandler(JournalHandler())
+    log.setLevel(logging.INFO)
+    log.info(message)

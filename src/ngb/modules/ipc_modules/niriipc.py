@@ -8,6 +8,7 @@ import traceback
 import random
 
 from ngb.types import NamedTuples
+from ngb.utils import log_error, log_warning
 from .windowmanageripc import WindowManagerIPC
 
 Workspace = NamedTuples.Workspace
@@ -43,12 +44,16 @@ class NiriIPC(WindowManagerIPC):
                     response = response.get(cmd, [])
                 socket_data = response
             except socket.error as e:
+                log_error(e)
                 print(e)
             except socket.timeout:
+                log_warning("Error: Socket timed out")
                 print("Error: Socket timed out")
             except AttributeError as e:
+                log_error(e)
                 print(e)
-            except Exception:
+            except Exception as e:
+                log_error(e)
                 traceback.print_exc()
                 print("-" * 15)
             finally:
