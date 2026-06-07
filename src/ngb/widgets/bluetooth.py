@@ -33,10 +33,7 @@ class Bluetooth(Gtk.Box):
     def update_boxes(self):
         while self.get_first_accessible_child() is not None:
             self.remove(self.get_first_accessible_child())
-        try:
-            device_list = self.devices.get_device_list()
-        except GLib.GError:
-            device_list = []
+        device_list = self.devices.get_device_list()
         for device in device_list:
             bluetooth_box = WidgetBox(
                 icon=device.icon,
