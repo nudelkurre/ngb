@@ -38,8 +38,8 @@ class Volume(WidgetBox):
         self.timer = kwargs.get("timer", 5)
         self.icon_size = kwargs.get("icon_size", 20)
         self.click_to_mute = kwargs.get("click_to_mute", False)
-        self.muted_icon = kwargs.get("muted_icon", "󰝟")
-        self.unmuted_icon = kwargs.get("unmuted_icon", "󰕾")
+        self.muted_icon = kwargs.get("muted_icon", "")
+        self.unmuted_icon = kwargs.get("unmuted_icon", "")
         self.volume = VolumeModule()
         self.default_button_dict = {}
         super().__init__(icon=self.icon, timer=self.timer, icon_size=self.icon_size)
@@ -91,7 +91,15 @@ class Volume(WidgetBox):
         return True
 
     def set_text(self):
-        self.text_label.set_label(f"{self.volume.get_volume("@DEFAULT_AUDIO_SINK@")}%")
+        volume = self.volume.get_volume("@DEFAULT_AUDIO_SINK@")
+        if volume < 0:
+            self.text_label.set_label("Muted")
+            self.icon = self.muted_icon
+            self.set_icon()
+        else:
+            self.text_label.set_label(f"{volume}%")
+            self.icon = self.unmuted_icon
+            self.set_icon()
         return True
 
     def on_slider_change(self, scale):
