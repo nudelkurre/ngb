@@ -14,12 +14,14 @@ class WorkspaceBox(WidgetBox):
         self.icon_size = kwargs.get("icon_size", 20)
         self.wm = kwargs.get("wm")
         super().__init__(icon=self.show_name, text=self.name, icon_size=self.icon_size)
+        if self.urgent:
+            self.add_css_class("urgent-workspace")
         self.hide_label()
         self.set_focused()
         self.set_icon()
 
     def set_focused(self):
-        if not self.focused:
+        if not self.focused and not self.urgent:
             self.icon_label.set_opacity(0.6)
             self.text_label.set_opacity(0.6)
 
