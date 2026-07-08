@@ -15,8 +15,8 @@ class BatteryModule:
     def get_battery_level(self):
         battery = self.update_battery()
         if battery == None:
-            return ""
-        return str(int(battery.percent))
+            return -1
+        return int(battery.percent)
 
     def get_battery_icon(self):
         battery = self.update_battery()
