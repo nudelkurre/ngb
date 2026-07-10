@@ -16,9 +16,9 @@ class Battery(WidgetBox):
 
     def set_text(self):
         battery_level = self.battery.get_battery_level()
-        if battery_level == "":
+        if battery_level == -1:
             self.set_tooltip_text("No battery is found")
         self.icon = self.battery.get_battery_icon()
-        self.text_label.set_label(battery_level)
+        self.text_label.set_label(f"{battery_level}%")
         self.set_icon()
         return True
