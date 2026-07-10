@@ -84,8 +84,13 @@ class VolumeModule:
             volume = subprocess.run(
                 f"wpctl get-volume {id}".split(), capture_output=True, text=True
             ).stdout
-            volume_level = int(float(re.search(r"(\d?\.\d{2})", volume).group(1)) * 100)
-            return volume_level
+            volume_regexp = re.search(
+                r"(?P<volume>\d\.\d{2})\s*(\[(?P<muted>MUTED)\])?", volume
+            )
+            if volume_regexp["muted"]:
+                return -1
+            else:
+                return int(float(volume_regexp["volume"]) * 100)
         return "wpctl not installed"
 
     def set_default_sink(self, id):
