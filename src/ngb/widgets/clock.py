@@ -29,9 +29,6 @@ class Clock(WidgetBox):
             icon_size=self.icon_size,
         )
 
-    def run(self):
-        super().run()
-
         # Create a revealer for smoother transition when hover over
         self.revealer = Gtk.Revealer()
         self.revealer.set_reveal_child(self.show_revealer)
@@ -49,12 +46,27 @@ class Clock(WidgetBox):
         self.dropdown.add(self.calendar)
         self.dropdown.add(today_button)
 
-    def set_text(self):
+    def _task_func(self, task, _task_data, _cancellable, _other):
         datetimenow = datetime.now().strftime(self.timeformat)
         datetimenow_revealer = datetime.now().strftime(self.timeformat_revealer)
-        self.text_label.set_text(datetimenow)
-        self.revealer_label.set_text(datetimenow_revealer)
-        return True
+        data = {
+            "text": datetimenow,
+            "revealer": datetimenow_revealer,
+            "icon": self.icon,
+        }
+        task.return_value(data)
+
+    def _on_task_ready(self, task, _result, _user_data=None):
+        try:
+            task_dict = _result.propagate_value()[1]
+            self.text_label.set_label(task_dict.get("text", "Default text"))
+            self.revealer_label.set_label(task_dict.get("revealer", "Default revealer"))
+            self.icon_label.set_label(task_dict.get("icon", "I"))
+        except Exception as e:
+            print(e)
+            pass
+        finally:
+            self._task_in_flight = False
 
     def on_click(self, user_data):
         self.reset_calendar_date()

@@ -16,22 +16,21 @@ class WorkspaceBox(WidgetBox):
         super().__init__(icon=self.show_name, text=self.name, icon_size=self.icon_size)
         if self.urgent:
             self.add_css_class("urgent-workspace")
-        self.hide_label()
+        # self.hide_label()
         self.set_focused()
-        self.set_icon()
+        self.update_label()
 
     def set_focused(self):
         if not self.focused and not self.urgent:
             self.icon_label.set_opacity(0.6)
             self.text_label.set_opacity(0.6)
 
-    def hide_label(self):
-        if self.show_name != "":
-            self.icon_label.set_visible(True)
-            self.text_label.set_visible(False)
+    def _task_func(self, task, _task_data, _cancellable, _other):
+        if self.show_name != "" or True:
+            data = {"icon": self.icon}
         else:
-            self.icon_label.set_visible(False)
-            self.text_label.set_visible(True)
+            data = {"text": self.text}
+        task.return_value(data)
 
     def on_click(self, user_data):
         self.wm.goto_workspace(self.name)

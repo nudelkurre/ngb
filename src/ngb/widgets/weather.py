@@ -24,9 +24,6 @@ class Weather(WidgetBox):
         )
         self.last_updated_label = Gtk.Label()
 
-    def run(self):
-        super().run()
-
     def on_click(self, user_data):
         if self.weather_data and self.weather_data.error is None:
             self.dropdown.popup()
@@ -63,20 +60,16 @@ class Weather(WidgetBox):
             f"<span font='{self.small_text}'>Last updated: {self.weather_api.last_updated}</span>"
         )
 
-    def set_text(self):
+    def _task_func(self, task, _task_data, _cancellable, _other):
         self.weather_data = self.weather_api.get_weather()
         if self.weather_data:
             if self.weather_data.error is None:
-                if self.text_label.get_visible() == False:
-                    self.text_label.set_visible(True)
-                self.text_label.set_label(
-                    f"{self.weather_data.temperature} {self.weather_data.temperature_unit}"
-                )
-                self.icon = self.weather_data.icon
-                self.set_icon()
+                data = {
+                    "text": f"{self.weather_data.temperature} {self.weather_data.temperature_unit}",
+                    "icon": self.weather_data.icon,
+                }
             else:
-                self.text_label.set_visible(False)
-                self.icon = ""
-                self.set_icon()
-                self.set_tooltip_text(self.weather_data.error)
-        return True
+                data = {"text": "", "icon": "", "tooltip": self.weather_data.error}
+        else:
+            data = {"text": "Default text", "icon": "?"}
+        task.return_value(data)

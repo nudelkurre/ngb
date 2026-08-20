@@ -12,8 +12,8 @@ class WidgetBox(Gtk.Button):
     def __init__(self, **kwargs):
         self.spacing = kwargs.get("spacing", 10)
         self.timer = kwargs.get("timer", 1)
-        self.text = kwargs.get("text", "")
-        self.icon = kwargs.get("icon", "")
+        self.text = kwargs.get("text", "Default text")
+        self.icon = kwargs.get("icon", "?")
         self.icon_size = kwargs.get("icon_size", 20)
         super().__init__()
 
@@ -71,13 +71,18 @@ class WidgetBox(Gtk.Button):
         # Store the running timer to be able to stop it
         self.timeout = None
 
+        # Prevent overlapping tasks if one already running
+        self._task_in_flight = False
+
         # Check if widget is stopped
         self.is_stopped = False
 
     def run(self):
-        self.set_icon()
-        self.set_text()
         self.update_label()
+        if getattr(self, "timeout", None) is not None:
+            return False
+        self.timeout = GLib.timeout_add(self.timer * 1000, self.update_label)
+        return True
 
     def stop(self):
         self.is_stopped = True
@@ -121,14 +126,33 @@ class WidgetBox(Gtk.Button):
         self.box.append(widget)
         return True
 
-    def set_icon(self):
-        self.icon_label.set_label(self.icon)
-        return True
+    def _task_func(self, task, _task_data, _cancellable, _other):
+        data = {"text": self.text, "icon": self.icon}
+        task.return_value(data)
 
-    def set_text(self):
-        self.text_label.set_label(self.text)
-        return True
+    def _on_task_ready(self, task, _result, _user_data=None):
+        try:
+            task_dict = _result.propagate_value()[1]
+            if task_dict.get("text", "") == "":
+                self.text_label.set_visible(False)
+            else:
+                self.text_label.set_visible(True)
+            if task_dict.get("icon", "") == "":
+                self.icon_label.set_visible(False)
+            else:
+                self.icon_label.set_visible(True)
+            self.text_label.set_label(task_dict.get("text", "Default text"))
+            self.icon_label.set_label(task_dict.get("icon", "?"))
+            self.set_tooltip_text(task_dict.get("tooltip", ""))
+        except Exception as e:
+            pass
+        finally:
+            self._task_in_flight = False
 
     def update_label(self):
-        self.timeout = GLib.timeout_add(self.timer * 1000, self.set_text)
+        if self._task_in_flight:
+            return True
+        self._task_in_flight = True
+        self._task = Gio.Task.new(self, None, self._on_task_ready, None)
+        self._task.run_in_thread(self._task_func)
         return True

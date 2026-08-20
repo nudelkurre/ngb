@@ -44,9 +44,6 @@ class Volume(WidgetBox):
         self.default_button_dict = {}
         super().__init__(icon=self.icon, timer=self.timer, icon_size=self.icon_size)
 
-    def run(self):
-        super().run()
-
     def populate_dropdown(self):
         sinks = self.volume.get_sinks()
         for sink in sinks:
@@ -86,17 +83,13 @@ class Volume(WidgetBox):
             self.dropdown.add(slider_box)
         return True
 
-    def set_text(self):
+    def _task_func(self, task, _task_data, _cancellable, _other):
         volume = self.volume.get_volume("@DEFAULT_AUDIO_SINK@")
         if volume < 0:
-            self.text_label.set_label("Muted")
-            self.icon = self.muted_icon
-            self.set_icon()
+            data = {"text": "Muted", "icon": self.muted_icon}
         else:
-            self.text_label.set_label(f"{volume}%")
-            self.icon = self.unmuted_icon
-            self.set_icon()
-        return True
+            data = {"text": f"{volume}%", "icon": self.unmuted_icon}
+        task.return_value(data)
 
     def on_slider_change(self, scale):
         scale_id = int(scale.get_name())
@@ -104,15 +97,15 @@ class Volume(WidgetBox):
         volume = scale.get_value() / 100
         self.volume.set_volume(scale_id, volume)
         if scale_id == sink.id:
-            self.set_text()
+            self.update_label()
 
     def on_scroll(self, controller, x, y):
         if y < 0:
             self.volume.set_volume("@DEFAULT_AUDIO_SINK@", "5%+")
-            self.set_text()
+            self.update_label()
         elif y > 0:
             self.volume.set_volume("@DEFAULT_AUDIO_SINK@", "5%-")
-            self.set_text()
+            self.update_label()
 
     def on_default_click(self, user_data, sink_id):
         current_default = self.volume.get_default_sink().id
