@@ -16,15 +16,28 @@ class Disk(WidgetBox):
         self.disk_info = DiskModule(mountpoint=self.mountpoint)
         super().__init__(timer=self.timer, icon=self.icon, icon_size=self.icon_size)
 
-    def run(self):
-        super().run()
-
-    def set_text(self):
+    def _task_func(self, task, _task_data, _cancellable, _other):
         disk_usage = self.disk_info.get_disk_usage()
-        self.text_label.set_label(disk_usage.percentage)
-        self.storage_label.set_label(f"{disk_usage.used}/{disk_usage.total}")
-        self.used_bar.set_fraction(self.disk_info.get_used_fraction())
-        return True
+        data = {
+            "icon": self.icon,
+            "text": disk_usage.percentage,
+            "storage": f"{disk_usage.used}/{disk_usage.total}",
+            "used": self.disk_info.get_used_fraction(),
+        }
+        task.return_value(data)
+
+    def _on_task_ready(self, task, _result, _user_data=None):
+        try:
+            task_dict = _result.propagate_value()[1]
+            self.icon_label.set_label(task_dict.get("icon", "?"))
+            self.text_label.set_label(task_dict.get("text", "Default text"))
+            self.storage_label.set_label(task_dict.get("storage", "0B/0B"))
+            self.used_bar.set_fraction(task_dict.get("used", "0B"))
+        except Exception as e:
+            print(e)
+            pass
+        finally:
+            self._task_in_flight = False
 
     def populate_dropdown(self):
         self.dropdown.add(self.mountpoint_label)

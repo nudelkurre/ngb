@@ -13,10 +13,7 @@ class Cpu(WidgetBox):
         self.icon_size = kwargs.get("icon_size", 20)
         super().__init__(timer=self.timer, icon=self.icon, icon_size=self.icon_size)
 
-    def run(self):
-        super().run()
-
-    def set_text(self):
+    def _task_func(self, task, _task_data, _cancellable, _other):
         usage = psutil.cpu_percent()
-        self.text_label.set_label(f"{usage}%")
-        return True
+        data = {"text": f"{usage}%", "icon": self.icon}
+        task.return_value(data)
