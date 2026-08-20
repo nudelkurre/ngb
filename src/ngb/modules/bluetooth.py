@@ -49,7 +49,7 @@ class BluetoothModule:
             address=device.Address if "Address" in dir(device) else "",
             battery=f"{device.Percentage}%" if "Percentage" in dir(device) else "0",
             connected=device.Connected if "Connected" in dir(device) else False,
-            icon=self.icons.get(device.Icon, "󰥈"),
+            icon="󰥉",
             name=device.Name if "Name" in dir(device) else "",
         )
 
