@@ -45,9 +45,6 @@ class WindowTitle(WidgetBox):
         self.title_max_length = kwargs.get("title_max_length", 200)
         self.wm_api = IPCModule(**kwargs)
 
-    def run(self):
-        super().run()
-
     def populate_dropdown(self):
         window_list = self.wm_api.get_windows()
         for window in window_list:
@@ -66,6 +63,6 @@ class WindowTitle(WidgetBox):
             self.dropdown.popup()
         return True
 
-    def set_text(self):
-        self.text_label.set_label(self.wm_api.get_window_title())
-        return True
+    def _task_func(self, task, _task_data, _cancellable, _other):
+        data = {"text": self.wm_api.get_window_title()}
+        task.return_value(data)

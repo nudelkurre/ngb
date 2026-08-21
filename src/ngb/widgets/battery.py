@@ -11,14 +11,13 @@ class Battery(WidgetBox):
         self.battery = BatteryModule()
         super().__init__(timer=self.timer, icon_size=self.icon_size)
 
-    def run(self):
-        super().run()
-
-    def set_text(self):
+    def _task_func(self, task, _task_data, _cancellable, _other):
         battery_level = self.battery.get_battery_level()
-        if battery_level == -1:
-            self.set_tooltip_text("No battery is found")
-        self.icon = self.battery.get_battery_icon()
-        self.text_label.set_label(f"{battery_level}%")
-        self.set_icon()
-        return True
+        if battery_level == "":
+            data = {
+                "icon": self.battery.get_battery_icon(),
+                "tooltip": "No battery is found",
+            }
+        else:
+            data = {"text": battery_level, "icon": self.battery.get_battery_icon()}
+        task.return_value(data)

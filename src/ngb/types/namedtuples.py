@@ -38,3 +38,9 @@ class NamedTuples:
     DiskInfo = namedtuple(
         "DiskInfo", ["percentage", "used", "total"], defaults=("0%", "0iB", "0iB")
     )
+
+    HeadsetDevice = namedtuple(
+        "HeadsetDevice",
+        ["name", "batterylevel", "icon", "error"],
+        defaults=("", 0, "?", None),
+    )

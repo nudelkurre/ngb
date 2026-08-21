@@ -19,16 +19,23 @@ class Network(WidgetBox):
         self.show_disconnected = kwargs.get("show_disconnected", False)
         super().__init__(icon=self.icon, timer=self.timer, icon_size=self.icon_size)
 
-    def run(self):
-        super().run()
+    def _task_func(self, task, _task_data, _cancellable, _other):
+        data = {"text": self.interface.get_ipv4_addr(), "icon": self.icon}
+        task.return_value(data)
 
-    def set_text(self):
-        if self.interface.is_up():
-            self.set_visible(True)
-        else:
-            self.set_visible(self.show_disconnected)
-        self.text_label.set_label(self.interface.get_ipv4_addr())
-        return True
+    def _on_task_ready(self, task, _result, _user_data=None):
+        try:
+            task_dict = _result.propagate_value()[1]
+            self.text_label.set_label(task_dict.get("text", "Default text"))
+            self.icon_label.set_label(task_dict.get("icon", "?"))
+            if self.interface.is_up():
+                self.set_visible(True)
+            else:
+                self.set_visible(self.show_disconnected)
+        except Exception as e:
+            pass
+        finally:
+            self._task_in_flight = False
 
     def populate_dropdown(self):
         self.dropdown.add(Gtk.Label(label=f"Interface: {self.interface_name}"))
