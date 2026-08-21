@@ -1,56 +1,54 @@
 from gi.repository import Gtk
 from gi.repository import GLib
 
-from ngb.modules import HeadsetModule, WidgetBox
+from ngb.modules import HeadsetModule, WidgetBox, WidgetDrawer
 
 
-class Headset(WidgetBox):
+class HeadsetBox(WidgetBox):
+    def __init__(self, **kwargs):
+        self.device = kwargs.get("device")
+        self.text = f"{self.device.batterylevel}%"
+        self.icon = self.device.icon
+        self.icon_size = kwargs.get("icon_size", 20)
+        self.timer = kwargs.get("timer")
+        super().__init__(
+            text=self.text, icon=self.icon, icon_size=self.icon_size, timer=self.timer
+        )
+        self.name = self.device.name
+        self.batterylevel = self.device.batterylevel
+
+    def _task_func(self, task, _task_data, _cancellable, _other):
+        if self.device.error is None:
+            if self.batterylevel > 0:
+                data = {"text": self.text, "icon": self.icon, "tooltip": self.name}
+            else:
+                data = {}
+        else:
+            if self.device.error == -1:
+                data = {"icon": self.icon, "tooltip": "Process timed out"}
+            elif self.device.error == -2:
+                data = {"icon": self.icon, "tooltip": "headsetcontrol is not installed"}
+            else:
+                data = {}
+        task.return_value(data)
+
+
+class Headset(WidgetDrawer):
     min_timer = 5
 
     def __init__(self, **kwargs):
-        self.default_icon = "󰋎"
-        self.warning_icon = ""
-        self.icon = kwargs.get("icon", self.default_icon)
         self.timer = kwargs.get("timer", self.min_timer)
         if self.timer < self.min_timer:
             self.timer = self.min_timer
+        self.spacing = kwargs.get("spacing", 10)
         self.icon_size = kwargs.get("icon_size", 20)
         self.headset = HeadsetModule()
-        super().__init__(icon=self.icon, icon_size=self.icon_size, timer=self.timer)
+        super().__init__(spacing=self.spacing, timer=self.timer)
+        self.is_stopped = False
+        self.timeout = None
 
-    def _task_func(self, task, _task_data, _cancellable, _other):
-        battery_levels = self.headset.get_headset_info()
-        if isinstance(battery_levels, list) and len(battery_levels) > 0:
-            data = {"text": " ".join(battery_levels), "icon": self.default_icon}
-            task.return_value(data)
-        elif battery_levels == -1:
-            data = {"text": "", "error": -1, "tooltip": "Process timed out"}
-            task.return_value(data)
-        elif battery_levels == -2:
-            data = {
-                "text": "",
-                "icon": self.warning_icon,
-                "tooltip": "headsetcontrol not installed",
-                "error": -2,
-            }
-            task.return_value(data)
-        else:
-            data = {}
-            task.return_value(data)
+    def get_boxes(self):
+        return self.headset.get_headset_info()
 
-    def _on_task_ready(self, task, _result, _user_data=None):
-        try:
-            task_dict = _result.propagate_value()[1]
-            if task_dict != {}:
-                self.set_visible(True)
-                self.text_label.set_text(task_dict.get("text", "Default text"))
-                self.icon_label.set_text(task_dict.get("icon", "?"))
-                self.set_tooltip_text(task_dict.get("tooltip", ""))
-                if task_dict.get("error") == -1:
-                    self.stop()
-            else:
-                self.set_visible(False)
-        except Exception as e:
-            pass
-        finally:
-            self._task_in_flight = False
+    def create_widget(self, box):
+        return HeadsetBox(device=box, icon_size=self.icon_size, timer=self.timer)
