@@ -4,6 +4,10 @@ import json
 import subprocess
 import re
 
+from ngb.types import NamedTuples
+
+HeadsetDevice = NamedTuples.HeadsetDevice
+
 
 class HeadsetModule:
     def __init__(self, **kwargs):
@@ -11,6 +15,7 @@ class HeadsetModule:
 
     def get_headset_info(self):
         path = which("headsetcontrol")
+        device_battery = []
         if path:
             try:
                 info = json.loads(
@@ -21,13 +26,16 @@ class HeadsetModule:
                         timeout=3,
                     ).stdout
                 )
-                device_battery = []
                 for device in info.get("devices", []):
-                    battery_level = device.get("battery", {}).get("level", 0)
-                    if battery_level > 0:
-                        device_battery.append(f"{battery_level}%")
-                return device_battery
+                    device_battery.append(
+                        HeadsetDevice(
+                            name=device.get("device", ""),
+                            batterylevel=device.get("battery", {}).get("level", 0),
+                            icon="󰋎",
+                        )
+                    )
             except subprocess.TimeoutExpired as e:
-                return -1
+                device_battery.append(HeadsetDevice(icon="", error=-1))
         else:
-            return -2
+            device_battery.append(HeadsetDevice(icon="", error=-2))
+        return device_battery

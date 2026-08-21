@@ -10,3 +10,4 @@ from .network import NetworkModule
 from .volume import VolumeModule
 from .weather import WeatherModule
 from .widgetbox import WidgetBox
+from .widgetdrawer import WidgetDrawer
