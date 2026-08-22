@@ -31,7 +31,8 @@ class WorkspaceBox(WidgetBox):
         task.return_value(data)
 
     def on_click(self, user_data):
-        self.wm.goto_workspace(self.name)
+        if self.wm:
+            self.wm.goto_workspace(self.name)
 
 
 class Workspaces(WidgetDrawer):
@@ -47,10 +48,11 @@ class Workspaces(WidgetDrawer):
         super().__init__(spacing=self.spacing, timer=self.timer)
 
     def on_scroll(self, controller, x, y):
-        if y < 0:
-            self.wm_api.next_workspace()
-        elif y > 0:
-            self.wm_api.previous_workspace()
+        if self.wm_api:
+            if y < 0:
+                self.wm_api.next_workspace()
+            elif y > 0:
+                self.wm_api.previous_workspace()
 
     def get_boxes(self):
         return self.wm_api.get_workspaces()
@@ -70,6 +72,7 @@ class Workspaces(WidgetDrawer):
                 show_name=show_name,
                 focused=box.focused,
                 urgent=box.urgent,
+                wm=self.wm_api,
             )
         else:
             return None
