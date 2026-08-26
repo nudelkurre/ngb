@@ -40,10 +40,8 @@ class SwayIPC(WindowManagerIPC):
             socket_data = parsed_response
         except socket.error as e:
             log_error(e)
-            print(e)
         except Exception as e:
             log_error(e)
-            traceback.print_exc()
         finally:
             return socket_data
 
