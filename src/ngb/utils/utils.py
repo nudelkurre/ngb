@@ -1,5 +1,6 @@
 import logging
 from systemd.journal import JournalHandler
+import sys
 
 
 def cut_string_length(text, length):
@@ -32,22 +33,31 @@ def wrap_string_at(text, length):
     return "\n".join(lines)
 
 
-def log_error(message):
+def log_error(message, write_to_journal=True):
+    stdout_handler = logging.StreamHandler(stream=sys.stdout)
     log = logging.getLogger(__name__)
-    log.addHandler(JournalHandler())
+    if write_to_journal:
+        log.addHandler(JournalHandler())
+    log.addHandler(stdout_handler)
     log.setLevel(logging.ERROR)
     log.error(message)
 
 
-def log_warning(message):
+def log_warning(message, write_to_journal=True):
+    stdout_handler = logging.StreamHandler(stream=sys.stdout)
     log = logging.getLogger(__name__)
-    log.addHandler(JournalHandler())
+    if write_to_journal:
+        log.addHandler(JournalHandler())
+    log.addHandler(stdout_handler)
     log.setLevel(logging.WARNING)
     log.warn(message)
 
 
-def log_info(message):
+def log_info(message, write_to_journal=True):
+    stdout_handler = logging.StreamHandler(stream=sys.stdout)
     log = logging.getLogger(__name__)
-    log.addHandler(JournalHandler())
+    if write_to_journal:
+        log.addHandler(JournalHandler())
+    log.addHandler(stdout_handler)
     log.setLevel(logging.INFO)
     log.info(message)

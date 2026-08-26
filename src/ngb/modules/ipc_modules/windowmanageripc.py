@@ -15,10 +15,8 @@ class WindowManagerIPC:
             self.usocket.connect(self.sock_req)
         except ConnectionRefusedError:
             log_error("Connection to the UNIX socket refused.")
-            print("Connection to the UNIX socket refused.")
         except socket.error as e:
             log_error(f"Error open socket: {e}")
-            print(f"Error open socket: {e}")
 
     def disconnect(self):
         self.usocket.close()

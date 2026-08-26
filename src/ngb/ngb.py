@@ -282,7 +282,6 @@ def main():
     except KeyboardInterrupt:
         pass
     except Exception as e:
-        print(e)
         log_error(e)
 
 

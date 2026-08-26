@@ -47,11 +47,9 @@ class NiriIPC(WindowManagerIPC):
                 return socket_data
             except socket.timeout:
                 log_warning("Error: Socket timed out")
-                print("Error: Socket timed out")
                 return []
             except Exception as e:
                 log_error(e)
-                print(e)
                 return []
 
     def parse_workspace(self, ws):
