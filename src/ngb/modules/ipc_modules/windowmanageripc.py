@@ -4,11 +4,13 @@ from ngb.utils import log_error, log_warning
 
 
 class WindowManagerIPC:
-    def __init__(self):
+    def __init__(self, **kwargs):
         self.usocket = None
+        self.timer = kwargs.get("timer", 1)
 
     def connect(self):
         self.usocket = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+        self.usocket.settimeout(self.timer)
         try:
             self.usocket.connect(self.sock_req)
         except ConnectionRefusedError:

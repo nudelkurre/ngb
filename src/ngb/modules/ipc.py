@@ -11,7 +11,8 @@ class IPCModule:
         self.hide_no_focus = kwargs.get("hide_no_focus", False)
         self.title_max_length = kwargs.get("title_max_length", 200)
         self.current_wm = os.environ.get("XDG_CURRENT_DESKTOP").lower()
-        self.wm = self.valid_ipc.get(self.current_wm)()
+        self.timer = kwargs.get("timer")
+        self.wm = self.valid_ipc.get(self.current_wm)(timer=self.timer)
 
     def close_window(self, id):
         self.wm.close_window(id)
