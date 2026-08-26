@@ -36,11 +36,15 @@ class WorkspaceBox(WidgetBox):
 
 
 class Workspaces(WidgetDrawer):
+    min_timer = 0.3
+
     def __init__(self, **kwargs):
         self.spacing = kwargs.get("spacing", 5)
         self.icon_size = kwargs.get("icon_size", 20)
-        self.wm_api = IPCModule(**kwargs)
-        self.timer = kwargs.get("timer", 0.1)
+        self.wm_api = IPCModule(timer=self.min_timer, **kwargs)
+        self.timer = kwargs.get("timer", self.min_timer)
+        if self.timer < self.min_timer:
+            self.timer = self.min_timer
         self.monitor = kwargs.get("monitor", "all")
         self.use_workspace_names = kwargs.get("use_workspace_names", False)
         self.ws_names = kwargs.get("names", {})
@@ -55,24 +59,27 @@ class Workspaces(WidgetDrawer):
                 self.wm_api.previous_workspace()
 
     def get_boxes(self):
-        return self.wm_api.get_workspaces()
+        boxes = self.wm_api.get_workspaces()
+        boxes = [
+            x if x.output == self.monitor or self.monitor == "all" else None
+            for x in boxes
+        ]
+        boxes = list(filter(None, boxes))
+        return boxes
 
     def create_widget(self, box):
-        if self.monitor == "all" or box.output == self.monitor:
-            if self.use_workspace_names:
-                show_name = box.name
-            else:
-                if box.name in self.ws_names:
-                    show_name = self.ws_names.get(box.name, {})
-                else:
-                    show_name = self.default_name
-            return WorkspaceBox(
-                id=box.id,
-                name=box.name,
-                show_name=show_name,
-                focused=box.focused,
-                urgent=box.urgent,
-                wm=self.wm_api,
-            )
+        if self.use_workspace_names:
+            show_name = box.name
         else:
-            return None
+            if box.name in self.ws_names:
+                show_name = self.ws_names.get(box.name, {})
+            else:
+                show_name = self.default_name
+        return WorkspaceBox(
+            id=box.id,
+            name=box.name,
+            show_name=show_name,
+            focused=box.focused,
+            urgent=box.urgent,
+            wm=self.wm_api,
+        )
