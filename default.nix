@@ -3,7 +3,7 @@ with pkgs.python3Packages;
 
 buildPythonApplication {
     pname = "ngb";
-    version = "0.8.3";
+    version = "0.8.4";
     pyproject = true;
     src = ./.;
 
@@ -29,7 +29,6 @@ buildPythonApplication {
         meson-python
         ninja
         psutil
-        pydbus
         pygobject3
         pyyaml
         requests

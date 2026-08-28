@@ -20,8 +20,9 @@ class NiriIPC(WindowManagerIPC):
     focused_workspace_id = ""
     active_workspaces = {}
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, **kwargs):
+        self.timer = kwargs.get("timer")
+        super().__init__(timer=self.timer)
         self.sock_req = f"{os.environ.get('NIRI_SOCKET')}"
         self.connect()
 
@@ -35,7 +36,7 @@ class NiriIPC(WindowManagerIPC):
                 while True:
                     part = self.usocket.recv(1024)
                     response.extend(part)
-                    if len(part) < 1024:
+                    if response.find(b"\n") != -1:
                         break
                 response = response.decode("utf-8")
                 response = json.loads(response)
@@ -43,45 +44,38 @@ class NiriIPC(WindowManagerIPC):
                 if isinstance(response, dict):
                     response = response.get(cmd, [])
                 socket_data = response
-            except socket.error as e:
-                log_error(e)
-                print(e)
+                return socket_data
             except socket.timeout:
                 log_warning("Error: Socket timed out")
-                print("Error: Socket timed out")
-            except AttributeError as e:
-                log_error(e)
-                print(e)
+                return []
             except Exception as e:
                 log_error(e)
-                traceback.print_exc()
-                print("-" * 15)
-            finally:
-                return socket_data
+                return []
 
     def parse_workspace(self, ws):
         parsed_ws = list()
         self.get_outputs()
         for wss in ws:
             ws_dict = dict()
-            if (
-                wss != {}
-                and wss["active_window_id"] != None
-                and self.active_workspaces.get(wss.get("output", "")) != None
-                or (wss["is_active"] and wss["active_window_id"] == None)
-            ):
-                ws_dict["id"] = wss.get("idx", 0)
-                ws_dict["name"] = wss.get("name", str(wss.get("id", 0)))
-                ws_dict["monitor"] = wss.get("output", "")
-                ws_dict["active"] = wss.get("is_active", False)
-                ws_dict["urgent"] = wss.get("is_urgent", False)
-                ws_dict["focused"] = wss.get("is_focused", False)
-                self.active_workspaces.get(wss.get("output", "")).append(
-                    [wss.get("name", "0"), wss.get("idx", 0)]
-                )
-                if wss["is_focused"]:
-                    self.focused_output = wss.get("output", "")
-                    self.focused_workspace_id = wss.get("idx", 0)
+            if isinstance(wss, dict):
+                if (
+                    wss != {}
+                    and wss["active_window_id"] != None
+                    and self.active_workspaces.get(wss.get("output", "")) != None
+                    or (wss["is_active"] and wss["active_window_id"] == None)
+                ):
+                    ws_dict["id"] = wss.get("idx", 0)
+                    ws_dict["name"] = wss.get("name", str(wss.get("id", 0)))
+                    ws_dict["monitor"] = wss.get("output", "")
+                    ws_dict["active"] = wss.get("is_active", False)
+                    ws_dict["urgent"] = wss.get("is_urgent", False)
+                    ws_dict["focused"] = wss.get("is_focused", False)
+                    self.active_workspaces.get(wss.get("output", "")).append(
+                        [wss.get("name", "0"), wss.get("idx", 0)]
+                    )
+                    if wss["is_focused"]:
+                        self.focused_output = wss.get("output", "")
+                        self.focused_workspace_id = wss.get("idx", 0)
             if ws_dict != {}:
                 parsed_ws.append(ws_dict)
         for out in self.active_workspaces.keys():
@@ -111,9 +105,10 @@ class NiriIPC(WindowManagerIPC):
     def get_outputs(self):
         outputs = self.send_to_socket("Outputs")
         if outputs:
-            parsed_outputs = list(outputs.keys())
-            for out in parsed_outputs:
-                self.active_workspaces[out] = []
+            if isinstance(outputs, dict):
+                parsed_outputs = list(outputs.keys())
+                for out in parsed_outputs:
+                    self.active_workspaces[out] = []
 
     def get_windows(self):
         windows = self.send_to_socket("Windows")

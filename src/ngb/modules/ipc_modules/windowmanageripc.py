@@ -4,19 +4,19 @@ from ngb.utils import log_error, log_warning
 
 
 class WindowManagerIPC:
-    def __init__(self):
+    def __init__(self, **kwargs):
         self.usocket = None
+        self.timer = kwargs.get("timer", 1)
 
     def connect(self):
         self.usocket = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+        self.usocket.settimeout(self.timer * 3)
         try:
             self.usocket.connect(self.sock_req)
         except ConnectionRefusedError:
             log_error("Connection to the UNIX socket refused.")
-            print("Connection to the UNIX socket refused.")
         except socket.error as e:
             log_error(f"Error open socket: {e}")
-            print(f"Error open socket: {e}")
 
     def disconnect(self):
         self.usocket.close()

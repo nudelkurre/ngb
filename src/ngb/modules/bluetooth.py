@@ -1,5 +1,4 @@
-from pydbus import SystemBus
-from gi.repository import GLib
+from gi.repository import GLib, Gio
 
 import re
 
@@ -9,57 +8,44 @@ BluetoothDevice = NamedTuples.BluetoothDevice
 
 
 class BluetoothModule:
-    system_bus = SystemBus()
-    dbus_interface = "org.bluez"
     icons = {"audio-headset": "󰋎", "input-gaming": "󰊗"}
 
     def __init__(self):
         pass
 
-    def get_controllers(self):
-        try:
-            proxy = self.system_bus.get(self.dbus_interface)
-            proxy_data = proxy.Introspect()
-            controllers = re.findall(r"<node name=\"([\w]+)\"/>", proxy_data)
-            if controllers:
-                return controllers
-            else:
-                return []
-        except GLib.GError as e:
-            return []
-
-    def get_devices(self, controller):
-        proxy = self.system_bus.get(self.dbus_interface, controller)
-        proxy_data = proxy.Introspect()
-        devices = re.findall(r"<node name=\"([\w]+)\"/>", proxy_data)
-        device_controller = []
-        for device in devices:
-            device_controller.append((controller, device))
-        return device_controller
-
-    def get_device_info(self, device):
-        object_path = f"{device[0]}/{device[1]}"
-        proxy = self.system_bus.get(self.dbus_interface, object_path)
-        proxy_data = proxy
-        return proxy_data
-
-    def parse_device_info(self, device):
-        return BluetoothDevice(
-            adapter=device.Adapter if "Adapter" in dir(device) else "",
-            address=device.Address if "Address" in dir(device) else "",
-            battery=f"{device.Percentage}%" if "Percentage" in dir(device) else "0",
-            connected=device.Connected if "Connected" in dir(device) else False,
-            icon="󰥉",
-            name=device.Name if "Name" in dir(device) else "",
-        )
-
     def get_device_list(self):
         device_list = []
-        controllers = self.get_controllers()
-        for controller in controllers:
-            devices = self.get_devices(controller)
-            for device in devices:
-                device_info = self.parse_device_info(self.get_device_info(device))
-                if device_info.connected:
-                    device_list.append(device_info)
+        bus_type = Gio.BusType.SYSTEM
+        bus_name = "org.bluez"
+        object_path = "/"
+        mngr_iface = "org.freedesktop.DBus.ObjectManager"
+        device_iface = "org.bluez.Device1"
+        battery_iface = "org.bluez.Battery1"
+
+        mngr_proxy = Gio.DBusProxy.new_for_bus_sync(
+            bus_type=bus_type,
+            flags=Gio.DBusProxyFlags.NONE,
+            info=None,
+            name=bus_name,
+            object_path=object_path,
+            interface_name=mngr_iface,
+            cancellable=None,
+        )
+
+        mngd_objs = mngr_proxy.GetManagedObjects()
+        for obj_path, obj_data in mngd_objs.items():
+            obj_data_device = obj_data.get(device_iface, {})
+            if obj_data_device:
+                if obj_data_device.get("Connected"):
+                    device_battery_data = obj_data.get(battery_iface, {})
+                    device_list.append(
+                        BluetoothDevice(
+                            adapter=obj_data_device.get("Adapter", ""),
+                            address=obj_data_device.get("Address", ""),
+                            battery=f"{device_battery_data.get("Percentage", "0")}%",
+                            connected=obj_data_device.get("Connected", False),
+                            icon=self.icons.get(obj_data_device.get("Icon"), "󰥉"),
+                            name=obj_data_device.get("Name", ""),
+                        )
+                    )
         return device_list

@@ -29,6 +29,7 @@ class WidgetDrawer(Gtk.Box):
         self.add_controller(self.scroll_controller)
 
     def run(self):
+        self.update_boxes()
         if getattr(self, "timeout", None) is not None:
             return False
         self.timeout = GLib.timeout_add(self.timer * 1000, self.update_boxes)

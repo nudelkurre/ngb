@@ -43,7 +43,7 @@ class WindowTitle(WidgetBox):
         self.hide_no_focus = kwargs.get("hide_no_focus", False)
         self.hide_on_close = kwargs.get("hide_on_close", True)
         self.title_max_length = kwargs.get("title_max_length", 200)
-        self.wm_api = IPCModule(**kwargs)
+        self.wm_api = IPCModule(timer=self.timer, **kwargs)
 
     def populate_dropdown(self):
         window_list = self.wm_api.get_windows()

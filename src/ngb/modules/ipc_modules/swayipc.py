@@ -15,8 +15,9 @@ Window = NamedTuples.Window
 
 class SwayIPC(WindowManagerIPC):
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, **kwargs):
+        self.timer = kwargs.get("timer", 1)
+        super().__init__(timer=self.timer)
         self.sock_req = f"{os.environ.get('SWAYSOCK')}"
 
     def send_to_socket(self, cmd):
@@ -40,10 +41,8 @@ class SwayIPC(WindowManagerIPC):
             socket_data = parsed_response
         except socket.error as e:
             log_error(e)
-            print(e)
         except Exception as e:
             log_error(e)
-            traceback.print_exc()
         finally:
             return socket_data
 
