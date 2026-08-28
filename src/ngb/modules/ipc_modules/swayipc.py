@@ -15,8 +15,9 @@ Window = NamedTuples.Window
 
 class SwayIPC(WindowManagerIPC):
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, **kwargs):
+        self.timer = kwargs.get("timer", 1)
+        super().__init__(timer=self.timer)
         self.sock_req = f"{os.environ.get('SWAYSOCK')}"
 
     def send_to_socket(self, cmd):

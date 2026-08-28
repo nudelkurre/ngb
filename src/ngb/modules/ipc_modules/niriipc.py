@@ -20,8 +20,8 @@ class NiriIPC(WindowManagerIPC):
     focused_workspace_id = ""
     active_workspaces = {}
 
-    def __init__(self, timer):
-        self.timer = timer
+    def __init__(self, **kwargs):
+        self.timer = kwargs.get("timer")
         super().__init__(timer=self.timer)
         self.sock_req = f"{os.environ.get('NIRI_SOCKET')}"
         self.connect()

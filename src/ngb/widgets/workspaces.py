@@ -36,7 +36,7 @@ class WorkspaceBox(WidgetBox):
 
 
 class Workspaces(WidgetDrawer):
-    min_timer = 0.3
+    min_timer = 0.1
 
     def __init__(self, **kwargs):
         self.spacing = kwargs.get("spacing", 5)

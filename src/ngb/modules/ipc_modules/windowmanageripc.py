@@ -10,7 +10,7 @@ class WindowManagerIPC:
 
     def connect(self):
         self.usocket = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-        self.usocket.settimeout(self.timer)
+        self.usocket.settimeout(self.timer * 3)
         try:
             self.usocket.connect(self.sock_req)
         except ConnectionRefusedError:
