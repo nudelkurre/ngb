@@ -27,13 +27,14 @@ class HeadsetModule:
                     ).stdout
                 )
                 for device in info.get("devices", []):
-                    device_battery.append(
-                        HeadsetDevice(
-                            name=device.get("device", ""),
-                            batterylevel=device.get("battery", {}).get("level", 0),
-                            icon="󰋎",
+                    if device.get("battery", {}).get("level") > 0:
+                        device_battery.append(
+                            HeadsetDevice(
+                                name=device.get("device", ""),
+                                batterylevel=device.get("battery", {}).get("level", 0),
+                                icon="󰋎",
+                            )
                         )
-                    )
             except subprocess.TimeoutExpired as e:
                 device_battery.append(HeadsetDevice(icon="", error=-1))
         else:
