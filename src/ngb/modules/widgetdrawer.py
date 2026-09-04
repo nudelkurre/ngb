@@ -65,11 +65,15 @@ class WidgetDrawer(Gtk.Box):
                 if self.get_first_child() is not None:
                     self.cleanup()
                 self.old_boxes = self.new_boxes
-                for box in self.old_boxes:
-                    widget = self.create_widget(box)
-                    if widget is not None:
-                        self.append(widget)
-                        widget.run()
+                if len(self.old_boxes) == 0:
+                    self.set_visible(False)
+                else:
+                    self.set_visible(True)
+                    for box in self.old_boxes:
+                        widget = self.create_widget(box)
+                        if widget is not None:
+                            self.append(widget)
+                            widget.run()
         except Exception as e:
             pass
         finally:
