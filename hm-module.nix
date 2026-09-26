@@ -174,34 +174,37 @@ with lib;
         systemd = {
             user = {
                 services = {
-                    "ngb" = {
-                        Unit = {
-                            Description = "ngb status bar";
-                            PartOf = "graphical-session.target";
+                    "ngb" =
+                        let
+                            filterNulls = attrs: lib.filterAttrs (key: value: value != null) attrs;
+                            filtered = filterNulls (
+                                config.services.ngb.settings // { bars = map filterNulls config.services.ngb.settings.bars; }
+                            );
+                            format = config.services.ngb.file-type;
+                            fileFormat =
+                                if format == "json" then
+                                    pkgs.formats.json { }
+                                else if format == "toml" then
+                                    pkgs.formats.toml { }
+                                else
+                                    pkgs.formats.yaml { };
+                        in
+                        {
+                            Unit = {
+                                Description = "ngb status bar";
+                                PartOf = "graphical-session.target";
+                            };
+                            Install = {
+                                WantedBy = [ "graphical-session.target" ];
+                            };
+                            Service = {
+                                ExecStart = "${config.services.ngb.package}/bin/ngb --type ${config.services.ngb.file-type} --config ${fileFormat.generate "ngb-config.${config.services.ngb.file-type}" filtered}";
+                                Restart = "always";
+                                RestartSec = "5s";
+                            };
                         };
-                        Install = {
-                            WantedBy = [ "graphical-session.target" ];
-                        };
-                        Service = {
-                            ExecStart = "${config.services.ngb.package}/bin/ngb --type ${config.services.ngb.file-type}";
-                            Restart = "always";
-                            RestartSec = "5s";
-                        };
-                    };
                 };
             };
         };
-        xdg.configFile."ngb/config.${config.services.ngb.file-type}" =
-            let
-                filterNulls = attrs: lib.filterAttrs (key: value: value != null) attrs;
-                filtered = filterNulls (
-                    config.services.ngb.settings // { bars = map filterNulls config.services.ngb.settings.bars; }
-                );
-                format = config.services.ngb.file-type;
-                fileFormat = if format == "json" then pkgs.formats.json {} else if format == "toml" then pkgs.formats.toml {} else pkgs.formats.yaml {};
-            in
-            {
-                source = fileFormat.generate "ngb-config" filtered;
-            };
     };
 }

@@ -47,12 +47,21 @@ class MainWindow(Gtk.Application):
         )
         self.config_file_path = ""
         self.config_file_type = ""
+        self.use_default_config = False
         self.add_main_option(
             "version",
             ord("v"),
             GLib.OptionFlags.NONE,
             GLib.OptionArg.NONE,
             "Show application version",
+            None,
+        )
+        self.add_main_option(
+            "default",
+            False,
+            GLib.OptionFlags.IN_MAIN,
+            GLib.OptionArg.NONE,
+            "Use default config without overwriting existing",
             None,
         )
         self.add_main_option(
@@ -80,6 +89,8 @@ class MainWindow(Gtk.Application):
             self.config = Config(
                 file_path=self.config_file_path, file_type=self.config_file_type
             )
+        elif self.use_default_config:
+            self.config = Config(use_default_config=self.use_default_config)
         else:
             self.config = Config()
         self.load_css()
@@ -217,6 +228,9 @@ class MainWindow(Gtk.Application):
         options = options.end().unpack()
         if "version" in options:
             print(f"Version: {__about__.__version__}")
+        elif "default" in options:
+            self.use_default_config = options.get("default")
+            self.activate()
         else:
             if "config" in options:
                 self.config_file_path = options.get("config")

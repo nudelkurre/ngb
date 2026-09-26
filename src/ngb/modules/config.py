@@ -14,6 +14,7 @@ class Config:
     def __init__(self, **kwargs):
         self.file_path = kwargs.get("file_path", f"{self.file_dir}/config.json")
         self.file_type = kwargs.get("file_type", "")
+        self.use_default_config = kwargs.get("use_default_config", False)
         if self.file_type == "":
             if len(self.file_path.split(".")) < 2:
                 print(
@@ -21,7 +22,7 @@ class Config:
                 )
             else:
                 self.file_type = self.file_path.split(".")[-1]
-        if os.path.isfile(self.file_path):
+        if os.path.isfile(self.file_path) and not self.use_default_config:
             self.load_config(self.file_path)
         else:
             self.load_default()
@@ -63,17 +64,18 @@ class Config:
             "spacing": 5,
             "corner_radius": 0,
         }
-        if not os.path.exists(self.file_dir):
-            os.makedirs(self.file_dir)
-        write_mode = "wb" if self.file_type == "toml" else "w"
-        with open(self.file_path, write_mode) as file:
-            if self.file_type == "json":
-                file.write(json.dumps(default_data))
-            elif self.file_type == "toml":
-                tomli_w.dump(default_data, file)
-            elif self.file_type == "yaml":
-                file.write(yaml.dump(default_data))
-            file.close()
+        if not self.use_default_config:
+            if not os.path.exists(self.file_dir):
+                os.makedirs(self.file_dir)
+            write_mode = "wb" if self.file_type == "toml" else "w"
+            with open(self.file_path, write_mode) as file:
+                if self.file_type == "json":
+                    file.write(json.dumps(default_data))
+                elif self.file_type == "toml":
+                    tomli_w.dump(default_data, file)
+                elif self.file_type == "yaml":
+                    file.write(yaml.dump(default_data))
+                file.close()
         self.data = default_data
 
     def load_config(self, config_file):
