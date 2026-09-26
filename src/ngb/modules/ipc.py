@@ -1,11 +1,11 @@
 import os
 
-from .ipc_modules import NiriIPC, SwayIPC, WindowManagerIPC
+from .ipc_modules import MangoIPC, NiriIPC, SwayIPC, WindowManagerIPC
 from ngb.utils import cut_string_length
 
 
 class IPCModule:
-    valid_ipc = {"niri": NiriIPC, "sway": SwayIPC}
+    valid_ipc = {"mango": MangoIPC, "niri": NiriIPC, "sway": SwayIPC}
 
     def __init__(self, **kwargs):
         self.hide_no_focus = kwargs.get("hide_no_focus", False)
