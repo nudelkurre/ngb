@@ -255,11 +255,13 @@ Show active windows title. Click will show a dropdown with all windows and click
 
 ##### Workspace
 Show active workspaces and highlight the focused one. Can be set to show only a specific monitor or show all workspaces from all monitors.
-Works with SwayWM, Hyprland and Niri (requires xwayland-satellite for the moment).
+use_workspace_names and use_workspace_ids is used both when using icons for workspaces where use_workspace_names takes precedence over use_workspace_ids. If names are set, icons will be used.
+Works with SwayWM, Hyprland, Niri (requires xwayland-satellite for the moment) and MangoWM.
 |configureation key|description|data type|default|
 |---|---|---|---|
 |monitor|Set either specific monitor or "all" for all workspaces|String|"all"|
 |use_workspace_names|Use workspace name set by window manager|Boolean|False|
+|use_workspace_ids|Use workspace id set by window manager|Boolean|False|
 |default_name|Set default name to use for workspaces|String|"*"|
 |names|Can be used if workspace names is numbers but want to change to icons|Object of key-value pairs with strings as value|{}|
 
