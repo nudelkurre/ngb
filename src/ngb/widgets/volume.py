@@ -13,6 +13,7 @@ class MuteButton(Gtk.Button):
         self.muted_icon = kwargs.get("muted_icon", "󰝟")
         self.unmuted_icon = kwargs.get("unmuted_icon", "󰕾")
         self.volume = kwargs.get("volume_module")
+        self.update_parent_label = kwargs.get("update_label", None)
         self.mute_label = Gtk.Label()
         self.mute_label.add_css_class("icon")
         self.mute_label.set_label(self.get_muted())
@@ -23,6 +24,8 @@ class MuteButton(Gtk.Button):
         self.volume.toggle_mute(self.sink.id)
         self.sink = self.sink._replace(muted=not self.sink.muted)
         self.mute_label.set_markup(self.get_muted())
+        if self.update_parent_label:
+            self.update_parent_label()
 
     def get_muted(self):
         if self.sink.muted:
@@ -69,6 +72,7 @@ class Volume(WidgetBox):
                 muted_icon=self.muted_icon,
                 unmuted_icon=self.unmuted_icon,
                 volume_module=self.volume,
+                update_label=self.update_label,
             )
             slider_box.append(mute_button)
             set_default_button = Gtk.Button(label="Set as default")
@@ -114,21 +118,25 @@ class Volume(WidgetBox):
             self.volume.set_default_sink(sink_id)
             current_default_button.set_sensitive(True)
             user_data.set_sensitive(False)
+            self.update_label()
 
     def on_click(self, user_data):
         if self.click_to_mute:
             self.volume.toggle_mute("@DEFAULT_AUDIO_SINK@")
+            self.update_label()
         else:
             self.dropdown.popup()
 
     def on_middle_click(self, sequence, user_data):
         if not self.click_to_mute:
             self.volume.toggle_mute("@DEFAULT_AUDIO_SINK@")
+            self.update_label()
         else:
             self.dropdown.popup()
 
     def on_right_click(self, sequence, user_data):
         self.volume.change_default_sink()
+        self.update_label()
 
     def on_close(self, user_data):
         super().on_close(user_data)
