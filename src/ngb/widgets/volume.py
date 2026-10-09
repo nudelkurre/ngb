@@ -117,7 +117,7 @@ class Volume(WidgetBox):
 
     def on_click(self, user_data):
         if self.click_to_mute:
-            self.toggle_mute("@DEFAULT_AUDIO_SINK@")
+            self.volume.toggle_mute("@DEFAULT_AUDIO_SINK@")
         else:
             self.dropdown.popup()
 
