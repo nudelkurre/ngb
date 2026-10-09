@@ -8,6 +8,7 @@ class WorkspaceBox(WidgetBox):
 
     def __init__(self, **kwargs):
         self.name = kwargs.get("name", "")
+        self.id = str(kwargs.get("id", 0))
         self.show_name = kwargs.get("show_name", "")
         self.focused = kwargs.get("focused", False)
         self.urgent = kwargs.get("urgent", False)
@@ -24,10 +25,7 @@ class WorkspaceBox(WidgetBox):
             self.text_label.set_opacity(0.6)
 
     def _task_func(self, task, _task_data, _cancellable, _other):
-        if self.show_name != "" or True:
-            data = {"icon": self.icon}
-        else:
-            data = {"text": self.text}
+        data = {"icon": self.icon}
         task.return_value(data)
 
     def on_click(self, user_data):
@@ -47,6 +45,7 @@ class Workspaces(WidgetDrawer):
             self.timer = self.min_timer
         self.monitor = kwargs.get("monitor", "all")
         self.use_workspace_names = kwargs.get("use_workspace_names", False)
+        self.use_workspace_ids = kwargs.get("use_workspace_ids", False)
         self.ws_names = kwargs.get("names", {})
         self.default_name = kwargs.get("default_name", "*")
         super().__init__(spacing=self.spacing, timer=self.timer)
@@ -68,16 +67,23 @@ class Workspaces(WidgetDrawer):
         return boxes
 
     def create_widget(self, box):
-        if self.use_workspace_names:
-            show_name = box.name
-        else:
-            if box.name in self.ws_names:
-                show_name = self.ws_names.get(box.name, {})
+        box_name = box.name
+        box_id = str(box.id)
+        if self.ws_names != {}:
+            if self.use_workspace_names and box_name in self.ws_names:
+                show_name = self.ws_names.get(box_name)
+            elif self.use_workspace_ids and box_id in self.ws_names:
+                show_name = self.ws_names.get(box_id)
             else:
                 show_name = self.default_name
+        else:
+            if self.use_workspace_ids:
+                show_name = box_id
+            else:
+                show_name = box.name
         return WorkspaceBox(
-            id=box.id,
-            name=box.name,
+            id=box_id,
+            name=box_name,
             show_name=show_name,
             focused=box.focused,
             urgent=box.urgent,
