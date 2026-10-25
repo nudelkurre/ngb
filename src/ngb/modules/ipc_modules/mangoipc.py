@@ -1,14 +1,23 @@
 import subprocess
+import socket
 import re
 import os
 import json
+from dataclasses import dataclass
+
+from gi.repository import Gio, GLib
 
 from ngb.types import NamedTuples
 from ngb.utils import log_error, log_warning
 from .windowmanageripc import WindowManagerIPC
 
 Workspace = NamedTuples.Workspace
-Window = NamedTuples.Window
+Monitor = NamedTuples.Monitor
+
+
+@dataclass
+class Window(NamedTuples.Window):
+    output: str = ""
 
 
 class MangoIPC(WindowManagerIPC):
@@ -16,85 +25,137 @@ class MangoIPC(WindowManagerIPC):
     def __init__(self, **kwargs):
         self.timer = kwargs.get("timer", 1)
         super().__init__(timer=self.timer)
+        self.socket_path = os.environ.get("MANGO_INSTANCE_SIGNATURE")
+        self.commands = [
+            self._encode_cmd("all-clients"),
+            self._encode_cmd("all-monitors"),
+            self._encode_cmd("all-tags"),
+            self._encode_cmd("focusing-client"),
+        ]
 
-    def send_to_socket(self, cmd):
-        socket_data = subprocess.run(
-            self.translate_cmd(cmd), capture_output=True, text=True, timeout=self.timer
-        ).stdout
-        socket_data = json.loads(socket_data)
-        return socket_data
+    def _encode_cmd(self, cmd):
+        return f"watch {cmd}\n".encode("utf-8")
 
-    def get_workspaces(self):
-        workspace_list = []
-        wss = self.send_to_socket("get all-tags").get("all_tags", [])
-        focused_client = self.send_to_socket("get focusing-client")
-        focused_monitor = focused_client.get("monitor")
-        for ws in wss:
-            monitor = ws.get("monitor", "")
-            tags = ws.get("tags", [])
-            for tag in tags:
-                if tag.get("client_count") > 0:
-                    is_focused = focused_monitor == monitor and tag.get(
+    def _parse_line(self, line, command):
+        data = json.loads(line[0].decode("utf-8"))
+        cmd = command.split()[1]
+        if cmd == "all-clients":
+            windows = data.get("clients", [])
+            self.windows = list()
+            for window in windows:
+                self.windows.append(
+                    Window(
+                        id=str(window.get("id", 0)),
+                        title=window.get("title", ""),
+                        focused=window.get("is_focused", False),
+                    )
+                )
+            self.emit("windows", self.windows)
+        elif cmd == "all-monitors":
+            monitors = data.get("monitors", [])
+            self.monitors = list()
+            for m in monitors:
+                name = m.get("name", "")
+                active = m.get("active", False)
+                tags = m.get("tags", [])
+                monitor_tags = [
+                    (
+                        tag.get("index")
+                        if tag.get("client_count") > 0 or tag.get("is_active")
+                        else None
+                    )
+                    for tag in tags
+                ]
+                monitor_tags = list(filter(None, monitor_tags))
+                active_tags = m.get("active_tags", [0])
+                self.monitors.append(
+                    Monitor(
+                        name=name,
+                        active=active,
+                        workspaces=monitor_tags,
+                        active_workspace=active_tags[0],
+                    )
+                )
+            self.emit("monitors", self.monitors)
+        elif cmd == "all-tags":
+            workspaces = data.get("all_tags", [])
+            self.workspaces = list()
+            if self.focused_window is None:
+                return
+            for workspace in workspaces:
+                monitor = workspace.get("monitor", "")
+                tags = workspace.get("tags", [])
+                for tag in tags:
+                    is_focused = self.focused_window.output == monitor and tag.get(
                         "is_active", False
                     )
-                    workspace_list.append(
-                        Workspace(
-                            id=tag.get("index", 0),
-                            name=str(tag.get("index", 0)),
-                            focused=is_focused,
-                            output=monitor,
-                            urgent=tag.get("is_urgent", False),
+                    # print(tag, monitor)
+                    if tag.get("client_count") > 0:
+                        self.workspaces.append(
+                            Workspace(
+                                id=tag.get("index", 0),
+                                name=str(tag.get("index", 0)),
+                                focused=is_focused,
+                                output=monitor,
+                                urgent=tag.get("is_urgent", False),
+                                active=True,
+                            )
                         )
-                    )
-                elif tag.get("is_active"):
-                    workspace_list.append(
-                        Workspace(
-                            id=tag.get("index", 0),
-                            name=str(tag.get("index", 0)),
-                            focused=True,
-                            output=monitor,
-                            urgent=tag.get("is_urgent", False),
+                    elif tag.get("is_active"):
+                        self.workspaces.append(
+                            Workspace(
+                                id=tag.get("index", 0),
+                                name=str(tag.get("index", 0)),
+                                focused=is_focused,
+                                output=monitor,
+                                urgent=tag.get("is_urgent", False),
+                                active=True,
+                            )
                         )
-                    )
-        return workspace_list
 
-    def get_focused_window(self):
-        return self.send_to_socket("get focusing-client").get("title", "")
-
-    def get_windows(self):
-        window_list = []
-        windows = self.send_to_socket("get all-clients").get("clients", [])
-        for window in windows:
-            window_list.append(
-                Window(
-                    id=window.get("id", 0),
-                    title=window.get("title", ""),
-                    focused=window.get("is_focused", False),
-                )
+            self.emit("workspaces", self.workspaces)
+        elif cmd == "focusing-client":
+            self.focused_window = Window(
+                id=str(data.get("id", 0)),
+                title=data.get("title", ""),
+                focused=data.get("is_focused", False),
+                output=data.get("monitor", ""),
             )
-        return window_list
+            self.emit("focused-window", self.focused_window)
+
+    def send_to_socket(self, cmd):
+        socket_data = []
+        try:
+            self.sock_connect()
+            translated_cmd = self.translate_cmd(cmd)
+            self.usocket.sendall(translated_cmd)
+            self.usocket.sendall("\n".encode("utf-8"))
+            response = bytearray()
+            while True:
+                part = self.usocket.recv(1024)
+                response.extend(part)
+                if response.find(b"\n") != -1:
+                    break
+            response = response.decode("utf-8")
+            response = json.loads(response)
+            self.disconnect()
+            response = response.get("Ok", {})
+            if isinstance(response, dict):
+                response = response.get(cmd, [])
+            socket_data = response
+            return socket_data
+        except socket.timeout:
+            log_warning("Error: Socket timed out")
+            return []
+        except Exception as e:
+            log_error(e)
+            return []
 
     def close_window(self, id):
         self.command(f"dispatch killclient client,{id}")
 
     def focus_window(self, id):
         self.command(f"dispatch focusid client,{id}")
-
-    def get_current_tags(self):
-        tags = self.send_to_socket("get all-monitors").get("monitors", [])
-        monitor = [x if x.get("active") else None for x in tags]
-        monitor = list(filter(None, monitor))[0]
-        monitor_tags = [
-            (
-                x.get("index", 0)
-                if x.get("client_count") > 0 or x.get("is_active")
-                else None
-            )
-            for x in monitor.get("tags", [])
-        ]
-        monitor_tags = list(filter(None, monitor_tags))
-        active_tags = monitor.get("active_tags")
-        return {"tags": monitor_tags, "active": active_tags[0]}
 
     def translate_cmd(self, cmd):
         cmd_list = cmd.split()
@@ -103,24 +164,27 @@ class MangoIPC(WindowManagerIPC):
             new_cmd = self.goto_workspace(cmd_list[1])
         else:
             new_cmd = cmd
+        encoded = new_cmd.encode("utf-8")
         new_cmd = f"mmsg {new_cmd}".split()
-        return new_cmd
+        return encoded
 
     def goto_workspace(self, workspace):
+        tags_dict = self.monitors
+        active_monitor = list(
+            filter(
+                None,
+                [(monitor if monitor.active else None) for monitor in tags_dict],
+            )
+        )[0]
+        tags = active_monitor.workspaces
+        current_tag = active_monitor.active_workspace
         if workspace == "next_on_output":
-            tags_dict = self.get_current_tags()
-            tags = tags_dict.get("tags", [])
-            current_tag = tags_dict.get("active", 0)
             for index, value in enumerate(tags):
                 if value == current_tag:
                     return f"dispatch view,{tags[(index + 1) % (len(tags))]}"
         elif workspace == "prev_on_output":
-            tags_dict = self.get_current_tags()
-            tags = tags_dict.get("tags", [])
-            current_tag = tags_dict.get("active", 0)
             for index, value in enumerate(tags):
                 if value == current_tag:
                     return f"dispatch view,{tags[(index - 1) % (len(tags))]}"
         else:
-            tags_dict = self.get_current_tags()
             return f"dispatch view,{workspace}"

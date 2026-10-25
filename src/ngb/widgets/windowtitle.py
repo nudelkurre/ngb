@@ -44,10 +44,26 @@ class WindowTitle(WidgetBox):
         self.hide_on_close = kwargs.get("hide_on_close", True)
         self.title_max_length = kwargs.get("title_max_length", 200)
         self.wm_api = IPCModule(timer=self.timer, **kwargs)
+        self.wm_api.connect("window-updates", self.on_window_updates)
+        self.wm_api.connect("focused-window-updates", self.on_focused_window_updates)
+
+        self.focused_title = ""
+        self.windows = []
+
+        self.update_label()
+
+    def on_window_updates(self, instance, data):
+        self.windows = data
+
+    def on_focused_window_updates(self, instance, data):
+        self.focused_title = data.title
+        self.update_label()
+
+    def run(self):
+        pass
 
     def populate_dropdown(self):
-        window_list = self.wm_api.get_windows()
-        for window in window_list:
+        for window in self.windows:
             self.dropdown.add(
                 WindowButton(
                     title=cut_string_length(window.title, self.title_max_length),
@@ -64,5 +80,5 @@ class WindowTitle(WidgetBox):
         return True
 
     def _task_func(self, task, _task_data, _cancellable, _other):
-        data = {"text": self.wm_api.get_window_title()}
+        data = {"text": self.focused_title}
         task.return_value(data)

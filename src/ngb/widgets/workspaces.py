@@ -50,6 +50,21 @@ class Workspaces(WidgetDrawer):
         self.default_name = kwargs.get("default_name", "*")
         super().__init__(spacing=self.spacing, timer=self.timer)
 
+        self.wm_api.connect("workspace-updates", self.on_workspace_updates)
+
+    def run(self):
+        pass
+
+    def on_workspace_updates(self, instance, data):
+        self.cleanup()
+        for box in data:
+            if self.monitor == "all" or box.output == self.monitor:
+                if box.active:
+                    widget = self.create_widget(box)
+                    if widget is not None:
+                        self.append(widget)
+                        widget.run()
+
     def on_scroll(self, controller, x, y):
         if self.wm_api:
             if y < 0:

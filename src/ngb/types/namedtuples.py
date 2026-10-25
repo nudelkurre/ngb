@@ -1,14 +1,29 @@
 from collections import namedtuple
+from dataclasses import dataclass, field
 
 
 class NamedTuples:
-    Workspace = namedtuple(
-        "Workspace",
-        ["id", "name", "focused", "output", "urgent"],
-        defaults=(0, "", False, "", False),
-    )
+    @dataclass
+    class Workspace:
+        id: int = 0
+        name: str = ""
+        focused: bool = False
+        output: str = ""
+        urgent: bool = False
+        active: bool = False
 
-    Window = namedtuple("Window", ["id", "title", "focused"], defaults=(0, "", False))
+    @dataclass
+    class Window:
+        id: int = 0
+        title: str = ""
+        focused: bool = False
+
+    @dataclass
+    class Monitor:
+        name: str = ""
+        active: bool = False
+        workspaces: list[int] = field(default_factory=list)
+        active_workspace: int = 0
 
     BluetoothDevice = namedtuple(
         "BluetoothDevice",
