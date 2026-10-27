@@ -1,6 +1,5 @@
 import subprocess
 import socket
-import re
 import os
 import json
 from dataclasses import dataclass
@@ -39,89 +38,88 @@ class MangoIPC(WindowManagerIPC):
     def _parse_line(self, line, command):
         data = json.loads(line[0].decode("utf-8"))
         cmd = command.split()[1]
-        if cmd == "all-clients":
-            windows = data.get("clients", [])
-            self.windows = list()
-            for window in windows:
-                self.windows.append(
-                    Window(
-                        id=str(window.get("id", 0)),
-                        title=window.get("title", ""),
-                        focused=window.get("is_focused", False),
-                    )
-                )
-            self.emit("windows", self.windows)
-        elif cmd == "all-monitors":
-            monitors = data.get("monitors", [])
-            self.monitors = list()
-            for m in monitors:
-                name = m.get("name", "")
-                active = m.get("active", False)
-                tags = m.get("tags", [])
-                monitor_tags = [
-                    (
-                        tag.get("index")
-                        if tag.get("client_count") > 0 or tag.get("is_active")
-                        else None
-                    )
-                    for tag in tags
-                ]
-                monitor_tags = list(filter(None, monitor_tags))
-                active_tags = m.get("active_tags", [0])
-                self.monitors.append(
-                    Monitor(
-                        name=name,
-                        active=active,
-                        workspaces=monitor_tags,
-                        active_workspace=active_tags[0],
-                    )
-                )
-            self.emit("monitors", self.monitors)
-        elif cmd == "all-tags":
-            workspaces = data.get("all_tags", [])
-            self.workspaces = list()
-            if self.focused_window is None:
-                return
-            for workspace in workspaces:
-                monitor = workspace.get("monitor", "")
-                tags = workspace.get("tags", [])
-                for tag in tags:
-                    is_focused = self.focused_window.output == monitor and tag.get(
-                        "is_active", False
-                    )
-                    # print(tag, monitor)
-                    if tag.get("client_count") > 0:
-                        self.workspaces.append(
-                            Workspace(
-                                id=tag.get("index", 0),
-                                name=str(tag.get("index", 0)),
-                                focused=is_focused,
-                                output=monitor,
-                                urgent=tag.get("is_urgent", False),
-                                active=True,
-                            )
+        match cmd:
+            case "all-clients":
+                windows = data.get("clients", [])
+                self.windows = list()
+                for window in windows:
+                    self.windows.append(
+                        Window(
+                            id=str(window.get("id", 0)),
+                            title=window.get("title", ""),
+                            focused=window.get("is_focused", False),
                         )
-                    elif tag.get("is_active"):
-                        self.workspaces.append(
-                            Workspace(
-                                id=tag.get("index", 0),
-                                name=str(tag.get("index", 0)),
-                                focused=is_focused,
-                                output=monitor,
-                                urgent=tag.get("is_urgent", False),
-                                active=True,
-                            )
+                    )
+                self.emit("windows", self.windows)
+            case "all-monitors":
+                monitors = data.get("monitors", [])
+                self.monitors = list()
+                for m in monitors:
+                    name = m.get("name", "")
+                    active = m.get("active", False)
+                    tags = m.get("tags", [])
+                    monitor_tags = [
+                        (
+                            tag.get("index")
+                            if tag.get("client_count") > 0 or tag.get("is_active")
+                            else None
                         )
-
-            self.emit("workspaces", self.workspaces)
-        elif cmd == "focusing-client":
-            self.focused_window = Window(
-                id=str(data.get("id", 0)),
-                title=data.get("title", ""),
-                focused=data.get("is_focused", False),
-                output=data.get("monitor", ""),
-            )
-            self.emit("focused-window", self.focused_window)
+                        for tag in tags
+                    ]
+                    monitor_tags = list(filter(None, monitor_tags))
+                    active_tags = m.get("active_tags", [0])
+                    self.monitors.append(
+                        Monitor(
+                            name=name,
+                            active=active,
+                            workspaces=monitor_tags,
+                            active_workspace=active_tags[0],
+                        )
+                    )
+                self.emit("monitors", self.monitors)
+            case "all-tags":
+                workspaces = data.get("all_tags", [])
+                self.workspaces = list()
+                if self.focused_window is None:
+                    return
+                for workspace in workspaces:
+                    monitor = workspace.get("monitor", "")
+                    tags = workspace.get("tags", [])
+                    for tag in tags:
+                        is_focused = self.focused_window.output == monitor and tag.get(
+                            "is_active", False
+                        )
+                        if tag.get("client_count") > 0:
+                            self.workspaces.append(
+                                Workspace(
+                                    id=tag.get("index", 0),
+                                    name=str(tag.get("index", 0)),
+                                    focused=is_focused,
+                                    output=monitor,
+                                    urgent=tag.get("is_urgent", False),
+                                    active=True,
+                                )
+                            )
+                        elif tag.get("is_active"):
+                            self.workspaces.append(
+                                Workspace(
+                                    id=tag.get("index", 0),
+                                    name=str(tag.get("index", 0)),
+                                    focused=is_focused,
+                                    output=monitor,
+                                    urgent=tag.get("is_urgent", False),
+                                    active=True,
+                                )
+                            )
+                self.emit("workspaces", self.workspaces)
+            case "focusing-client":
+                self.focused_window = Window(
+                    id=str(data.get("id", 0)),
+                    title=data.get("title", ""),
+                    focused=data.get("is_focused", False),
+                    output=data.get("monitor", ""),
+                )
+                self.emit("focused-window", self.focused_window)
 
     def send_to_socket(self, cmd):
         socket_data = []
