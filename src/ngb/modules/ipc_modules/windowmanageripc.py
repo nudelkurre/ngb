@@ -13,6 +13,11 @@ class WindowManagerIPC(GObject.Object):
             None,
             (object,),
         ),
+        "keymode": (
+            GObject.SignalFlags.RUN_LAST,
+            None,
+            (object,),
+        ),
         "monitors": (
             GObject.SignalFlags.RUN_LAST,
             None,
@@ -44,6 +49,7 @@ class WindowManagerIPC(GObject.Object):
         self.monitors = list()
         self.windows = list()
         self.focused_window = None
+        self.keymode = str()
 
         self.socket_path = None
         self._cancellable = Gio.Cancellable()
