@@ -30,6 +30,7 @@ class MangoIPC(WindowManagerIPC):
             self._encode_cmd("all-monitors"),
             self._encode_cmd("all-tags"),
             self._encode_cmd("focusing-client"),
+            self._encode_cmd("keymode"),
         ]
 
     def _encode_cmd(self, cmd):
@@ -120,6 +121,9 @@ class MangoIPC(WindowManagerIPC):
                     output=data.get("monitor", ""),
                 )
                 self.emit("focused-window", self.focused_window)
+            case "keymode":
+                self.keymode = data.get("keymode", "")
+                self.emit("keymode", self.keymode)
 
     def send_to_socket(self, cmd):
         socket_data = []

@@ -21,6 +21,7 @@ class SwayIPC(WindowManagerIPC):
     event_types = {
         "0x1": "get_workspaces",
         "0x4": "get_tree",
+        "0xc": "get_binding_state",
         "0x80000000": "workspace",
         "0x80000001": "output",
         "0x80000002": "mode",
@@ -41,7 +42,8 @@ class SwayIPC(WindowManagerIPC):
         self.commands = [
             self.encode_cmd("GET_WORKSPACES", 1),
             self.encode_cmd("GET_TREE", 4),
-            self.encode_cmd("['workspace', 'window']", 2),
+            self.encode_cmd("GET_BINDING_STATE", 12),
+            self.encode_cmd("['workspace', 'window', 'mode']", 2),
         ]
 
     def encode_cmd(self, msg, msg_type=0):
@@ -104,6 +106,9 @@ class SwayIPC(WindowManagerIPC):
                 self.emit("windows", self.windows)
                 self.emit("monitors", self.monitors)
                 self.emit("focused-window", self.focused_window)
+            case "get_binding_state":
+                self.keymode = data.get("name", "")
+                self.emit("keymode", self.keymode)
             case "workspace":
                 change = data.get("change")
                 match change:
@@ -185,6 +190,10 @@ class SwayIPC(WindowManagerIPC):
                                 self.windows[index].title = container.get("name")
                 self.emit("focused-window", self.focused_window)
                 self.emit("windows", self.windows)
+            case "mode":
+                self.keymode = data.get("change", "")
+                self.emit("keymode", self.keymode)
+
         return data
 
     def _read_next_line(self, listener):

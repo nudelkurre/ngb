@@ -30,6 +30,11 @@ class IPCModule(GObject.Object):
             None,
             (object,),
         ),
+        "keymode-updates": (
+            GObject.SignalFlags.RUN_LAST,
+            None,
+            (object,),
+        ),
     }
 
     def __init__(self, **kwargs):
@@ -42,13 +47,17 @@ class IPCModule(GObject.Object):
             timer=self.timer
         )
         self.wm.connect("focused-window", self.on_focused_window)
-        self.wm.connect("windows", self.on_window_updates)
+        self.wm.connect("keymode", self.on_keymode_updates)
         self.wm.connect("monitors", self.on_monitor_updates)
+        self.wm.connect("windows", self.on_window_updates)
         self.wm.connect("workspaces", self.on_workspace_updates)
         self.wm.start()
 
     def on_focused_window(self, instance, data):
         self.emit("focused-window-updates", data)
+
+    def on_keymode_updates(self, instance, data):
+        self.emit("keymode-updates", data)
 
     def on_window_updates(self, instance, data):
         self.emit("window-updates", data)
