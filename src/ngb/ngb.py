@@ -95,12 +95,15 @@ class MainWindow(Gtk.Application):
         else:
             self.config = Config()
         self.load_css()
-        for i in self.config.data.get("bars", {}):
-            self.create_window(i)
+        monitors = [*self.config.data.get("bars", {})]
+        for monitor in monitors:
+            self.create_window(
+                monitor, self.config.data.get("bars", {}).get(monitor, {})
+            )
 
-    def create_window(self, bar_config):
+    def create_window(self, monitor, bar_config):
         local_bar_config = {}
-        local_bar_config["monitor"] = bar_config.get("output", "")
+        local_bar_config["monitor"] = monitor
         if "gaps" in bar_config:
             local_bar_config["gaps"] = bar_config.get("gaps", 0)
         elif "gaps" in self.config.data:
@@ -135,30 +138,30 @@ class MainWindow(Gtk.Application):
         }
 
         for widget in bar_config.get("widgets", {}).get("left", {}):
-            config = widget.get("config", {})
+            module = [*widget][0]
+            config = widget.get(module, {})
             if "icon_size" not in config and "icon_size" in self.config.data:
                 config["icon_size"] = self.config.data.get("icon_size", 20)
-            module = widget.get("module", [])
             if module in valid_widgets:
                 new_module = valid_widgets.get(module)(**config)
                 window.left(new_module)
                 new_module.run()
 
-        for widget in bar_config["widgets"]["center"]:
-            config = widget.get("config", {})
+        for widget in bar_config.get("widgets", {}).get("center", {}):
+            module = [*widget][0]
+            config = widget.get(module, {})
             if "icon_size" not in config and "icon_size" in self.config.data:
                 config["icon_size"] = self.config.data.get("icon_size", 20)
-            module = widget.get("module", [])
             if module in valid_widgets:
                 new_module = valid_widgets.get(module)(**config)
                 window.center(new_module)
                 new_module.run()
 
-        for widget in bar_config["widgets"]["right"]:
-            config = widget.get("config", {})
+        for widget in bar_config.get("widgets", {}).get("right", []):
+            module = [*widget][0]
+            config = widget.get(module, {})
             if "icon_size" not in config and "icon_size" in self.config.data:
                 config["icon_size"] = self.config.data.get("icon_size", 20)
-            module = widget.get("module", [])
             if module in valid_widgets:
                 new_module = valid_widgets.get(module)(**config)
                 window.right(new_module)
