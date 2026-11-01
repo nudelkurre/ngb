@@ -35,6 +35,7 @@ from ngb.widgets import (
     Workspaces,
 )
 from ngb.modules import Bar, Config
+from ngb.utils import ConfigError, ValidateConfig
 from ngb import __about__
 
 
@@ -79,6 +80,14 @@ class MainWindow(Gtk.Application):
             GLib.OptionFlags.IN_MAIN,
             GLib.OptionArg.STRING,
             "Specify file type for config file (suppported are json, toml, yaml)",
+            None,
+        )
+        self.add_main_option(
+            "validate",
+            False,
+            GLib.OptionFlags.IN_MAIN,
+            GLib.OptionArg.NONE,
+            "Validate config file",
             None,
         )
 
@@ -236,6 +245,14 @@ class MainWindow(Gtk.Application):
         elif "default" in options:
             self.use_default_config = options.get("default")
             self.activate()
+        elif "validate" in options:
+            try:
+                ValidateConfig(
+                    file_path=options.get("config"), file_type=options.get("type")
+                )
+            except ConfigError as e:
+                print(e)
+                exit(1)
         else:
             if "config" in options:
                 self.config_file_path = options.get("config")
