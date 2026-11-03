@@ -17,6 +17,7 @@ class ValidateConfig:
         "gaps": type(int()),
         "height": type(int()),
         "icon_size": type(int()),
+        "layer": type(str()),
         "spacing": type(int()),
     }
 
@@ -46,6 +47,7 @@ class ValidateConfig:
             "show_heading": type(bool()),
             "show_day_names": type(bool()),
             "show_week_numbers": type(bool()),
+            "show_revealer": type(bool()),
             "icon_size": type(int()),
             "spacing": type(int()),
             "timer": type(int()),
@@ -57,6 +59,7 @@ class ValidateConfig:
         },
         "disk": {
             "mountpoint": type(str()),
+            "icon": type(str()),
             "icon_size": type(int()),
             "spacing": type(int()),
             "timer": type(int()),
@@ -72,6 +75,7 @@ class ValidateConfig:
             "show_ipv6": type(bool()),
             "show_disconnected": type(bool()),
             "icon_size": type(int()),
+            "icon": type(str()),
             "spacing": type(int()),
             "timer": type(int()),
         },
@@ -88,11 +92,12 @@ class ValidateConfig:
             "api": type(str()),
             "show_big_icon": type(bool()),
             "big_icon_size": type(int()),
+            "small_text_size": type(int()),
             "icon_size": type(int()),
             "spacing": type(int()),
             "timer": type(int()),
         },
-        "window_title": {
+        "windowtitle": {
             "hide_no_focus": type(bool()),
             "hide_on_close": type(bool()),
             "title_max_length": type(int()),
@@ -201,8 +206,9 @@ class ValidateConfig:
                             f"{setting} is invalid setting for {[*widget][0]}"
                         )
                     elif not isinstance(
-                        setting, self.valid_widgets.get([*widget][0], {}).get(setting)
+                        widget.get([*widget][0], {}).get(setting),
+                        self.valid_widgets.get([*widget][0], {}).get(setting),
                     ):
                         raise ConfigError(
-                            f"{setting} should be {self.valid_widgets.get([*widget][0], {}).get(setting).__name__}"
+                            f"{setting} should be {self.valid_widgets.get([*widget][0], {}).get(setting).__name__} but are {type(setting)}"
                         )
