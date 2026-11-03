@@ -11,7 +11,7 @@ class ConfigError(Exception):
 
 class ValidateConfig:
     valid_config_keys = {
-        "bars": type(dict()),
+        "bars": type(list()),
         "corner_radius": type(int()),
         "font_size": type(int()),
         "gaps": type(int()),
@@ -25,6 +25,7 @@ class ValidateConfig:
         "height": type(int()),
         "layer": type(str()),
         "location": type(str()),
+        "output": type(str()),
         "widgets": type(dict()),
     }
 
@@ -173,17 +174,18 @@ class ValidateConfig:
     def validate_bars(self):
         bars = [*self.config.get("bars", {})]
         for bar in bars:
-            bar_config = self.config.get("bars", {}).get(bar)
-            for bc in [*bar_config]:
+            for bc in [*bar]:
                 if bc not in [*self.valid_bar_settings]:
                     raise ConfigError(f"{bc} is invalid bar setting for {bar}")
                 if bc == "widgets":
-                    for bcl in [*bar_config.get(bc)]:
+                    for bcl in [*bar.get(bc)]:
                         if bcl not in ["left", "center", "right"]:
                             raise ConfigError(f"Widget location {bcl} invalid")
-                        elif not isinstance(bar_config.get(bc).get(bcl), type(list())):
+                        elif not isinstance(bar.get(bc).get(bcl), type(list())):
                             raise ConfigError(f"{bcl} is not a list")
-                        self.validate_widgets(bar, bar_config.get(bc).get(bcl))
+                        self.validate_widgets(
+                            bar.get("output", ""), bar.get(bc).get(bcl)
+                        )
 
     # Validate each widget for the bar
     def validate_widgets(self, output, widgets):

@@ -106,13 +106,11 @@ class MainWindow(Gtk.Application):
         self.load_css()
         monitors = [*self.config.data.get("bars", {})]
         for monitor in monitors:
-            self.create_window(
-                monitor, self.config.data.get("bars", {}).get(monitor, {})
-            )
+            self.create_window(monitor)
 
-    def create_window(self, monitor, bar_config):
+    def create_window(self, bar_config):
         local_bar_config = {}
-        local_bar_config["monitor"] = monitor
+        local_bar_config["monitor"] = bar_config.get("output")
         if "gaps" in bar_config:
             local_bar_config["gaps"] = bar_config.get("gaps", 0)
         elif "gaps" in self.config.data:
@@ -253,6 +251,7 @@ class MainWindow(Gtk.Application):
             except ConfigError as e:
                 print(e)
                 exit(1)
+            print("Config file is valid")
         else:
             if "config" in options:
                 self.config_file_path = options.get("config")

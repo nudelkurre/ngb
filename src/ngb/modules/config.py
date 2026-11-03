@@ -36,8 +36,9 @@ class Config:
             else list(psutil.net_if_addrs())[0]
         )
         default_data = {
-            "bars": {
-                first_monitor: {
+            "bars": [
+                {
+                    "output": first_monitor,
                     "widgets": {
                         "left": [{"workspace": {}}],
                         "center": [],
@@ -54,7 +55,7 @@ class Config:
                         ],
                     },
                 },
-            },
+            ],
             "icon_size": 20,
             "spacing": 5,
             "corner_radius": 0,
