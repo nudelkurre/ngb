@@ -40,25 +40,21 @@ class Config:
                 {
                     "output": first_monitor,
                     "widgets": {
-                        "left": [{"config": {}, "module": "workspace"}],
+                        "left": [{"workspace": {}}],
                         "center": [],
                         "right": [
-                            {"config": {"mountpoint": "/"}, "module": "disk"},
+                            {"disk": {"mountpoint": "/"}},
+                            {"network": {"interface": first_network_interface}},
+                            {"volume": {}},
                             {
-                                "config": {"interface": first_network_interface},
-                                "module": "network",
-                            },
-                            {"config": {}, "module": "volume"},
-                            {
-                                "config": {
+                                "clock": {
                                     "timeformat_normal": "%H:%M:%S",
                                     "timeformat_revealer": "%Y-%m-%d",
-                                },
-                                "module": "clock",
+                                }
                             },
                         ],
                     },
-                }
+                },
             ],
             "icon_size": 20,
             "spacing": 5,
@@ -69,12 +65,13 @@ class Config:
                 os.makedirs(self.file_dir)
             write_mode = "wb" if self.file_type == "toml" else "w"
             with open(self.file_path, write_mode) as file:
-                if self.file_type == "json":
-                    file.write(json.dumps(default_data))
-                elif self.file_type == "toml":
-                    tomli_w.dump(default_data, file)
-                elif self.file_type == "yaml":
-                    file.write(yaml.dump(default_data))
+                match self.file_type:
+                    case "json":
+                        file.write(json.dumps(default_data, indent=4))
+                    case "toml":
+                        tomli_w.dump(default_data, file)
+                    case "yaml":
+                        file.write(yaml.dump(default_data))
                 file.close()
         self.data = default_data
 
@@ -82,12 +79,13 @@ class Config:
         read_mode = "rb" if self.file_type == "toml" else "r"
         with open(config_file, read_mode) as file:
             try:
-                if self.file_type == "json":
-                    self.data = json.load(file)
-                elif self.file_type == "toml":
-                    self.data = tomli.load(file)
-                elif self.file_type == "yaml":
-                    self.data = yaml.safe_load(file)
+                match self.file_type:
+                    case "json":
+                        self.data = json.load(file)
+                    case "toml":
+                        self.data = tomli.load(file)
+                    case "yaml":
+                        self.data = yaml.safe_load(file)
                 if "bars" not in self.data:
                     self.data["bars"] = []
                 if "spacing" not in self.data:
