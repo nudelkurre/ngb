@@ -280,12 +280,13 @@ class SwayIPC(WindowManagerIPC):
                 parsed_response = []
             self.disconnect()
             socket_data = parsed_response
+            return socket_data
         except socket.error as e:
             log_error(e)
+            return []
         except Exception as e:
             log_error(e)
-        finally:
-            return socket_data
+            return []
 
     def close_window(self, id):
         self.command(f"[con_id={id}] kill")
