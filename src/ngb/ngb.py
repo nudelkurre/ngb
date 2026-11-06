@@ -35,6 +35,7 @@ from ngb.widgets import (
     Workspaces,
 )
 from ngb.modules import Bar, Config
+from ngb.utils import ConfigError, ValidateConfig
 from ngb import __about__
 
 
@@ -81,6 +82,14 @@ class MainWindow(Gtk.Application):
             "Specify file type for config file (suppported are json, toml, yaml)",
             None,
         )
+        self.add_main_option(
+            "validate",
+            False,
+            GLib.OptionFlags.IN_MAIN,
+            GLib.OptionArg.NONE,
+            "Validate config file",
+            None,
+        )
 
         self.bars = []
 
@@ -95,12 +104,13 @@ class MainWindow(Gtk.Application):
         else:
             self.config = Config()
         self.load_css()
-        for i in self.config.data.get("bars", {}):
-            self.create_window(i)
+        monitors = [*self.config.data.get("bars", {})]
+        for monitor in monitors:
+            self.create_window(monitor)
 
     def create_window(self, bar_config):
         local_bar_config = {}
-        local_bar_config["monitor"] = bar_config.get("output", "")
+        local_bar_config["monitor"] = bar_config.get("output")
         if "gaps" in bar_config:
             local_bar_config["gaps"] = bar_config.get("gaps", 0)
         elif "gaps" in self.config.data:
@@ -135,30 +145,30 @@ class MainWindow(Gtk.Application):
         }
 
         for widget in bar_config.get("widgets", {}).get("left", {}):
-            config = widget.get("config", {})
+            module = [*widget][0]
+            config = widget.get(module, {})
             if "icon_size" not in config and "icon_size" in self.config.data:
                 config["icon_size"] = self.config.data.get("icon_size", 20)
-            module = widget.get("module", [])
             if module in valid_widgets:
                 new_module = valid_widgets.get(module)(**config)
                 window.left(new_module)
                 new_module.run()
 
-        for widget in bar_config["widgets"]["center"]:
-            config = widget.get("config", {})
+        for widget in bar_config.get("widgets", {}).get("center", {}):
+            module = [*widget][0]
+            config = widget.get(module, {})
             if "icon_size" not in config and "icon_size" in self.config.data:
                 config["icon_size"] = self.config.data.get("icon_size", 20)
-            module = widget.get("module", [])
             if module in valid_widgets:
                 new_module = valid_widgets.get(module)(**config)
                 window.center(new_module)
                 new_module.run()
 
-        for widget in bar_config["widgets"]["right"]:
-            config = widget.get("config", {})
+        for widget in bar_config.get("widgets", {}).get("right", []):
+            module = [*widget][0]
+            config = widget.get(module, {})
             if "icon_size" not in config and "icon_size" in self.config.data:
                 config["icon_size"] = self.config.data.get("icon_size", 20)
-            module = widget.get("module", [])
             if module in valid_widgets:
                 new_module = valid_widgets.get(module)(**config)
                 window.right(new_module)
@@ -233,6 +243,15 @@ class MainWindow(Gtk.Application):
         elif "default" in options:
             self.use_default_config = options.get("default")
             self.activate()
+        elif "validate" in options:
+            try:
+                ValidateConfig(
+                    file_path=options.get("config"), file_type=options.get("type")
+                )
+            except ConfigError as e:
+                print(e)
+                exit(1)
+            print("Config file is valid")
         else:
             if "config" in options:
                 self.config_file_path = options.get("config")

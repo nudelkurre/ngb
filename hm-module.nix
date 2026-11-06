@@ -64,57 +64,15 @@ with lib;
                                     type = types.submodule {
                                         options = {
                                             center = mkOption {
-                                                type = types.listOf (
-                                                    types.submodule {
-                                                        options = {
-                                                            config = mkOption {
-                                                                type = types.attrs;
-                                                                description = "Settings for widget";
-                                                                default = { };
-                                                            };
-                                                            module = mkOption {
-                                                                type = types.str;
-                                                                description = "Name of widget";
-                                                            };
-                                                        };
-                                                    }
-                                                );
+                                                type = types.listOf types.attrs;
                                                 default = [ ];
                                             };
                                             left = mkOption {
-                                                type = types.listOf (
-                                                    types.submodule {
-                                                        options = {
-                                                            config = mkOption {
-                                                                type = types.attrs;
-                                                                description = "Settings for widget";
-                                                                default = { };
-                                                            };
-                                                            module = mkOption {
-                                                                type = types.str;
-                                                                description = "Name of widget";
-                                                            };
-                                                        };
-                                                    }
-                                                );
+                                                type = types.listOf types.attrs;
                                                 default = [ ];
                                             };
                                             right = mkOption {
-                                                type = types.listOf (
-                                                    types.submodule {
-                                                        options = {
-                                                            config = mkOption {
-                                                                type = types.attrs;
-                                                                description = "Settings for widget";
-                                                                default = { };
-                                                            };
-                                                            module = mkOption {
-                                                                type = types.str;
-                                                                description = "Name of widget";
-                                                            };
-                                                        };
-                                                    }
-                                                );
+                                                type = types.listOf types.attrs;
                                                 default = [ ];
                                             };
                                         };
@@ -188,6 +146,11 @@ with lib;
                                     pkgs.formats.toml { }
                                 else
                                     pkgs.formats.yaml { };
+
+                            validatedConfig = pkgs.runCommand "ngb-config.${format}" {} ''
+                                cp -a ${fileFormat.generate "ngb-config.${config.services.ngb.file-type}" filtered} $out
+                                ${config.services.ngb.package}/bin/ngb --type ${config.services.ngb.file-type} --config $out --validate
+                            '';
                         in
                         {
                             Unit = {
@@ -198,7 +161,7 @@ with lib;
                                 WantedBy = [ "graphical-session.target" ];
                             };
                             Service = {
-                                ExecStart = "${config.services.ngb.package}/bin/ngb --type ${config.services.ngb.file-type} --config ${fileFormat.generate "ngb-config.${config.services.ngb.file-type}" filtered}";
+                                ExecStart = "${config.services.ngb.package}/bin/ngb --type ${config.services.ngb.file-type} --config ${validatedConfig}";
                                 Restart = "always";
                                 RestartSec = "5s";
                             };
