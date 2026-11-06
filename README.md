@@ -9,14 +9,17 @@
     - [Output](#output)
     - [Widgets](#widgets)
     - [Widget modules](#widget-modules)
+      - [Battery](#battery)
       - [Bluetooth](#bluetooth)
       - [Clock](#clock)
       - [Cpu](#cpu)
       - [Disk](#disk)
       - [Headset](#headset)
+      - [Key mode](#key-mode)
       - [Network](#network)
       - [Volume](#volume)
       - [Weather](#weather)
+      - [Window Title](#window-title)
       - [Workspace](#workspace)
   - [Icon_size](#icon_size)
   - [Spacing](#spacing)
@@ -95,6 +98,9 @@ homeConfigurations = {
 ```
 
 ## Configuration
+> [!WARNING]
+> Configuration breaking with version 0.10
+
 The configuration is by default a json formated file stored in $XDG_CONFIG_HOME/ngb/config.json if XDG_CONFIG_HOME is set, else it is stored in $HOME/.config/ngb/config.json.
 
 If a configuration file is not found when ngb first run, it will create one in the right location specified above and looks like this:
@@ -110,34 +116,29 @@ If a configuration file is not found when ngb first run, it will create one in t
           "widgets": {
               "left": [
                   {
-                      "config": {},
-                      "module": "workspace"
+                      "workspace": {}
                   }
               ],
               "center": [],
               "right": [
                   {
-                      "config": {
+                      "disk": {
                           "mountpoint": "/"
-                      },
-                      "module": "disk"
+                      }
                   },
                   {
-                      "config": {
+                      "network": {
                           "interface": "eth0"
                       },
-                      "module": "network"
                   },
                   {
-                      "config": {},
-                      "module": "volume"
+                      "volume": {}
                   },
                   {
-                      "config": {
+                      "clock": {
                           "timeformat_normal": "%H:%M:%S",
                           "timeformat_revealer": "%Y-%m-%d"
-                      },
-                      "module": "clock"
+                      }
                   }
               ]
           }
@@ -169,19 +170,21 @@ Set the layer shell layer to show the bar at. Valid layers are background, botto
 Widgets is an object that keeps three lists, center, left and right. The lists contains the widgets to show on respective position of the bar.
 
 #### widget modules
-Each widget module contain an object with a module name and config object.
+Each widget module contain a key with the module name and the config as the object value
 ```json
 {
-  "config": {},
-  "module": "module_name"
+  "module_name": {
+    "configKey": "configValue"
+  }
 }
 ```
 Every widget can set the following for each module.
-|configureation key|description|data type|default|
+|configuration key|description|data type|default|
 |---|---|---|---|
 |icon_size|Set the icons font size|Integer|20|
 |spacing|Number of pixels to set as spacing between icon and text|Integer|10|
 |timer|How often the module should be updated in seconds|Integer|1|
+
 If icon_size and spacing is not set in the module, it will use the global set value or if not set at all, will use the default value (icon_size=20, spacing=5)
 
 ##### Battery
@@ -193,7 +196,7 @@ Bluetoothctl is needed to be in $PATH to work.
 
 ##### Clock
 Show a clock and can be configured to show different formats and also show additional format if clicked on. If right click on clock, a calendar is shown in a dropdown.
-|configureation key|description|data type|default|
+|configuration key|description|data type|default|
 |---|---|---|---|
 |timeformat_normal||String using date format|"%T"|
 |timeformat_revealer||String using date format|"%A %Y-%m-%d"|
@@ -206,7 +209,7 @@ Show current cpu usage in percent
 
 ##### Disk
 Show the percentage used of the chosen mountpoint, and if clicked on will show a dropdown with which mountpoint it shows, a bar visualize disk usage and text showing amount used/total space.
-|configureation key|description|data type|default|
+|configuration key|description|data type|default|
 |---|---|---|---|
 |mountpoint|Mountpoint to use|String|"/"|
 
@@ -216,9 +219,12 @@ headsetcontrol is needed to be in $PATH to work.
 Have a minimum timer set at 5 seconds
 (May remove this in the future since it is unstable and can crash the headset controller if to many requests is sent to the headset at a low interval)
 
+##### Key mode
+Show the current key mode that are active for the window manager (only sway and mango support key mode, niri does not have key mode as of now)
+
 ##### Network
 Show ipv4 address of chosen interface. When clicked on show a dropdown with interface name, mac address, ipv4 address and ipv6 addresses of interface.
-|configureation key|description|data type|default|
+|configuration key|description|data type|default|
 |---|---|---|---|
 |interface|Set interface name to show|String|""|
 |show_public_ip|Set to show public ip|Boolean|True|
@@ -228,7 +234,7 @@ Show ipv4 address of chosen interface. When clicked on show a dropdown with inte
 ##### Volume
 Show the current volume of default sink. By default, click on widget will show a dropdown with all sinks and be able to use slider to set volume, middle click will mute and right click will change default sink to the next in the list. Left click and middle click action can be swapped in config.
 wpctl is needed to be in $PATH to work.
-|configureation key|description|data type|default|
+|configuration key|description|data type|default|
 |---|---|---|---|
 |click_to_mute|Swap left and middle click action, to make left click toggle mute|Boolean|False|
 |muted_icon|Set icon to show when a sink is muted|String|"󰝟"|
@@ -238,7 +244,7 @@ wpctl is needed to be in $PATH to work.
 Show current temperature of specified city. Left click will show a dropdown with city name, current temperature, current wind speed and current weather description.
 Currently only gets the data from SMHI API (for Sweden) and YR.no (for nordic countries). 
 OpenWeatherMap (for global) is planned for future.
-|configureation key|description|data type|default|
+|configuration key|description|data type|default|
 |---|---|---|---|
 |city|City to show weather info for|String|""|
 |api|Set which api to use|String|"YR"|
@@ -247,7 +253,7 @@ OpenWeatherMap (for global) is planned for future.
 
 ##### Window Title
 Show active windows title. Click will show a dropdown with all windows and click on a title in the dropdown to change focus to that window (only for Niri and SwayWM)
-|configureation key|description|data type|default|
+|configuration key|description|data type|default|
 |---|---|---|---|
 |hide_no_focus|Set to hide the widget if no window is focused|Boolean|False|
 |hide_on_close|Set to close the dropdown after closing a window|Boolean|True|
@@ -257,7 +263,7 @@ Show active windows title. Click will show a dropdown with all windows and click
 Show active workspaces and highlight the focused one. Can be set to show only a specific monitor or show all workspaces from all monitors.
 use_workspace_names and use_workspace_ids is used both when using icons for workspaces where use_workspace_names takes precedence over use_workspace_ids. If names are set, icons will be used.
 Works with SwayWM, Hyprland, Niri (requires xwayland-satellite for the moment) and MangoWM.
-|configureation key|description|data type|default|
+|configuration key|description|data type|default|
 |---|---|---|---|
 |monitor|Set either specific monitor or "all" for all workspaces|String|"all"|
 |use_workspace_names|Use workspace name set by window manager|Boolean|False|
