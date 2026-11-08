@@ -56,7 +56,7 @@ class WindowTitle(WidgetBox):
         self.windows = data
 
     def on_focused_window_updates(self, instance, data):
-        self.focused_title = data.title
+        self.focused_title = cut_string_length(data.title, self.title_max_length)
         self.update_label()
 
     def run(self):
