@@ -69,6 +69,11 @@ class ValidateConfig:
             "spacing": int,
             "timer": int,
         },
+        "keymode": {
+            "icon_size": int,
+            "spacing": int,
+            "timer": int,
+        },
         "network": {
             "interface": str,
             "show_public_ip": bool,
