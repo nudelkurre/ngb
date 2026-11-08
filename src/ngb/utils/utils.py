@@ -4,13 +4,16 @@ import sys
 
 
 def cut_string_length(text, length):
-    old_text = text.split(" ")
-    new_text = text[:length].split(" ")
-    new_text_last_index = len(new_text) - 1
-    if old_text[new_text_last_index] == new_text[new_text_last_index]:
-        return " ".join(new_text)
+    if isinstance(text, str):
+        old_text = text.split(" ")
+        new_text = text[:length].split(" ")
+        new_text_last_index = len(new_text) - 1
+        if old_text[new_text_last_index] == new_text[new_text_last_index]:
+            return " ".join(new_text)
+        else:
+            return " ".join(new_text[:-1])
     else:
-        return " ".join(new_text[:-1])
+        return ""
 
 
 def wrap_string_at(text, length):
