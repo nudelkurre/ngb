@@ -69,6 +69,10 @@ class MangoIPC(WindowManagerIPC):
                     ]
                     monitor_tags = list(filter(None, monitor_tags))
                     active_tags = m.get("active_tags", [0])
+                    for index, workspace in enumerate(self.workspaces):
+                        if workspace.id == active_tags[0] and workspace.output == name:
+                            self.workspaces[index].focused = active
+                            self.emit("workspaces", self.workspaces)
                     self.monitors.append(
                         Monitor(
                             name=name,
