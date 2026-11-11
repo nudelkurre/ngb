@@ -34,7 +34,7 @@ from ngb.widgets import (
     WindowTitle,
     Workspaces,
 )
-from ngb.modules import Bar, Config
+from ngb.modules import Bar, Config, IPCModule
 from ngb.utils import ConfigError, ValidateConfig
 from ngb import __about__
 
@@ -104,6 +104,7 @@ class MainWindow(Gtk.Application):
         else:
             self.config = Config()
         self.load_css()
+        self.ipc = IPCModule()
         monitors = [*self.config.data.get("bars", {})]
         for monitor in monitors:
             self.create_window(monitor)
@@ -150,7 +151,7 @@ class MainWindow(Gtk.Application):
             if "icon_size" not in config and "icon_size" in self.config.data:
                 config["icon_size"] = self.config.data.get("icon_size", 20)
             if module in valid_widgets:
-                new_module = valid_widgets.get(module)(**config)
+                new_module = valid_widgets.get(module)(ipc=self.ipc, **config)
                 window.left(new_module)
                 new_module.run()
 
@@ -160,7 +161,7 @@ class MainWindow(Gtk.Application):
             if "icon_size" not in config and "icon_size" in self.config.data:
                 config["icon_size"] = self.config.data.get("icon_size", 20)
             if module in valid_widgets:
-                new_module = valid_widgets.get(module)(**config)
+                new_module = valid_widgets.get(module)(ipc=self.ipc, **config)
                 window.center(new_module)
                 new_module.run()
 
@@ -170,7 +171,7 @@ class MainWindow(Gtk.Application):
             if "icon_size" not in config and "icon_size" in self.config.data:
                 config["icon_size"] = self.config.data.get("icon_size", 20)
             if module in valid_widgets:
-                new_module = valid_widgets.get(module)(**config)
+                new_module = valid_widgets.get(module)(ipc=self.ipc, **config)
                 window.right(new_module)
                 new_module.run()
 
