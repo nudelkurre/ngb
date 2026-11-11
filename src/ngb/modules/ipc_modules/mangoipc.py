@@ -28,8 +28,6 @@ class MangoIPC(WindowManagerIPC):
         self.commands = [
             self._encode_cmd("all-clients"),
             self._encode_cmd("all-monitors"),
-            self._encode_cmd("all-tags"),
-            self._encode_cmd("focusing-client"),
             self._encode_cmd("keymode"),
         ]
 
@@ -55,6 +53,7 @@ class MangoIPC(WindowManagerIPC):
             case "all-monitors":
                 monitors = data.get("monitors", [])
                 self.monitors = list()
+                self.workspaces = list()
                 for m in monitors:
                     name = m.get("name", "")
                     active = m.get("active", False)
@@ -69,6 +68,32 @@ class MangoIPC(WindowManagerIPC):
                     ]
                     monitor_tags = list(filter(None, monitor_tags))
                     active_tags = m.get("active_tags", [0])
+                    if active:
+                        active_client = m.get("active_client")
+                        active_id = active_client.get("id")
+                        active_title = active_client.get("title")
+                        self.focused_window = Window(
+                            id=str(active_id) if active_id is not None else "0",
+                            title=active_title if active_title is not None else "",
+                            focused=True,
+                            output=name,
+                        )
+                        self.emit("focused-window", self.focused_window)
+                    for tag in tags:
+                        tag_id = tag.get("index")
+                        tag_active = tag.get("client_count") > 0 or tag.get("is_active")
+                        tag_focused = tag_id in active_tags and active
+                        self.workspaces.append(
+                            Workspace(
+                                id=tag_id,
+                                name=str(tag_id),
+                                focused=tag_focused,
+                                output=name,
+                                urgent=False,
+                                active=tag_active,
+                            )
+                        )
+                    self.emit("workspaces", self.workspaces)
                     self.monitors.append(
                         Monitor(
                             name=name,
@@ -78,49 +103,6 @@ class MangoIPC(WindowManagerIPC):
                         )
                     )
                 self.emit("monitors", self.monitors)
-            case "all-tags":
-                workspaces = data.get("all_tags", [])
-                self.workspaces = list()
-                if self.focused_window is None:
-                    return
-                for workspace in workspaces:
-                    monitor = workspace.get("monitor", "")
-                    tags = workspace.get("tags", [])
-                    for tag in tags:
-                        is_focused = self.focused_window.output == monitor and tag.get(
-                            "is_active", False
-                        )
-                        if tag.get("client_count") > 0:
-                            self.workspaces.append(
-                                Workspace(
-                                    id=tag.get("index", 0),
-                                    name=str(tag.get("index", 0)),
-                                    focused=is_focused,
-                                    output=monitor,
-                                    urgent=tag.get("is_urgent", False),
-                                    active=True,
-                                )
-                            )
-                        elif tag.get("is_active"):
-                            self.workspaces.append(
-                                Workspace(
-                                    id=tag.get("index", 0),
-                                    name=str(tag.get("index", 0)),
-                                    focused=is_focused,
-                                    output=monitor,
-                                    urgent=tag.get("is_urgent", False),
-                                    active=True,
-                                )
-                            )
-                self.emit("workspaces", self.workspaces)
-            case "focusing-client":
-                self.focused_window = Window(
-                    id=str(data.get("id", 0)),
-                    title=data.get("title", ""),
-                    focused=data.get("is_focused", False),
-                    output=data.get("monitor", ""),
-                )
-                self.emit("focused-window", self.focused_window)
             case "keymode":
                 self.keymode = data.get("keymode", "")
                 self.emit("keymode", self.keymode)
