@@ -39,10 +39,8 @@ class IPCModule(GObject.Object):
 
     def __init__(self, **kwargs):
         super().__init__()
-        self.hide_no_focus = kwargs.get("hide_no_focus", False)
-        self.title_max_length = kwargs.get("title_max_length", 200)
         self.current_wm = os.environ.get("XDG_CURRENT_DESKTOP", "").lower()
-        self.timer = kwargs.get("timer")
+        self.timer = kwargs.get("timer", 0.5)
         self.wm = self.valid_ipc.get(self.current_wm, WindowManagerIPC)(
             timer=self.timer
         )
