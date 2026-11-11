@@ -73,6 +73,7 @@ class ValidateConfig:
             "icon_size": int,
             "spacing": int,
             "timer": int,
+            "keymode_icons": dict,
         },
         "network": {
             "interface": str,
