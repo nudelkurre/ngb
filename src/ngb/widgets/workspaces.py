@@ -1,7 +1,7 @@
 from gi.repository import Gtk
 from gi.repository import GLib
 
-from ngb.modules import IPCModule, WidgetBox, WidgetDrawer
+from ngb.modules import WidgetBox, WidgetDrawer
 
 
 class WorkspaceBox(WidgetBox):
@@ -39,7 +39,7 @@ class Workspaces(WidgetDrawer):
     def __init__(self, **kwargs):
         self.spacing = kwargs.get("spacing", 5)
         self.icon_size = kwargs.get("icon_size", 20)
-        self.wm_api = IPCModule(timer=self.min_timer, **kwargs)
+        self.wm_api = kwargs.get("ipc")
         self.timer = kwargs.get("timer", self.min_timer)
         if self.timer < self.min_timer:
             self.timer = self.min_timer

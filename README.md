@@ -221,6 +221,9 @@ Have a minimum timer set at 5 seconds
 
 ##### Key mode
 Show the current key mode that are active for the window manager (only sway and mango support key mode, niri does not have key mode as of now)
+|configuration key|description|data type|default|
+|---|---|---|---|
+|names|Can be used to change keymode names to icons|Object of key-value pairs with strings as value|{}|
 
 ##### Network
 Show ipv4 address of chosen interface. When clicked on show a dropdown with interface name, mac address, ipv4 address and ipv6 addresses of interface.

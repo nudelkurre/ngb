@@ -1,7 +1,7 @@
 from gi.repository import Gtk
 from gi.repository import GLib
 
-from ngb.modules import IPCModule, WidgetBox
+from ngb.modules import WidgetBox
 from ngb.utils import cut_string_length
 
 
@@ -43,7 +43,7 @@ class WindowTitle(WidgetBox):
         self.hide_no_focus = kwargs.get("hide_no_focus", False)
         self.hide_on_close = kwargs.get("hide_on_close", True)
         self.title_max_length = kwargs.get("title_max_length", 200)
-        self.wm_api = IPCModule(timer=self.timer, **kwargs)
+        self.wm_api = kwargs.get("ipc")
         self.wm_api.connect("window-updates", self.on_window_updates)
         self.wm_api.connect("focused-window-updates", self.on_focused_window_updates)
 
@@ -56,7 +56,7 @@ class WindowTitle(WidgetBox):
         self.windows = data
 
     def on_focused_window_updates(self, instance, data):
-        self.focused_title = data.title
+        self.focused_title = cut_string_length(data.title, self.title_max_length)
         self.update_label()
 
     def run(self):
