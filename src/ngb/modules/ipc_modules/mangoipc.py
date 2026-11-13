@@ -83,13 +83,14 @@ class MangoIPC(WindowManagerIPC):
                         tag_id = tag.get("index")
                         tag_active = tag.get("client_count") > 0 or tag.get("is_active")
                         tag_focused = tag_id in active_tags and active
+                        tag_urgent = tag.get("is_urgent", False)
                         self.workspaces.append(
                             Workspace(
                                 id=tag_id,
                                 name=str(tag_id),
                                 focused=tag_focused,
                                 output=name,
-                                urgent=False,
+                                urgent=tag_urgent,
                                 active=tag_active,
                             )
                         )
