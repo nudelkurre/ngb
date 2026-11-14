@@ -8,7 +8,7 @@ class KeyMode(WidgetBox):
     def __init__(self, **kwargs):
         super().__init__(icon="", spacing=1)
         self.icons = kwargs.get("keymode_icons", {})
-        self.wm_api = IPCModule()
+        self.wm_api = kwargs.get("ipc")
         self.wm_api.connect("keymode-updates", self.on_keymode_updates)
         self.keymode = ""
 
