@@ -17,6 +17,8 @@ class WidgetBox(Gtk.Button):
         self.icon_size = kwargs.get("icon_size", 20)
         super().__init__()
 
+        self._signal_connections = list()
+
         # Set css class to use the custom css created
         self.add_css_class("widget-button")
 
@@ -37,32 +39,61 @@ class WidgetBox(Gtk.Button):
         self.scroll_controller = Gtk.EventControllerScroll.new(
             Gtk.EventControllerScrollFlags.VERTICAL
         )
-        self.scroll_controller.connect("scroll", self.on_scroll)
+        self._signal_connections.append(
+            (
+                self.scroll_controller,
+                self.scroll_controller.connect("scroll", self.on_scroll),
+            )
+        )
         self.box.add_controller(self.scroll_controller)
 
         # Create a controller for hover events
         self.hover_controller = Gtk.EventControllerMotion.new()
-        self.hover_controller.connect("enter", self.on_hover_enter)
-        self.hover_controller.connect("leave", self.on_hover_leave)
+        self._signal_connections.append(
+            (
+                self.hover_controller,
+                self.hover_controller.connect("enter", self.on_hover_enter),
+            )
+        )
+        self._signal_connections.append(
+            (
+                self.hover_controller,
+                self.hover_controller.connect("leave", self.on_hover_leave),
+            )
+        )
         self.box.add_controller(self.hover_controller)
 
         # Create a controller for click events events
         # left click
-        self.connect("clicked", self.on_click)
+        self._signal_connections.append((self, self.connect("clicked", self.on_click)))
         # middle click
         self.middle_click_controller = Gtk.GestureSingle()
         self.middle_click_controller.set_button(2)
-        self.middle_click_controller.connect("begin", self.on_middle_click)
+        self._signal_connections.append(
+            (
+                self.middle_click_controller,
+                self.middle_click_controller.connect("begin", self.on_middle_click),
+            )
+        )
         self.box.add_controller(self.middle_click_controller)
         # right click
         self.right_click_controller = Gtk.GestureSingle()
         self.right_click_controller.set_button(3)
-        self.right_click_controller.connect("begin", self.on_right_click)
+        self._signal_connections.append(
+            (
+                self.right_click_controller,
+                self.right_click_controller.connect("begin", self.on_right_click),
+            )
+        )
         self.box.add_controller(self.right_click_controller)
 
         # Connect signals for dropdown
-        self.dropdown.connect("show", self.on_show)
-        self.dropdown.connect("closed", self.on_close)
+        self._signal_connections.append(
+            (self.dropdown, self.dropdown.connect("show", self.on_show))
+        )
+        self._signal_connections.append(
+            (self.dropdown, self.dropdown.connect("closed", self.on_close))
+        )
 
         # Append icon and text to widget
         self.box.append(self.icon_label)
@@ -89,6 +120,12 @@ class WidgetBox(Gtk.Button):
         if self.timeout:
             GLib.source_remove(self.timeout)
             self.timeout = None
+
+    def disconnect_handlers(self):
+        for emitter, handler_id in self._signal_connections:
+            if emitter.handler_is_connected(handler_id):
+                emitter.disconnect(handler_id)
+        self._signal_connections.clear()
 
     def remove_widget(self):
         parent = self.get_parent()
@@ -148,6 +185,7 @@ class WidgetBox(Gtk.Button):
             pass
         finally:
             self._task_in_flight = False
+            self._task = None
 
     def update_label(self):
         if self._task_in_flight:
