@@ -45,7 +45,8 @@ class WidgetDrawer(Gtk.Box):
         child = self.get_first_child()
         while child:
             child.stop()
-            child.unparent()
+            child.disconnect_handlers()
+            self.remove(child)
             child = self.get_first_child()
 
     def get_boxes(self):
