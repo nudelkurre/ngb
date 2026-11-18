@@ -129,6 +129,12 @@ class NiriIPC(WindowManagerIPC):
                 for index, workspace in enumerate(self.workspaces):
                     if workspace.global_id == workspace_id:
                         self.workspaces[index].windows.add(changed_window_id)
+                    if (
+                        changed_window_id in workspace.windows
+                        and workspace.global_id != workspace_id
+                    ):
+                        self.workspaces[index].windows.remove(changed_window_id)
+                self.emit("workspaces", self.workspaces)
                 self.emit("windows", self.windows)
             case "WorkspaceActivated":
                 activated_workspace = data.get("WorkspaceActivated", {})
